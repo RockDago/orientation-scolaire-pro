@@ -4,23 +4,24 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  assetsInclude: ['**/*.geojson'],
+
   plugins: [
     react(),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      
-      // Désactive totalement la génération du Service Worker en mode DEV
+
       devOptions: {
         enabled: false
       },
-      
+
       includeAssets: [
         'favicon.ico',
         'apple-touch-icon.png',
         'masked-icon.svg'
       ],
-      
+
       manifest: {
         name: 'Orientation Scolaire et Professionnelle',
         short_name: 'Orientation',
@@ -51,10 +52,10 @@ export default defineConfig({
           }
         ]
       },
-      
+
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
-        maximumFileSizeToCacheInBytes: 3000000, 
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,geojson}'],
+        maximumFileSizeToCacheInBytes: 3000000,
         sourcemap: true,
         cleanupOutdatedCaches: true,
       }

@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 const InstallPWA = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   
-  // 1. Détection de l'appareil (iOS ou autre) au chargement
   const [isIOS] = useState(() => {
     if (typeof window === 'undefined') return false;
     const userAgent = window.navigator.userAgent.toLowerCase();
@@ -11,33 +10,33 @@ const InstallPWA = () => {
            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   });
 
-  // 2. Initialisation conditionnelle de l'affichage du Toast
+
   const [showToast, setShowToast] = useState(() => {
     if (typeof window === 'undefined') return false;
     
-    // Vérifier si l'app est déjà en mode "Application installée"
+
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                          window.navigator.standalone === true;
     
-    // Vérifier si l'utilisateur a déjà cliqué sur la croix pour fermer le toast
+   
     const hasDismissed = localStorage.getItem('pwa-prompt-dismissed');
     
     if (isStandalone || hasDismissed) return false;
     
-    // Si c'est iOS, on affiche le toast immédiatement (car iOS ne déclenche pas d'événement)
+    
     return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || 
            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   });
 
   useEffect(() => {
-    // 3. Capture l'événement d'installation autorisé par le navigateur
+   
     const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault(); // Empêche l'affichage automatique du navigateur
+      e.preventDefault(); 
       setDeferredPrompt(e);
-      setShowToast(true); // Affiche notre beau Toast Tailwind
+      setShowToast(true); 
     };
 
-    // 4. Écoute quand l'application est finalement installée pour cacher le toast
+   
     const handleAppInstalled = () => {
       setShowToast(false);
       setDeferredPrompt(null);
@@ -52,7 +51,7 @@ const InstallPWA = () => {
     };
   }, []);
 
-  // Fonction pour déclencher l'installation quand l'utilisateur clique sur le bouton
+ 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
     
@@ -67,17 +66,16 @@ const InstallPWA = () => {
     setShowToast(false);
   };
 
-  // Fonction pour fermer le Toast et s'en souvenir pour les prochaines visites
+
   const handleClose = () => {
     setShowToast(false);
     localStorage.setItem('pwa-prompt-dismissed', 'true');
   };
 
-  // Si showToast est faux, on ne rend rien du tout
   if (!showToast) return null;
 
   return (
-    // Conteneur fixe en bas à DROITE (bottom-6 right-6)
+   
     <div className="fixed bottom-6 right-6 w-[340px] bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 p-4 z-[9999] transition-all transform duration-300 translate-y-0 opacity-100">
       
       {/* Bouton de fermeture absolu en haut à droite */}
