@@ -1,9 +1,6 @@
-
-
-```markdown
-## 🛠️ Installation
-
 ### 1. Cloner le dépôt
+```markdown
+
 ```bash
 git clone https://github.com/RockDago/orientation-scolaire-pro.git
 cd orientation-scolaire-pro
