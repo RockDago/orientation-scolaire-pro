@@ -1,20 +1,44 @@
-<<<<<<< HEAD
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+```markdown
+## 🛠️ Installation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 1. Cloner le dépôt
+```bash
+git clone https://github.com/RockDago/orientation-scolaire-pro.git
+cd orientation-scolaire-pro
+```
 
-## React Compiler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 2. Installer les modules Node
 
-## Expanding the ESLint configuration
+```bash
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# orientation-scolaire-pro
->>>>>>> e8b84d021dc045cc851b361f1c6b46a1b1b48e0a
+
+### 3. Installer les dépendances supplémentaires
+
+```bash
+npm install leaflet --legacy-peer-deps
+npm install react-toastify --legacy-peer-deps
+npm install react-icons react-router-dom react-hot-toast react-simple-maps recharts d3 d3-geo --legacy-peer-deps
+```
+
+
+### 4. Lancer le serveur de développement
+
+```bash
+npm run dev
+```
+
+
+---
+
+## ⚙️ Scripts utiles
+
+- **`npm run build`** – Compile le projet pour la production.
+- **`npm run preview`** – Lance un serveur local pour prévisualiser le build de production.
+
+```
+
