@@ -28,16 +28,22 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Deploy Frontend Only
+      - name: Deploy to cPanel
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: /frontend/
+          server-dir: /
+          
           create-directories: true
+          
           exclude: |
+            **/backend*/**
             **/*.php
             **/.git*
+            **/node_modules/**
+            **/*.log
+            
           dry-run: false
