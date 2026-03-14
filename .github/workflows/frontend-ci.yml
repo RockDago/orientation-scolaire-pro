@@ -5,14 +5,15 @@ on:
     branches:
       - main
 
+env:
+  # Corrige l'avertissement de dépréciation Node.js dans GitHub Actions
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # Empêche l'arrêt du workflow si le code contient de simples avertissements
+  CI: false
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    env:
-      # Corrige l'avertissement de dépréciation Node.js dans GitHub Actions
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
-      # Empêche l'arrêt du workflow si votre code contient de simples avertissements (warnings ESLint)
-      CI: false
 
     steps:
       - name: Checkout repository
@@ -24,7 +25,6 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        # Ajout de --legacy-peer-deps pour éviter les échecs liés aux conflits de versions de paquets
         run: npm install --legacy-peer-deps
 
       - name: Build project
@@ -36,6 +36,5 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
-          # Assurez-vous que './dist/' correspond bien au dossier généré par votre build
           local-dir: ./dist/ 
           server-dir: /public_html/dssip.bambaray.mg/
