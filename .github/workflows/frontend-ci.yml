@@ -4,36 +4,28 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # récupérer le code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # installer Node
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: 20
 
-      # installer dépendances
       - name: Install dependencies
         run: npm install
 
-      # build Vite
       - name: Build project
         run: npm run build
 
-      # déploiement FTP
       - name: Deploy to cPanel
-        uses: SamKirkland/FTP-Deploy-Action@4.4.0
+        uses: SamKirkland/FTP-Deploy-Action@v4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
