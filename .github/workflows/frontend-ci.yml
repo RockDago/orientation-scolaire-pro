@@ -6,9 +6,7 @@ on:
       - main
 
 env:
-  # Corrige l'avertissement de dépréciation Node.js dans GitHub Actions
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # Empêche l'arrêt du workflow si le code contient de simples avertissements
   CI: false
 
 jobs:
@@ -30,26 +28,16 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Deploy to cPanel
+      - name: Deploy Frontend Only
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: /
-          # 1. Force la suppression des anciens fichiers avant déploiement (évite les conflits)
-          dangerous-clean-slate: true
-          # 2. Crée automatiquement les dossiers manquants
+          server-dir: /frontend/
           create-directories: true
-          # 3. Exclut les fichiers système ET votre dossier backend
           exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/*.log
-            **/backend/**
-            **/backend*/**
             **/*.php
-          # 4. Mode de synchronisation complet pour une mise à jour propre
+            **/.git*
           dry-run: false
