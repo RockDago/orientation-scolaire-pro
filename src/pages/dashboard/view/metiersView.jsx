@@ -243,9 +243,9 @@ const MetierModal = ({
       </>}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Première rangée : 2 colonnes */}
-        <div className="grid grid-cols-2 gap-6">
-          {/* Colonne 1 : Informations de base */}
+        {/* Première rangée : 2 colonnes pour les infos de base */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Colonne 1 : Informations générales */}
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
               Informations générales
@@ -268,65 +268,6 @@ const MetierModal = ({
               type="textarea"
               rows={3}
             />
-
-            {/* Parcours d'études possibles */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Parcours d'études possibles <span className="text-red-500">*</span>
-                <span className="text-xs text-gray-500 ml-2">(Vous pouvez ajouter plusieurs parcours)</span>
-              </label>
-
-              {/* Affichage des parcours sélectionnés */}
-              <div className="flex flex-wrap gap-2 min-h-[60px] p-3 bg-gray-50 rounded-lg border border-gray-200">
-                {formData.parcours && formData.parcours.length > 0 ? (
-                  formData.parcours.map((p, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm"
-                    >
-                      <span className="text-sm font-medium text-gray-700">{p}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveParcours(p)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        <FaTimes size={14} />
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <span className="text-gray-400 text-sm w-full text-center py-2">
-                    Aucun parcours sélectionné
-                  </span>
-                )}
-              </div>
-
-              {/* Sélecteur et bouton d'ajout */}
-              <div className="flex gap-2">
-                <select
-                  value={newParcours}
-                  onChange={(e) => setNewParcours(e.target.value)}
-                  className="flex-1 px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
-                >
-                  <option value="">Sélectionner un parcours</option>
-                  {parcoursOptions
-                    .filter((p) => !formData.parcours.includes(p.label))
-                    .map((p) => (
-                      <option key={p.id} value={p.label}>
-                        {p.label}
-                      </option>
-                    ))}
-                </select>
-                <button
-                  type="button"
-                  onClick={handleAddParcours}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 whitespace-nowrap text-sm"
-                >
-                  <FaPlusCircle size={16} />
-                  Ajouter
-                </button>
-              </div>
-            </div>
           </div>
 
           {/* Colonne 2 : Classification */}
@@ -357,9 +298,68 @@ const MetierModal = ({
           </div>
         </div>
 
-        {/* Deuxième rangée : 2 colonnes pour les sections multiples */}
-        <div className="grid grid-cols-2 gap-6">
-          {/* Colonne 1 : Séries recommandées */}
+        {/* Sections sur une seule colonne */}
+        <div className="space-y-8">
+          {/* Parcours d'études possibles */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+              Parcours d'études possibles <span className="text-red-500">*</span>
+              <span className="text-xs text-gray-500 ml-2">(Vous pouvez ajouter plusieurs parcours)</span>
+            </h3>
+
+            {/* Affichage des parcours sélectionnés */}
+            <div className="flex flex-wrap gap-2 min-h-[80px] p-4 bg-gray-50 rounded-lg border border-gray-200">
+              {formData.parcours && formData.parcours.length > 0 ? (
+                formData.parcours.map((p, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <span className="text-sm font-medium text-gray-700">{p}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveParcours(p)}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <FaTimes size={14} />
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <span className="text-gray-400 text-sm w-full text-center py-4">
+                  Aucun parcours sélectionné
+                </span>
+              )}
+            </div>
+
+            {/* Sélecteur et bouton d'ajout */}
+            <div className="flex gap-3">
+              <select
+                value={newParcours}
+                onChange={(e) => setNewParcours(e.target.value)}
+                className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+              >
+                <option value="">Sélectionner un parcours</option>
+                {parcoursOptions
+                  .filter((p) => !formData.parcours.includes(p.label))
+                  .map((p) => (
+                    <option key={p.id} value={p.label}>
+                      {p.label}
+                    </option>
+                  ))}
+              </select>
+              <button
+                type="button"
+                onClick={handleAddParcours}
+                className="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 whitespace-nowrap text-sm font-medium"
+              >
+                <FaPlusCircle size={16} />
+                Ajouter
+              </button>
+            </div>
+          </div>
+
+          {/* Séries recommandées */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
               Séries recommandées <span className="text-red-500">*</span>
@@ -367,15 +367,14 @@ const MetierModal = ({
             </h3>
 
             {/* Liste des séries ajoutées */}
-            <div className="flex flex-wrap gap-2 min-h-[60px] p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex flex-wrap gap-2 min-h-[80px] p-4 bg-gray-50 rounded-lg border border-gray-200">
               {formData.serie.map((serieCode, index) => {
-                const serie = serieOptions.find((s) => s.code === serieCode);
                 return (
                   <div
                     key={index}
-                    className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm"
+                    className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <span className="text-sm text-gray-700">{serieCode}</span>
+                    <span className="text-sm text-gray-700 font-medium">{serieCode}</span>
                     <button
                       onClick={() => handleRemoveSerieRecommanded(serieCode)}
                       className="text-gray-400 hover:text-red-500 transition-colors"
@@ -387,18 +386,18 @@ const MetierModal = ({
                 );
               })}
               {formData.serie.length === 0 && (
-                <span className="text-gray-400 text-sm w-full text-center py-2">
+                <span className="text-gray-400 text-sm w-full text-center py-4">
                   Aucune série ajoutée
                 </span>
               )}
             </div>
 
             {/* Ajout d'une nouvelle série */}
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <select
                 value={newSerieRecommanded}
                 onChange={(e) => setNewSerieRecommanded(e.target.value)}
-                className="flex-1 px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
               >
                 <option value="">Sélectionner une série</option>
                 {serieOptions
@@ -411,7 +410,7 @@ const MetierModal = ({
               </select>
               <button
                 onClick={handleAddSerieRecommanded}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm"
+                className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm font-medium"
                 type="button"
               >
                 <FaPlusCircle size={16} />
@@ -420,7 +419,7 @@ const MetierModal = ({
             </div>
           </div>
 
-          {/* Colonne 2 : Parcours de formation */}
+          {/* Parcours de formation */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
               Parcours de formation <span className="text-red-500">*</span>
@@ -428,13 +427,13 @@ const MetierModal = ({
             </h3>
 
             {/* Liste des parcours ajoutés */}
-            <div className="flex flex-wrap gap-2 min-h-[60px] p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex flex-wrap gap-2 min-h-[80px] p-4 bg-gray-50 rounded-lg border border-gray-200">
               {formData.parcoursFormation.map((parcours, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm"
+                  className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                 >
-                  <span className="text-sm text-gray-700">{parcours}</span>
+                  <span className="text-sm text-gray-700 font-medium">{parcours}</span>
                   <button
                     onClick={() => handleRemoveParcoursFormation(parcours)}
                     className="text-gray-400 hover:text-red-500 transition-colors"
@@ -445,20 +444,20 @@ const MetierModal = ({
                 </div>
               ))}
               {formData.parcoursFormation.length === 0 && (
-                <span className="text-gray-400 text-sm w-full text-center py-2">
+                <span className="text-gray-400 text-sm w-full text-center py-4">
                   Aucun parcours de formation ajouté
                 </span>
               )}
             </div>
 
             {/* Ajout d'un nouveau parcours */}
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <input
                 type="text"
                 placeholder="Saisir un parcours de formation"
                 value={newParcoursFormation}
                 onChange={(e) => setNewParcoursFormation(e.target.value)}
-                className="flex-1 px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 onKeyPress={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -468,7 +467,7 @@ const MetierModal = ({
               />
               <button
                 onClick={handleAddParcoursFormation}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm"
+                className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm font-medium"
                 type="button"
               >
                 <FaPlusCircle size={16} />
@@ -669,7 +668,7 @@ const exportToPDF = (data) => {
         lineColor: [220, 220, 220],
         lineWidth: 0.1
       },
-      didDrawPage: (data) => {
+      didDrawPage: () => {
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
           doc.setPage(i);

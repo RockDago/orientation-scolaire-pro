@@ -462,7 +462,7 @@ const exportToPDF = (data) => {
         lineColor: [220, 220, 220],
         lineWidth: 0.1
       },
-      didDrawPage: (data) => {
+      didDrawPage: () => {
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
           doc.setPage(i);
