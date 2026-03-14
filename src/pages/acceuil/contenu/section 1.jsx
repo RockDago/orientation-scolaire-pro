@@ -22,13 +22,11 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
 
   return (
     <>
-      {/* ── Overlay de transition ── */}
       {transitioning && (
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
           style={{ pointerEvents: "all" }}
         >
-          {/* Rideau qui se ferme depuis les deux côtés */}
           <div
             className="absolute inset-y-0 left-0 w-1/2 transition-animation"
             style={{
@@ -49,7 +47,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
               animation: "curtainRight 0.75s cubic-bezier(0.86,0,0.07,1) forwards",
             }}
           />
-          {/* Logo centré qui apparaît */}
           <div
             className="relative z-10"
             style={{
@@ -72,7 +69,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
           animation: "sectionEntrance 0.6s cubic-bezier(0.16,1,0.3,1) both",
         }}
       >
-        {/* Grain texture overlay */}
         <div
           className="absolute inset-0 pointer-events-none opacity-[0.025]"
           style={{
@@ -83,7 +79,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
           }}
         />
 
-        {/* Subtle gradient accent top-right */}
         <div
           className="absolute top-0 right-0 w-96 h-96 pointer-events-none opacity-5"
           style={{
@@ -91,14 +86,11 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
           }}
         />
 
-        {/* Contenu principal */}
-        <div className="relative flex-1 flex flex-col">
-          {/* Logo + badge */}
+        <div className="relative flex-1 flex flex-col items-center justify-center">
           <div
             className="flex flex-col items-center justify-center w-full py-4 md:py-6 gap-3"
             style={{ animation: "fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s both" }}
           >
-            {/* Logo - Mobile/Tablette vs Desktop */}
             <img
               src={logo}
               alt="MESUPRES Logo"
@@ -113,9 +105,8 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             </span>
           </div>
 
-          {/* Titre + texte */}
           <div
-            className="w-full max-w-5xl lg:max-w-3xl xl:max-w-4xl mx-auto text-center lg:text-left mt-2 lg:mt-4 xl:mt-6 mb-6 lg:mb-8 xl:mb-10"
+            className="w-full max-w-5xl lg:max-w-3xl xl:max-w-4xl mx-auto text-center mt-2 lg:mt-4 xl:mt-6 mb-6 lg:mb-8 xl:mb-10"
             style={{ animation: "fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.2s both" }}
           >
             <h1 className="font-extrabold text-slate-900 leading-tight tracking-tight
@@ -124,18 +115,16 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
               <br />
               aujourd&apos;hui ?
             </h1>
-            <p className="text-slate-500 leading-relaxed max-w-2xl lg:max-w-xl mx-auto lg:mx-0 mt-4 lg:mt-3
+            <p className="text-slate-500 leading-relaxed max-w-2xl lg:max-w-xl mx-auto mt-4 lg:mt-3
               text-[clamp(0.85rem,2vw,1.5rem)] lg:text-xs xl:text-sm">
               Découvre les métiers et les formations qui te correspondent
             </p>
           </div>
 
-          {/* Cards */}
           <div
             className="w-full max-w-6xl lg:max-w-4xl xl:max-w-5xl mx-auto flex flex-col lg:flex-row gap-[clamp(1rem,4vw,3rem)] lg:gap-4 xl:gap-5 flex-1 lg:flex-none pb-4 lg:pb-0"
             style={{ animation: "fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.35s both" }}
           >
-            {/* Card 1 — Explorer les métiers */}
             <button
               type="button"
               onClick={handleChoisirMetier}
@@ -174,7 +163,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
                     h-[clamp(4rem,15vw,12rem)] lg:h-10 xl:h-12"
                 />
                 <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors duration-500" />
-                {/* Shimmer on hover - seulement sur mobile/tablette */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 lg:opacity-0 lg:group-hover:opacity-0 transition-opacity duration-500"
                   style={{
                     background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%)",
@@ -183,7 +171,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
               </div>
             </button>
 
-            {/* Card 2 — Trouver mon orientation */}
             <button
               type="button"
               onClick={handleOrientation}
@@ -222,7 +209,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
                     h-[clamp(4rem,15vw,12rem)] lg:h-10 xl:h-12"
                 />
                 <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors duration-500" />
-                {/* Shimmer on hover - seulement sur mobile/tablette */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 lg:opacity-0 lg:group-hover:opacity-0 transition-opacity duration-500"
                   style={{
                     background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%)",
@@ -233,7 +219,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
           </div>
         </div>
 
-        {/* Footer */}
         <p
           className="mt-8 lg:mt-6 text-center text-slate-400
             text-[clamp(0.75rem,1.5vw,1rem)] lg:text-xs"

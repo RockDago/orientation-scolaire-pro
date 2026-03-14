@@ -1,6 +1,4 @@
-// C:\xampp\htdocs\orientation-scolaire-professionnelle\frontend\src\pages\dashboard\view\dashboardadminView.jsx
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   FaGlobe,
   FaArrowUp,
@@ -12,11 +10,8 @@ import {
   PiChartLineUp,
   PiChartBar,
   PiChartPieSlice,
-  PiCalendarBlank,
-  PiCaretDown,
-  PiX,
-  PiPencilSimple,
 } from "react-icons/pi";
+import { HiOutlineCalendar } from "react-icons/hi2";
 import { getDashboardData } from "../../../services/dashboard.services";
 
 const PIE_COLORS = [
@@ -29,12 +24,6 @@ const PIE_COLORS = [
 ];
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
-
-const formatDateToFR = (dateString) => {
-  if (!dateString) return "";
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
-};
 
 // Fonction utilitaire pour extraire les stats de manière robuste
 const extractStats = (data) => {
@@ -81,6 +70,174 @@ const extractStats = (data) => {
     trendViews: Number(trendViews) || 0,
     topMetier: topMetier
   };
+};
+
+// ─── COMPOSANT DATE RANGE PICKER ─────────────────────────────────────────────
+
+const DateRangePicker = ({ value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const presets = [
+    {
+      l: "Tous les résultats",
+      f: () => ({ from: null, to: null, label: "Tous les résultats" }),
+    },
+    {
+      l: "Aujourd'hui",
+      f: () => {
+        const d = new Date().toISOString().slice(0, 10);
+        return { from: d, to: d, label: "Aujourd'hui" };
+      },
+    },
+    {
+      l: "7 derniers jours",
+      f: () => {
+        const e = new Date();
+        const s = new Date();
+        s.setDate(s.getDate() - 7);
+        return {
+          from: s.toISOString().slice(0, 10),
+          to: e.toISOString().slice(0, 10),
+          label: "7 derniers jours",
+        };
+      },
+    },
+    {
+      l: "30 derniers jours",
+      f: () => {
+        const e = new Date();
+        const s = new Date();
+        s.setDate(s.getDate() - 30);
+        return {
+          from: s.toISOString().slice(0, 10),
+          to: e.toISOString().slice(0, 10),
+          label: "30 derniers jours",
+        };
+      },
+    },
+    {
+      l: "Cette année",
+      f: () => {
+        const year = new Date().getFullYear();
+        return { from: `${year}-01-01`, to: `${year}-12-31`, label: "Cette année" };
+      },
+    },
+    {
+      l: "12 derniers mois",
+      f: () => {
+        const e = new Date();
+        const s = new Date();
+        s.setFullYear(s.getFullYear() - 1);
+        return {
+          from: s.toISOString().slice(0, 10),
+          to: e.toISOString().slice(0, 10),
+          label: "12 derniers mois",
+        };
+      },
+    },
+    {
+      l: "Année 2025",
+      f: () => ({ from: "2025-01-01", to: "2025-12-31", label: "Année 2025" }),
+    },
+    {
+      l: "Année 2026",
+      f: () => ({ from: "2026-01-01", to: "2026-12-31", label: "Année 2026" }),
+    },
+  ];
+
+  useEffect(() => {
+    const h = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all bg-white border border-gray-200 text-gray-700 hover:border-gray-300"
+      >
+        <HiOutlineCalendar className="w-3.5 h-3.5 text-blue-500" />
+        {value.label || "Période"}
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 10 10"
+          fill="none"
+          className={`ml-0.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          <path
+            d="M2 3.5l3 3 3-3"
+            stroke="#94a3b8"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          className="absolute top-full right-0 z-[9999] min-w-[220px] p-1.5 rounded-xl shadow-xl animate-in fade-in duration-150 bg-white border border-gray-200"
+        >
+          {presets.map((p) => (
+            <button
+              key={p.l}
+              onClick={() => {
+                onChange(p.f());
+                setOpen(false);
+              }}
+              className="block w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
+              style={{
+                background:
+                  value.label === p.l ? "rgba(59,130,246,0.12)" : "transparent",
+                color:
+                  value.label === p.l ? "#3b82f6" : "#334155",
+              }}
+            >
+              {p.l}
+              {value.label === p.l && (
+                <span className="float-right text-blue-500">✓</span>
+              )}
+            </button>
+          ))}
+
+          <div className="mx-1.5 my-1 pt-1.5 border-t border-gray-200">
+            <div className="flex gap-1">
+              <input
+                type="date"
+                value={value.from || ""}
+                onChange={(e) =>
+                  onChange({
+                    ...value,
+                    from: e.target.value,
+                    to: value.to,
+                    label: "Personnalisé",
+                  })
+                }
+                className="flex-1 px-1.5 py-1 rounded-md text-xs border border-gray-200"
+              />
+              <input
+                type="date"
+                value={value.to || ""}
+                onChange={(e) =>
+                  onChange({
+                    ...value,
+                    from: value.from,
+                    to: e.target.value,
+                    label: "Personnalisé",
+                  })
+                }
+                className="flex-1 px-1.5 py-1 rounded-md text-xs border border-gray-200"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 // ─── STAT CARD MODERNE ────────────────────────────────────────────────────────
@@ -216,25 +373,24 @@ function LineChartSVG({ data }) {
     v: d.visites || d.views || d.vues || d.value || 0 
   }));
 
-  const W = 580,
-    H = 230;
-  const PL = 46,
-    PR = 22,
-    PT = 22,
-    PB = 30;
-  const cW = W - PL - PR,
-    cH = H - PT - PB;
+  const W = 700;
+  const H = 260;
+  const PL = 48;
+  const PR = 20;
+  const PT = 30;
+  const PB = 42;
+  const cW = W - PL - PR;
+  const cH = H - PT - PB;
 
   // Calcul dynamique des valeurs min et max
   const allValues = pts.map((d) => d.v);
-  const minV = 0; // Toujours commencer à 0
   const maxV = allValues.length > 0 ? Math.max(...allValues) : 1000;
 
   const xP = (i) => PL + (i / (pts.length - 1 || 1)) * cW;
-  const yP = (v) => PT + cH - ((v - minV) / (maxV - minV || 1)) * cH;
+  const yP = (v) => PT + cH - (v / maxV) * cH;
 
   // Générer des lignes de grille
-  const generateGridLines = (min, max) => {
+  const generateGridLines = (max) => {
     if (max <= 0) return [];
 
     const numLines = 4;
@@ -252,7 +408,7 @@ function LineChartSVG({ data }) {
 
     return lines;
   };
-  const gridLines = generateGridLines(minV, maxV);
+  const gridLines = generateGridLines(maxV);
 
   const lp = pts
     .map((d, i) => `${i ? "L" : "M"} ${xP(i).toFixed(1)} ${yP(d.v).toFixed(1)}`)
@@ -264,18 +420,20 @@ function LineChartSVG({ data }) {
         } Z`
       : "";
 
-  return (
-    <div className="animate-in fade-in duration-500">
-      <div className="mb-6">
-        <h3 className="text-sm font-bold text-gray-900">
-          Croissance des visibilités
-        </h3>
-        <p className="text-xs text-gray-500">
-          Évolution mensuelle des visites sur la plateforme
-        </p>
-      </div>
+  const gridColor = "#e2e8f0";
+  const axisColor = "#64748b";
+  const labelColor = "#1e293b";
 
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto overflow-visible">
+  return (
+    <div>
+      <p className="text-xs font-bold mb-1" style={{ color: labelColor }}>
+        Évolution mensuelle des visites
+      </p>
+      <p className="text-[11px] mb-3" style={{ color: axisColor }}>
+        Janvier à décembre · nombre de visites sur la plateforme
+      </p>
+
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full overflow-visible">
         <defs>
           <linearGradient id="lgLine" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#3b82f6" stopOpacity=".15" />
@@ -283,6 +441,7 @@ function LineChartSVG({ data }) {
           </linearGradient>
         </defs>
 
+        {/* Grille horizontale */}
         {gridLines.map((v) => (
           <g key={v}>
             <line
@@ -290,15 +449,17 @@ function LineChartSVG({ data }) {
               y1={yP(v)}
               x2={W - PR}
               y2={yP(v)}
-              className="stroke-gray-100"
+              stroke={gridColor}
               strokeWidth="1"
               strokeDasharray="4 4"
             />
             <text
-              x={PL - 10}
+              x={PL - 8}
               y={yP(v) + 4}
               textAnchor="end"
-              className="text-[10px] font-medium fill-gray-400"
+              fontSize="10"
+              fill={axisColor}
+              fontWeight="600"
             >
               {v >= 1000000
                 ? `${(v / 1000000).toFixed(1)}M`
@@ -309,6 +470,21 @@ function LineChartSVG({ data }) {
           </g>
         ))}
 
+        {/* Légendes mois */}
+        {pts.map((d, i) => (
+          <text
+            key={i}
+            x={xP(i)}
+            y={H - 12}
+            textAnchor="middle"
+            fontSize="10"
+            fill={axisColor}
+            fontWeight="600"
+          >
+            {d.y}
+          </text>
+        ))}
+
         {pts.length > 0 && (
           <>
             <path d={area} fill="url(#lgLine)" />
@@ -316,7 +492,7 @@ function LineChartSVG({ data }) {
               d={lp}
               fill="none"
               stroke="#3b82f6"
-              strokeWidth="2.5"
+              strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -328,7 +504,7 @@ function LineChartSVG({ data }) {
             key={i}
             onMouseEnter={() => setHov(i)}
             onMouseLeave={() => setHov(null)}
-            className="cursor-pointer group"
+            className="cursor-pointer"
           >
             <line
               x1={xP(i)}
@@ -345,33 +521,28 @@ function LineChartSVG({ data }) {
             <circle
               cx={xP(i)}
               cy={yP(d.v)}
-              r={hov === i ? 6 : 4}
-              className={`transition-all duration-300 fill-white ${
-                hov === i ? "stroke-[3px]" : "stroke-2"
-              }`}
-              stroke="#3b82f6"
+              r={hov === i ? 5 : 4}
+              fill="#3b82f6"
+              stroke="#fff"
+              strokeWidth="2"
             />
             {hov === i && (
-              <g className="animate-in zoom-in-95 duration-200">
+              <>
                 <rect
-                  x={xP(i) - 35}
-                  y={yP(d.v) - 40}
+                  x={Math.max(10, xP(i) - 35)}
+                  y={8}
                   width="70"
-                  height="26"
+                  height="22"
                   rx="6"
-                  className="fill-gray-900 shadow-lg"
-                />
-                <polygon
-                  points={`${xP(i) - 6},${yP(d.v) - 14.5} ${
-                    xP(i) + 6
-                  },${yP(d.v) - 14.5} ${xP(i)},${yP(d.v) - 8}`}
-                  className="fill-gray-900"
+                  fill="#1e293b"
                 />
                 <text
                   x={xP(i)}
-                  y={yP(d.v) - 23}
+                  y={22}
                   textAnchor="middle"
-                  className="text-[11px] font-bold fill-white"
+                  fontSize="10"
+                  fontWeight="700"
+                  fill="#fff"
                 >
                   {d.v >= 1000000
                     ? `${(d.v / 1000000).toFixed(1)}M`
@@ -379,18 +550,8 @@ function LineChartSVG({ data }) {
                       ? `${(d.v / 1000).toFixed(1)}k`
                       : d.v.toLocaleString("fr-FR")}
                 </text>
-              </g>
+              </>
             )}
-            <text
-              x={xP(i)}
-              y={H - 5}
-              textAnchor="middle"
-              className={`text-[11px] font-medium transition-colors ${
-                hov === i ? "fill-gray-900 font-bold" : "fill-gray-400"
-              }`}
-            >
-              {d.y}
-            </text>
           </g>
         ))}
       </svg>
@@ -417,29 +578,31 @@ function BarChartSVG({ data }) {
     c: PIE_COLORS[i % PIE_COLORS.length],
   }));
 
-  const W = 580,
-    H = 230;
-  const PL = 42,
-    PR = 18,
-    PT = 22,
-    PB = 34;
-  const cW = W - PL - PR,
-    cH = H - PT - PB;
-  const bW = cW / (mapped.length || 1);
+  const W = 700;
+  const H = 260;
+  const PL = 42;
+  const PR = 18;
+  const PT = 32;
+  const PB = 58;
+  const cW = W - PL - PR;
+  const cH = H - PT - PB;
+  const groupW = cW / Math.max(mapped.length, 1);
   const max = Math.max(...mapped.map((d) => d.v), 1);
+  
+  const gridColor = "#e2e8f0";
+  const axisColor = "#64748b";
+  const labelColor = "#1e293b";
 
   return (
-    <div className="animate-in fade-in duration-500">
-      <div className="mb-6">
-        <h3 className="text-sm font-bold text-gray-900">
-          Activité hebdomadaire
-        </h3>
-        <p className="text-xs text-gray-500">
-          Vues réparties par jour de la semaine
-        </p>
-      </div>
+    <div>
+      <p className="text-xs font-bold mb-1" style={{ color: labelColor }}>
+        Activité hebdomadaire
+      </p>
+      <p className="text-[11px] mb-3" style={{ color: axisColor }}>
+        Vues réparties par jour de la semaine
+      </p>
 
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto overflow-visible">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full overflow-visible">
         <defs>
           {mapped.map((d, i) => (
             <linearGradient
@@ -456,36 +619,40 @@ function BarChartSVG({ data }) {
           ))}
         </defs>
 
-        {[500, 1000, 1500, 2000, 2500].map((v) => {
-          const y = PT + cH - (v / max) * cH;
+        {/* Grille horizontale */}
+        {[0.25, 0.5, 0.75, 1].map((ratio, idx) => {
+          const val = Math.round(max * ratio);
+          const yy = PT + cH - ratio * cH;
           return (
-            <g key={v}>
+            <g key={idx}>
               <line
                 x1={PL}
-                y1={y}
+                y1={yy}
                 x2={W - PR}
-                y2={y}
-                className="stroke-gray-100"
-                strokeWidth="1"
+                y2={yy}
+                stroke={gridColor}
+                strokeWidth="1.5"
                 strokeDasharray="4 4"
               />
               <text
-                x={PL - 8}
-                y={y + 4}
+                x={PL - 6}
+                y={yy + 4}
                 textAnchor="end"
-                className="text-[10px] font-medium fill-gray-400"
+                fontSize="9"
+                fill={axisColor}
               >
-                {v >= 1000 ? `${v / 1000}k` : v}
+                {val >= 1000 ? `${val / 1000}k` : val}
               </text>
             </g>
           );
         })}
 
         {mapped.map((d, i) => {
+          const bW = groupW * 0.5; // Largeur des barres
+          const x = PL + i * groupW + (groupW - bW) / 2;
           const bH = (d.v / max) * cH;
-          const x = PL + i * bW + bW * 0.2;
-          const w = bW * 0.6;
           const y = PT + cH - bH;
+          const active = hov === i;
 
           return (
             <g
@@ -496,55 +663,42 @@ function BarChartSVG({ data }) {
             >
               <rect
                 x={x}
-                y={PT}
-                width={w}
-                height={cH}
-                rx="6"
-                className="fill-gray-50"
-              />
-              <rect
-                x={x}
                 y={y}
-                width={w}
+                width={bW}
                 height={bH}
                 rx="6"
                 fill={`url(#bgrad${i})`}
-                className="transition-all duration-300"
-                opacity={hov !== null && hov !== i ? 0.4 : 1}
+                opacity={hov !== null && !active ? 0.35 : 1}
               />
-              {hov === i && (
-                <g className="animate-in zoom-in-95 duration-200">
+              {active && (
+                <>
                   <rect
-                    x={x + w / 2 - 36}
-                    y={y - 32}
-                    width="72"
-                    height="24"
+                    x={x + bW / 2 - 26}
+                    y={Math.max(6, y - 28)}
+                    width="52"
+                    height="20"
                     rx="6"
-                    className="fill-gray-900 shadow-lg"
-                  />
-                  <polygon
-                    points={`${x + w / 2 - 6},${y - 8.5} ${x + w / 2 + 6},${
-                      y - 8.5
-                    } ${x + w / 2},${y - 2}`}
-                    className="fill-gray-900"
+                    fill="#1e293b"
                   />
                   <text
-                    x={x + w / 2}
-                    y={y - 16}
+                    x={x + bW / 2}
+                    y={Math.max(19, y - 15)}
                     textAnchor="middle"
-                    className="text-[11px] font-bold fill-white"
+                    fontSize="9.5"
+                    fontWeight="700"
+                    fill="#fff"
                   >
-                    {d.v} vues
+                    {d.v}
                   </text>
-                </g>
+                </>
               )}
               <text
-                x={x + w / 2}
-                y={H - 6}
+                x={x + bW / 2}
+                y={H - 14}
                 textAnchor="middle"
-                className={`text-[11px] font-medium transition-colors ${
-                  hov === i ? "fill-gray-900 font-bold" : "fill-gray-400"
-                }`}
+                fontSize="8.5"
+                fill={axisColor}
+                fontWeight="700"
               >
                 {d.r}
               </text>
@@ -605,16 +759,17 @@ function DonutChartSVG({ data }) {
     return acc;
   }, []);
 
+  const axisColor = "#64748b";
+  const labelColor = "#1e293b";
+
   return (
-    <div className="animate-in fade-in duration-500">
-      <div className="mb-6">
-        <h3 className="text-sm font-bold text-gray-900">
-          Métiers les plus recherchés
-        </h3>
-        <p className="text-xs text-gray-500">
-          Répartition par domaine (tendance du marché)
-        </p>
-      </div>
+    <div>
+      <p className="text-xs font-bold mb-1" style={{ color: labelColor }}>
+        Métiers les plus recherchés
+      </p>
+      <p className="text-[11px] mb-3" style={{ color: axisColor }}>
+        Répartition par domaine (tendance du marché)
+      </p>
 
       <div className="flex flex-col items-center gap-8 md:flex-row">
         <div className="relative flex-shrink-0 mx-auto md:mx-0">
@@ -627,8 +782,9 @@ function DonutChartSVG({ data }) {
                 key={i}
                 d={s.path}
                 fill={s.color}
-                className="transition-all duration-300 cursor-pointer stroke-white"
+                className="transition-all duration-300 cursor-pointer"
                 strokeWidth="3"
+                stroke="#fff"
                 opacity={hov !== null && hov !== i ? 0.3 : 1}
                 style={{
                   transformOrigin: `${cx}px ${cy}px`,
@@ -638,21 +794,25 @@ function DonutChartSVG({ data }) {
                 onMouseLeave={() => setHov(null)}
               />
             ))}
+            <circle cx={cx} cy={cy} r="46" fill="#fff" />
             <text
               x={cx}
-              y={cy - 4}
+              y={cy - 8}
               textAnchor="middle"
-              className="text-3xl font-extrabold fill-gray-900"
+              fontSize="26"
+              fontWeight="900"
+              fill={hov !== null ? slices[hov].color : labelColor}
             >
-              {total}
+              {hov !== null ? slices[hov].value : total}
             </text>
             <text
               x={cx}
-              y={cy + 16}
+              y={cy + 10}
               textAnchor="middle"
-              className="text-[11px] font-semibold tracking-wider uppercase fill-gray-400"
+              fontSize="9.5"
+              fill={axisColor}
             >
-              Recherches
+              {hov !== null ? slices[hov].name : "recherches"}
             </text>
           </svg>
         </div>
@@ -705,14 +865,11 @@ function DonutChartSVG({ data }) {
 
 const DashboardAdminView = () => {
   const [chart, setChart] = useState("line");
-  const [dateFilter, setDateFilter] = useState("all");
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [tempStartDate, setTempStartDate] = useState("");
-  const [tempEndDate, setTempEndDate] = useState("");
-
-  const [customStartDate, setCustomStartDate] = useState("");
-  const [customEndDate, setCustomEndDate] = useState("");
+  const [dateRange, setDateRange] = useState({
+    label: "Tous les résultats",
+    from: null,
+    to: null,
+  });
 
   const [dashData, setDashData] = useState(null);
   const [loadingDash, setLoadingDash] = useState(true);
@@ -722,11 +879,21 @@ const DashboardAdminView = () => {
     setLoadingDash(true);
     setError(null);
     try {
-      console.log("Fetching dashboard data with filter:", dateFilter);
+      console.log("Fetching dashboard data with filter:", dateRange);
+      
+      // Convertir le format dateRange vers le format attendu par l'API
+      const filter = dateRange.label === "Tous les résultats" ? "all" : 
+                     dateRange.label === "Aujourd'hui" ? "today" :
+                     dateRange.label === "7 derniers jours" ? "7j" :
+                     dateRange.label === "30 derniers jours" ? "30j" :
+                     dateRange.label === "Cette année" ? "this_year" :
+                     dateRange.label === "12 derniers mois" ? "12m" :
+                     dateRange.label === "Personnalisé" ? "custom" : "all";
+      
       const data = await getDashboardData(
-        dateFilter,
-        dateFilter === "custom" ? customStartDate : null,
-        dateFilter === "custom" ? customEndDate : null,
+        filter,
+        dateRange.from,
+        dateRange.to,
       );
       
       console.log("Données reçues de l'API:", data);
@@ -743,7 +910,7 @@ const DashboardAdminView = () => {
 
   useEffect(() => {
     fetchDash();
-  }, [dateFilter, customStartDate, customEndDate]);
+  }, [dateRange]);
 
   // Extraire les stats de manière robuste
   const stats = extractStats(dashData);
@@ -794,100 +961,13 @@ const DashboardAdminView = () => {
   };
 
   const CHART_TABS = [
-    { k: "line", I: PiChartLineUp, l: "Visibilité" },
-    { k: "bar", I: PiChartBar, l: "Activité" },
-    { k: "pie", I: PiChartPieSlice, l: "Métiers" },
+    { key: "line", icon: PiChartLineUp, label: "Visibilité" },
+    { key: "bar", icon: PiChartBar, label: "Activité" },
+    { key: "pie", icon: PiChartPieSlice, label: "Métiers" },
   ];
-
-  const handleFilterSelect = (e) => {
-    const val = e.target.value;
-    if (val === "custom") {
-      setIsModalOpen(true);
-    } else {
-      setDateFilter(val);
-      setCustomStartDate("");
-      setCustomEndDate("");
-    }
-  };
-
-  const handleApplyCustomDates = () => {
-    setCustomStartDate(tempStartDate);
-    setCustomEndDate(tempEndDate);
-    setDateFilter("custom");
-    setIsModalOpen(false);
-  };
-
-  const getCustomLabel = () => {
-    if (customStartDate && customEndDate) {
-      return `${formatDateToFR(customStartDate)} au ${formatDateToFR(
-        customEndDate,
-      )}`;
-    }
-    return "Période personnalisée...";
-  };
 
   return (
     <div className="min-h-screen p-4 md:p-8 bg-white font-sans text-gray-900 transition-colors duration-300">
-      {/* Modal période personnalisée */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h3 className="text-base font-bold text-gray-900">
-                Sélectionner une période
-              </h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
-              >
-                <PiX className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-5">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Date de début
-                </label>
-                <input
-                  type="date"
-                  value={tempStartDate}
-                  onChange={(e) => setTempStartDate(e.target.value)}
-                  className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-900 py-3 px-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Date de fin
-                </label>
-                <input
-                  type="date"
-                  value={tempEndDate}
-                  onChange={(e) => setTempEndDate(e.target.value)}
-                  className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-900 py-3 px-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 p-5 border-t border-gray-100 bg-gray-50/50">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="px-5 py-2.5 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-gray-900 transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleApplyCustomDates}
-                disabled={!tempStartDate || !tempEndDate}
-                className="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Appliquer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="mx-auto max-w-7xl space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -917,37 +997,11 @@ const DashboardAdminView = () => {
                 className={`w-4 h-4 ${loadingDash ? "animate-spin" : ""}`}
               />
             </button>
-            <div className="relative inline-block w-full sm:w-auto group z-10">
-              <select
-                value={dateFilter}
-                onChange={handleFilterSelect}
-                className="w-full sm:w-[240px] appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 pl-10 pr-10 rounded-xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-300 transition-all cursor-pointer truncate"
-              >
-                <option value="today">Aujourd'hui</option>
-                <option value="7j">7 derniers jours</option>
-                <option value="30j">30 derniers jours</option>
-                <option value="this_year">Cette année</option>
-                <option value="12m">12 derniers mois</option>
-                <option value="all">Depuis le début</option>
-                <option value="custom" className="font-bold text-blue-600">
-                  {dateFilter === "custom"
-                    ? getCustomLabel()
-                    : "Période personnalisée..."}
-                </option>
-              </select>
-              <PiCalendarBlank className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 group-hover:text-blue-500 transition-colors pointer-events-none" />
-              <PiCaretDown className="absolute right-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-            </div>
-
-            {dateFilter === "custom" && (
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="p-2.5 text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 hover:border-blue-200 rounded-xl transition-all shadow-sm"
-                title="Modifier les dates"
-              >
-                <PiPencilSimple className="w-4 h-4 font-bold" />
-              </button>
-            )}
+            
+            <DateRangePicker
+              value={dateRange}
+              onChange={setDateRange}
+            />
           </div>
         </div>
 
@@ -975,20 +1029,20 @@ const DashboardAdminView = () => {
             </div>
 
             <div className="flex p-1 bg-white border border-gray-100 shadow-sm rounded-xl">
-              {CHART_TABS.map(({ k, I, l }) => (
+              {CHART_TABS.map(({ key, icon: Icon, label }) => (
                 <button
-                  key={k}
-                  onClick={() => setChart(k)}
+                  key={key}
+                  onClick={() => setChart(key)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300 ${
-                    chart === k
+                    chart === key
                       ? "bg-blue-50/50 text-blue-600 shadow-sm border border-blue-100/50"
                       : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
                   }`}
                 >
-                  <I
-                    className={`w-4 h-4 ${chart === k ? "animate-pulse" : ""}`}
+                  <Icon
+                    className={`w-4 h-4 ${chart === key ? "animate-pulse" : ""}`}
                   />
-                  <span>{l}</span>
+                  <span>{label}</span>
                 </button>
               ))}
             </div>

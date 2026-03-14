@@ -46,7 +46,6 @@ const REGION_LABELS = {
   anosy:               "Anosy",
 };
 
-/* ─── FICHE MODAL ─────────────────────────────────────────────────────────── */
 function FicheModal({ fiche, metier, onClose }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -150,7 +149,7 @@ function FicheModal({ fiche, metier, onClose }) {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-10 py-5 custom-scrollbar-dark">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-w-7xl mx-auto">
           {fields.map(({ icon, label, value }) => (
             <div
               key={label}
@@ -195,7 +194,6 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
   const [filterNiveau, setFilterNiveau] = useState("Tous");
   const [etablissements, setEtablissements] = useState([]);
   const [loading, setLoading] = useState(true);
-
 
   useEffect(() => {
     const loadEtablissements = async () => {
@@ -271,7 +269,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
 
   return (
     <div
-      className="relative w-full h-screen overflow-hidden font-['Sora'] flex"
+      className="relative w-full min-h-screen overflow-y-auto font-['Sora'] flex flex-col"
       style={{
         background:
           "linear-gradient(135deg,#1250c8 0%,#1a6dcc 20%,#28b090 55%,#a0d820 80%,#c2e832 100%)",
@@ -282,7 +280,6 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
         rel="stylesheet"
       />
 
-      {/* ── Déco SVG haut droite ── */}
       <div className="absolute top-0 right-0 pointer-events-none z-0 opacity-70 origin-top-right">
         <svg width="220" height="200" viewBox="0 0 260 240" fill="none">
           <path d="M130 38 L232 94 L130 150 L28 94 Z" stroke="white" strokeWidth="2.6" fill="none" strokeLinejoin="round" />
@@ -294,7 +291,6 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
         </svg>
       </div>
 
-      {/* ── Silhouette ville bas ── */}
       <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-0 opacity-10">
         <svg width="100%" height="90" viewBox="0 0 400 100" preserveAspectRatio="xMidYMax meet" fill="none">
           <rect x="10"  y="55" width="30" height="45" stroke="white" strokeWidth="1.5" fill="none" />
@@ -309,133 +305,137 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
         </svg>
       </div>
 
-      {/* ── Vague centrale ── */}
       <div className="absolute top-[45%] left-0 right-0 pointer-events-none z-0 opacity-10">
         <svg width="100%" height="60" viewBox="0 0 1200 60" preserveAspectRatio="none" fill="none">
           <path d="M0,30 Q150,10 300,30 T600,30 T900,30 T1200,30" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" />
         </svg>
       </div>
 
-      {/* ══ Colonne gauche — Titre + Filtres + Liste ══ */}
-      <div className="relative z-10 flex flex-col h-full w-full lg:w-[55%] xl:w-[52%] px-6 sm:px-10 lg:px-12 xl:px-14 pt-8 pb-4">
-
+      {/* Conteneur principal avec flex column et min-height */}
+      <div className="relative z-10 flex-1 flex flex-col min-h-0 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
         {/* Bouton retour */}
         <button
           onClick={onRetour}
-          className="self-start text-white/80 hover:text-white transition-colors w-11 h-11 flex items-center justify-center mb-3 shrink-0"
+          className="text-white/80 hover:text-white transition-colors w-11 h-11 flex items-center justify-center mb-4 flex-shrink-0"
           aria-label="Retour"
         >
           <IoArrowBackCircleOutline size={38} />
         </button>
 
-        {/* Titre */}
-        <div className="shrink-0 mb-4">
-          <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight tracking-tight mb-3">
-            UNIVERSITÉS<br />&amp; INSTITUTS
-          </h1>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-block bg-white/90 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-gray-800">
-              {mentionLabel}
-            </span>
-            {regionLabel && (
-              <span className="inline-flex items-center gap-1.5 bg-black/15 border border-white/30 rounded-full px-3 py-1.5 text-xs font-semibold text-white">
-                <FiMapPin size={11} />
-                {regionLabel}
+        {/* Contenu scrollable */}
+        <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin-white pr-1">
+          <div className="mb-6">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-3">
+              UNIVERSITÉS<br className="sm:hidden" />&amp; INSTITUTS
+            </h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-block bg-white/90 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-gray-800">
+                {mentionLabel}
               </span>
-            )}
+              {regionLabel && (
+                <span className="inline-flex items-center gap-1.5 bg-black/15 border border-white/30 rounded-full px-3 py-1.5 text-xs font-semibold text-white">
+                  <FiMapPin size={11} />
+                  {regionLabel}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Filtres */}
-        <div className="shrink-0 mb-4 space-y-2">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] text-white/70 font-semibold mr-1">Type :</span>
-            {TYPES.map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setFilterType(t)}
-                className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
-                style={
-                  filterType === t
-                    ? { background: "white", color: "#1250c8" }
-                    : { background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }
-                }
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] text-white/70 font-semibold mr-1">Niveau :</span>
-            {NIVEAUX.map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setFilterNiveau(n)}
-                className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
-                style={
-                  filterNiveau === n
-                    ? { background: "white", color: "#1250c8" }
-                    : { background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }
-                }
-              >
-                {n}
-              </button>
-            ))}
+          <div className="mb-6 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] text-white/70 font-semibold">Type :</span>
+              <div className="flex flex-wrap gap-1.5">
+                {TYPES.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setFilterType(t)}
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                    style={
+                      filterType === t
+                        ? { background: "white", color: "#1250c8" }
+                        : { background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }
+                    }
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] text-white/70 font-semibold">Niveau :</span>
+              <div className="flex flex-wrap gap-1.5">
+                {NIVEAUX.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setFilterNiveau(n)}
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                    style={
+                      filterNiveau === n
+                        ? { background: "white", color: "#1250c8" }
+                        : { background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }
+                    }
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
             {(filterType !== "Tous" || filterNiveau !== "Tous") && (
               <button
                 type="button"
                 onClick={() => { setFilterType("Tous"); setFilterNiveau("Tous"); }}
-                className="text-xs text-white/60 hover:text-white underline underline-offset-2 ml-1"
+                className="text-xs text-white/60 hover:text-white underline underline-offset-2"
               >
                 Réinitialiser
               </button>
             )}
           </div>
-        </div>
 
-        {/* Compteur */}
-        <p className="shrink-0 text-xs text-white/60 mb-3 font-medium">
-          {etablissementsFiltres.length} établissement
-          {etablissementsFiltres.length !== 1 ? "s" : ""}
-        </p>
+          <p className="text-xs text-white/60 mb-4 font-medium">
+            {etablissementsFiltres.length} établissement
+            {etablissementsFiltres.length !== 1 ? "s" : ""}
+          </p>
 
-        {/* Liste scrollable */}
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin-white space-y-2.5 pr-1 pb-4">
-          {etablissementsFiltres.length > 0 ? (
-            etablissementsFiltres.map((etab, i) => (
-              <button
-                key={etab.id || i}
-                type="button"
-                onClick={() => handleSelectEtablissement(etab)}
-                className="group w-full text-left rounded-2xl px-4 py-3.5 flex items-start gap-3 cursor-pointer transition-all hover:shadow-xl hover:-translate-y-0.5"
-                style={{
-                  background:    "rgba(255,255,255,0.88)",
-                  backdropFilter: "blur(8px)",
-                  border:        "1px solid rgba(255,255,255,0.7)",
-                }}
-              >
-                <div
-                  className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+            {etablissementsFiltres.length > 0 ? (
+              etablissementsFiltres.map((etab, i) => (
+                <button
+                  key={etab.id || i}
+                  type="button"
+                  onClick={() => handleSelectEtablissement(etab)}
+                  className="group w-full text-left rounded-2xl p-4 flex flex-col gap-3 cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1"
                   style={{
-                    background:
-                      etab.type === "Public"
-                        ? "linear-gradient(135deg,#1250c8,#28b090)"
-                        : "linear-gradient(135deg,#28b090,#a0d820)",
+                    background:    "rgba(255,255,255,0.88)",
+                    backdropFilter: "blur(8px)",
+                    border:        "1px solid rgba(255,255,255,0.7)",
                   }}
-                />
-                <div className="flex-1 min-w-0">
+                >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-bold text-sm text-gray-900 leading-snug break-words">
-                      {etab.nom}
-                    </span>
+                    <div className="flex items-start gap-2 flex-1 min-w-0">
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
+                        style={{
+                          background:
+                            etab.type === "Public"
+                              ? "linear-gradient(135deg,#1250c8,#28b090)"
+                              : "linear-gradient(135deg,#28b090,#a0d820)",
+                        }}
+                      />
+                      <span className="font-bold text-sm text-gray-900 leading-snug break-words flex-1">
+                        {etab.nom}
+                      </span>
+                    </div>
                     <FiChevronRight
                       size={16}
-                      className="text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0 mt-0.5"
+                      className="text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0"
                     />
                   </div>
-                  <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                  
+                  <div className="flex flex-wrap items-center gap-2">
                     <span
                       className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
                       style={{
@@ -450,21 +450,29 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
                       {etab.ville || etab.region || etab.province}
                     </span>
                   </div>
+
+                  {etab.mention && (
+                    <p className="text-xs text-gray-600 line-clamp-1">
+                      {etab.mention}
+                    </p>
+                  )}
+                </button>
+              ))
+            ) : (
+              <div className="col-span-full">
+                <div
+                  className="rounded-2xl px-5 py-8 text-center text-sm text-gray-500"
+                  style={{ background: "rgba(255,255,255,0.85)" }}
+                >
+                  Aucun établissement trouvé pour ce métier dans cette région.
                 </div>
-              </button>
-            ))
-          ) : (
-            <div
-              className="rounded-2xl px-5 py-8 text-center text-sm text-gray-500"
-              style={{ background: "rgba(255,255,255,0.85)" }}
-            >
-              Aucun établissement trouvé pour ce métier dans cette région.
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Home */}
-        <div className="shrink-0 flex justify-center pt-3">
+        {/* Icône Home fixée en bas */}
+        <div className="flex justify-center pt-4 pb-2 flex-shrink-0">
           <button
             onClick={() => navigate("/acceuil/orientation")}
             className="text-white/70 hover:text-white transition-colors"
@@ -475,87 +483,6 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
         </div>
       </div>
 
-      {/* ══ Colonne droite — Panneau info glassmorphism ══ */}
-      <div className="hidden lg:flex relative z-10 flex-1 flex-col items-center justify-center px-10 xl:px-14 py-12 h-full">
-        <div
-          className="w-full max-w-sm rounded-3xl p-8 text-center"
-          style={{
-            background:          "rgba(255,255,255,0.12)",
-            backdropFilter:      "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            border:              "1px solid rgba(255,255,255,0.25)",
-            boxShadow:           "0 8px 32px rgba(0,0,0,0.2)",
-          }}
-        >
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-            style={{
-              background:     "rgba(255,255,255,0.15)",
-              border:         "1px solid rgba(255,255,255,0.25)",
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            <FiBook size={28} className="text-white" />
-          </div>
-
-          <h2 className="text-white font-black text-3xl mb-1 drop-shadow">
-            {etablissementsFiltres.length}
-          </h2>
-          <p className="text-white/85 text-sm font-semibold mb-6 drop-shadow">
-            établissement{etablissementsFiltres.length !== 1 ? "s" : ""}{" "}
-            disponible{etablissementsFiltres.length !== 1 ? "s" : ""}
-          </p>
-
-          <div className="space-y-3 text-left">
-            <div
-              className="rounded-xl px-4 py-3"
-              style={{
-                background:          "rgba(255,255,255,0.12)",
-                border:              "1px solid rgba(255,255,255,0.18)",
-                backdropFilter:      "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-              }}
-            >
-              <p className="text-white/55 text-[10px] uppercase tracking-widest font-bold mb-0.5">Métier</p>
-              <p className="text-white text-sm font-semibold drop-shadow">{metier?.label || "—"}</p>
-            </div>
-
-            {regionLabel && (
-              <div
-                className="rounded-xl px-4 py-3"
-                style={{
-                  background:          "rgba(255,255,255,0.12)",
-                  border:              "1px solid rgba(255,255,255,0.18)",
-                  backdropFilter:      "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                }}
-              >
-                <p className="text-white/55 text-[10px] uppercase tracking-widest font-bold mb-0.5">Région</p>
-                <p className="text-white text-sm font-semibold drop-shadow">{regionLabel}</p>
-              </div>
-            )}
-
-            <div
-              className="rounded-xl px-4 py-3"
-              style={{
-                background:          "rgba(255,255,255,0.12)",
-                border:              "1px solid rgba(255,255,255,0.18)",
-                backdropFilter:      "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-              }}
-            >
-              <p className="text-white/55 text-[10px] uppercase tracking-widest font-bold mb-0.5">Mention</p>
-              <p className="text-white text-sm font-semibold drop-shadow">{mentionLabel}</p>
-            </div>
-          </div>
-
-          <p className="text-white/55 text-xs mt-6 leading-relaxed drop-shadow">
-            Cliquez sur un établissement<br />pour voir sa fiche complète
-          </p>
-        </div>
-      </div>
-
-      {/* Fiche Modal */}
       {selectedEtab && (
         <FicheModal
           fiche={selectedEtab}
@@ -565,10 +492,25 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
       )}
 
       <style>{`
-        .scrollbar-thin-white::-webkit-scrollbar { width: 5px; }
-        .scrollbar-thin-white::-webkit-scrollbar-track { background: transparent; }
-        .scrollbar-thin-white::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 999px; }
-        .scrollbar-thin-white::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.40); }
+        .line-clamp-1 {
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .scrollbar-thin-white::-webkit-scrollbar {
+          width: 5px;
+        }
+        .scrollbar-thin-white::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .scrollbar-thin-white::-webkit-scrollbar-thumb {
+          background: rgba(255,255,255,0.22);
+          border-radius: 9999px;
+        }
+        .scrollbar-thin-white::-webkit-scrollbar-thumb:hover {
+          background: rgba(255,255,255,0.4);
+        }
       `}</style>
     </div>
   );

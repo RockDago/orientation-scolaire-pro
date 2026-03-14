@@ -95,7 +95,6 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
   const [selectedDomaine, setSelectedDomaine] = useState(null);
   const [isComboOpen,     setIsComboOpen]     = useState(false);
   const [comboSearch,     setComboSearch]     = useState("");
-  const [comboPosition,   setComboPosition]   = useState("bottom");
 
   const [mode, setMode] = useState("idle");
 
@@ -107,7 +106,6 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
 
   const metierComboRef = useRef(null);
   const comboRef       = useRef(null);
-  const comboButtonRef = useRef(null);
 
   useEffect(() => {
     if (searchParam && searchParam.trim()) {
@@ -182,23 +180,14 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
     if (localSelected) onSelectMetier?.(localSelected);
   };
 
-  const getComboPosition = () => {
-    if (comboButtonRef.current) {
-      const rect = comboButtonRef.current.getBoundingClientRect();
-      return window.innerHeight - rect.bottom < 300 ? "top" : "bottom";
-    }
-    return "bottom";
-  };
-
-  const handleToggleCombo = () => {
-    if (!isComboOpen) setComboPosition(getComboPosition());
-    setIsComboOpen(!isComboOpen);
-  };
-
   useEffect(() => {
     const handler = (e) => {
-      if (comboRef.current       && !comboRef.current.contains(e.target))       setIsComboOpen(false);
-      if (metierComboRef.current && !metierComboRef.current.contains(e.target)) setIsMetierComboOpen(false);
+      if (metierComboRef.current && !metierComboRef.current.contains(e.target)) {
+        setIsMetierComboOpen(false);
+      }
+      if (comboRef.current && !comboRef.current.contains(e.target)) {
+        setIsComboOpen(false);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -266,12 +255,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             </div>
 
             {/* ── COMBOBOX 1 : Recherche métier ── */}
-            {/* CORRECTION Z-INDEX ICI */}
-            <div className="s2-cbwrap" ref={metierComboRef}
-              style={{ 
-                animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.25s both",
-                zIndex: isMetierComboOpen ? 100 : 10
-              }}>
+            <div className="s2-cbwrap" ref={metierComboRef}>
               <p className="s2-lbl">Rechercher un métier</p>
               <button className="s2-trigger" onClick={() => setIsMetierComboOpen(!isMetierComboOpen)}>
                 <span className={localSelected ? "s2-val blue" : "s2-ph"}>
@@ -294,7 +278,9 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                       autoFocus
                     />
                     {searchQuery && (
-                      <button className="s2-drop-clr" onClick={() => setSearchQuery("")}><HiX size={13} /></button>
+                      <button className="s2-drop-clr" onClick={() => setSearchQuery("")}>
+                        <HiX size={13} />
+                      </button>
                     )}
                   </div>
                   <div className="s2-drop-list">
@@ -332,14 +318,9 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                   <div className="s2-sep-l" /><span className="s2-sep-txt">ou</span><div className="s2-sep-l" />
                 </div>
 
-                {/* CORRECTION Z-INDEX ICI */}
-                <div className="s2-cbwrap" ref={comboRef}
-                  style={{ 
-                    animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.4s both",
-                    zIndex: isComboOpen ? 100 : 5
-                  }}>
+                <div className="s2-cbwrap" ref={comboRef}>
                   <p className="s2-lbl">Explorer par domaine</p>
-                  <button ref={comboButtonRef} onClick={handleToggleCombo}
+                  <button onClick={() => setIsComboOpen(!isComboOpen)}
                     className={`s2-trigger ${isComboOpen ? "open-green" : ""}`}>
                     <span className={selectedDomaine ? "s2-val green" : "s2-ph"}>
                       {selectedDomaine ? selectedDomaine.label : "Sélectionner un domaine…"}
@@ -348,7 +329,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                   </button>
 
                   {isComboOpen && (
-                    <div className={`s2-drop s2-fadein ${comboPosition === "top" ? "drop-top" : ""}`}>
+                    <div className="s2-drop s2-fadein">
                       <div className="s2-drop-search">
                         <HiOutlineSearch className="s2-drop-sicon" />
                         <input
@@ -357,11 +338,13 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                           value={comboSearch}
                           onChange={(e) => setComboSearch(e.target.value)}
                           onClick={(e) => e.stopPropagation()}
-                          className="s2-drop-input green"
+                          className="s2-drop-input"
                           autoFocus
                         />
                         {comboSearch && (
-                          <button className="s2-drop-clr" onClick={() => setComboSearch("")}><HiX size={13} /></button>
+                          <button className="s2-drop-clr" onClick={() => setComboSearch("")}>
+                            <HiX size={13} />
+                          </button>
                         )}
                       </div>
                       <div className="s2-drop-list">
@@ -534,75 +517,103 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-icon.green {color:#4ade80;}
         .rot180{transform:rotate(180deg);}
 
-        /* ────────────────────────────
-            Dropdown
-            Positionné strictement sous
-            le trigger via top: calc(100% + 8px)
-        ──────────────────────────── */
+        /* Dropdown */
         .s2-drop {
-          position:absolute;left:0;right:0;
-          top:calc(100% + 8px);   /* GAP clair entre trigger et dropdown */
+          position:absolute;
+          left:0;
+          right:0;
+          top:calc(100% + 8px);
           background:white;
           border-radius:1rem;
-          box-shadow:0 8px 36px rgba(0,0,0,.17);
-          border:1px solid #f1f5f9;
+          box-shadow:0 12px 40px rgba(0,0,0,.25);
+          border:1px solid #e2e8f0;
           overflow:hidden;
-          z-index:500;
+          z-index:1000;
         }
-        .drop-top{top:auto;bottom:calc(100% + 8px);}
 
-        /* Input de recherche dans le dropdown */
+        /* Input de recherche dans le dropdown - DESIGN TOUT BLANC */
         .s2-drop-search {
           position:relative;
-          padding:.5rem .5rem .5rem .5rem;
-          background:#f8fafc;
+          padding:1rem;
+          background:white;
           border-bottom:1px solid #f1f5f9;
         }
         .s2-drop-sicon {
-          position:absolute;left:1rem;top:50%;transform:translateY(-50%);
-          color:#94a3b8;font-size:.8rem;pointer-events:none;
+          position:absolute;
+          left:1.5rem;
+          top:50%;
+          transform:translateY(-50%);
+          color:#94a3b8;
+          font-size:1rem;
+          pointer-events:none;
         }
         .s2-drop-input {
           width:100%;
-          background:white;border:1.5px solid #e2e8f0;border-radius:.625rem;
-          padding:.45rem 1.75rem .45rem 2.1rem;
-          font-size:.875rem;font-family:'Sora',sans-serif;
-          outline:none;transition:border-color .2s,box-shadow .2s;
+          background:white;
+          border:1.5px solid #e2e8f0;
+          border-radius:0.75rem;
+          padding:0.75rem 1rem 0.75rem 2.5rem;
+          font-size:0.95rem;
+          font-family:'Sora',sans-serif;
+          outline:none;
+          transition:all 0.2s ease;
+          color:#1e293b;
         }
-        .s2-drop-input:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(96,165,250,.18);}
-        .s2-drop-input.green:focus{border-color:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.18);}
+        .s2-drop-input::placeholder {
+          color:#94a3b8;
+          font-weight:400;
+        }
+        .s2-drop-input:focus {
+          border-color:#60a5fa;
+          box-shadow:0 0 0 4px rgba(96,165,250,0.15);
+        }
         .s2-drop-clr {
-          position:absolute;right:.875rem;top:50%;transform:translateY(-50%);
-          color:#94a3b8;background:none;border:none;cursor:pointer;
-          display:flex;align-items:center;padding:0;
+          position:absolute;
+          right:1.5rem;
+          top:50%;
+          transform:translateY(-50%);
+          color:#64748b;
+          background:white;
+          border:none;
+          cursor:pointer;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          padding:0.25rem;
+          border-radius:9999px;
+          transition:all 0.2s ease;
+        }
+        .s2-drop-clr:hover {
+          background:#f1f5f9;
+          color:#334155;
         }
 
         /* Liste items */
-        .s2-drop-list{max-height:13rem;overflow-y:auto;overscroll-behavior:contain;}
-        .s2-drop-list::-webkit-scrollbar{width:4px;}
+        .s2-drop-list{max-height:16rem;overflow-y:auto;overscroll-behavior:contain;background:white;}
+        .s2-drop-list::-webkit-scrollbar{width:5px;}
         .s2-drop-list::-webkit-scrollbar-track{background:#f8fafc;}
         .s2-drop-list::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px;}
 
         .s2-drop-item {
-          width:100%;padding:.7rem 1rem;
-          display:flex;flex-direction:column;gap:.25rem;
-          text-align:left;background:none;border:none;cursor:pointer;
+          width:100%;padding:.875rem 1.25rem;
+          display:flex;flex-direction:column;gap:.35rem;
+          text-align:left;background:white;border:none;cursor:pointer;
           transition:background .15s;
         }
-        .s2-drop-item:hover{background:#eff6ff;}
+        .s2-drop-item:hover{background:#f8fafc;}
         .s2-drop-item.active-blue{background:#eff6ff;}
         .s2-drop-item.active-green{background:#f0fdf4;}
-        .s2-drop-item.bordered{border-bottom:1px solid #f8fafc;}
+        .s2-drop-item.bordered{border-bottom:1px solid #f1f5f9;}
 
         .s2-drop-row{display:flex;align-items:center;justify-content:space-between;gap:.5rem;}
-        .s2-drop-name{font-size:.875rem;font-weight:700;color:#1e293b;}
-        .s2-chk{font-size:1rem;flex-shrink:0;}
+        .s2-drop-name{font-size:.95rem;font-weight:600;color:#0f172a;}
+        .s2-chk{font-size:1.125rem;flex-shrink:0;}
         .s2-chk.blue{color:#1250c8;}.s2-chk.green{color:#5E9422;}
-        .s2-badge{display:inline-block;font-size:.6rem;font-weight:700;padding:.1rem .45rem;border-radius:.25rem;}
+        .s2-badge{display:inline-block;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:.375rem;width:fit-content;}
         .s2-badge.blue{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;}
-        .s2-empty{padding:1.25rem 1rem;text-align:center;}
-        .s2-empty p{font-size:.875rem;color:#94a3b8;margin:0 0 .2rem;}
-        .s2-empty span{font-size:.75rem;color:#cbd5e1;}
+        .s2-empty{padding:1.5rem 1.25rem;text-align:center;background:white;}
+        .s2-empty p{font-size:.95rem;color:#64748b;margin:0 0 .25rem;}
+        .s2-empty span{font-size:.8rem;color:#94a3b8;}
 
         /* Séparateur */
         .s2-sep{display:flex;align-items:center;margin:clamp(.75rem,2vw,1.1rem) 0;}
