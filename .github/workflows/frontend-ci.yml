@@ -38,16 +38,18 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
           server-dir: /
-       
           # 1. Force la suppression des anciens fichiers avant déploiement (évite les conflits)
           dangerous-clean-slate: true
           # 2. Crée automatiquement les dossiers manquants
           create-directories: true
-          # 3. Exclut les fichiers système pour éviter les conflits
+          # 3. Exclut les fichiers système ET votre dossier backend
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/*.log
+            **/backend/**
+            **/backend*/**
+            **/*.php
           # 4. Mode de synchronisation complet pour une mise à jour propre
           dry-run: false

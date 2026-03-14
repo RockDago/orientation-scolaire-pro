@@ -1,3 +1,5 @@
+// C:\xampp\htdocs\orientation-scolaire-professionnelle\frontend\src\pages\dashboard\view\dashboardadminView.jsx
+
 import React, { useState, useEffect } from "react";
 import {
   FaGlobe,
@@ -86,6 +88,7 @@ const extractStats = (data) => {
 function StatCardModerne({
   label,
   value,
+  icon: Icon,
   trend,
   trendLabel,
   accentColor,
@@ -972,7 +975,7 @@ const DashboardAdminView = () => {
             </div>
 
             <div className="flex p-1 bg-white border border-gray-100 shadow-sm rounded-xl">
-              {CHART_TABS.map(({ k, l }) => (
+              {CHART_TABS.map(({ k, I, l }) => (
                 <button
                   key={k}
                   onClick={() => setChart(k)}
