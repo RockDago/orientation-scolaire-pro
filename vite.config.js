@@ -26,8 +26,8 @@ export default defineConfig({
       ],
 
       manifest: {
-        name: 'Orientation Scolaire et Professionnelle',
-        short_name: 'Orientation',
+        name: 'OSP',
+        short_name: 'OSP',
         description: "Plateforme interactive d'orientation scolaire et professionnelle",
      
         start_url: '/',

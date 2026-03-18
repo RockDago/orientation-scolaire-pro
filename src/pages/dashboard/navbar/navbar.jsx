@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   FaUser,
   FaBars,
@@ -8,6 +8,7 @@ import {
 } from "react-icons/fa";
 
 const Navbar = ({ collapsed, user, onMobileMenuClick }) => {
+  const { uuid } = useParams();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileRef = useRef(null);
   const userData = user || {
@@ -112,7 +113,7 @@ const Navbar = ({ collapsed, user, onMobileMenuClick }) => {
               
               {/* Lien vers la page de profil */}
               <Link 
-                to="/dashboard/admin/profile" 
+                to={`/dashboard/admin/profile/${uuid}`} 
                 onClick={() => setShowProfileMenu(false)}
                 className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors border-b border-gray-100"
               >

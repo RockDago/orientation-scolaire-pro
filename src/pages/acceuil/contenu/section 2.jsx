@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { getAllMetiersCache }  from "../../../services/metier.services";
 import { getAllDomaines }      from "../../../services/domaine.services";
 import { searchMetier }        from "../../../services/metier.services";
+import BuildingSVG        from "./BuildingSVG";
+import pictoExplorer      from "../../../assets/picto_Explorer.png";
 
 
 function MetierDetailsCard({ metier, onClose }) {
@@ -87,6 +89,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
   const [allMetiers,  setAllMetiers]  = useState([]);
   const [allDomaines, setAllDomaines] = useState([]);
   const [_loading,    _setLoading]    = useState(true);
+  const [isLoading,   setIsLoading]   = useState(false);
 
   const [isMetierComboOpen, setIsMetierComboOpen] = useState(false);
   const [searchQuery,       setSearchQuery]       = useState(searchParam || "");
@@ -158,14 +161,29 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
     });
   }, [selectedDomaine, allMetiers]);
 
-  const handleSelectMetier = (metier) => {
+  const handleSelectMetier = (metier, isFromDomain = false) => {
     if (metier.id && metier.label) searchMetier(metier.id, metier.label).catch(console.error);
     setLocalSelected(metier);
-    setSelectedDomaine(null);
     setIsMetierComboOpen(false);
     setSearchQuery("");
-    setMode("metier");
-    onSelectMetier?.(metier);
+    
+    if (isFromDomain) {
+      handleLancerRecherche(metier);
+    } else {
+      setSelectedDomaine(null);
+      setMode("metier");
+    }
+  };
+
+  const handleLancerRecherche = (metierToUse = null) => {
+    const targetMetier = metierToUse || localSelected;
+    if (!targetMetier) return;
+    
+    setIsLoading(true);
+    setTimeout(() => {
+      onSelectMetier?.(targetMetier);
+      setIsLoading(false);
+    }, 5000);
   };
 
   const handleSelectDomaine = (d) => {
@@ -204,29 +222,37 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
     >
       <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
+      {/* Loader Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 z-[500] bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832] flex items-center justify-center">
+          <div className="s2-deco-tr">
+            <img src={pictoExplorer} alt="" className="w-[200px] lg:w-[260px] opacity-40 object-contain" />
+          </div>
+          <div className="relative z-10 flex flex-col items-center gap-8">
+            <div className="loader">
+              <div className="justify-content-center jimu-primary-loading"></div>
+            </div>
+            <div className="mt-20 flex flex-col items-center gap-2">
+              <p className="text-white font-black text-2xl uppercase tracking-widest animate-pulse text-center px-4">
+                Recherche de détails...
+              </p>
+              <p className="text-white/60 text-sm font-medium">Préparation de la fiche métier...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Déco SVG */}
       {/* Déco SVG */}
       <div className="s2-deco-tr">
-        <svg width="200" height="180" viewBox="0 0 260 240" fill="none">
-          <path d="M130 38 L232 94 L130 150 L28 94 Z" stroke="white" strokeWidth="2.6" fill="none" strokeLinejoin="round" />
-          <path d="M52 108 Q52 160 130 188 Q208 160 208 108" stroke="white" strokeWidth="2.6" fill="none" strokeLinecap="round" />
-          <line x1="232" y1="94" x2="232" y2="148" stroke="white" strokeWidth="2.6" strokeLinecap="round" />
-          <circle cx="232" cy="155" r="7" fill="white" />
-          <line x1="130" y1="150" x2="130" y2="188" stroke="white" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4" />
-          <circle cx="130" cy="94" r="5" fill="white" />
-        </svg>
+        <img 
+          src={pictoExplorer} 
+          alt="" 
+          className="w-[200px] lg:w-[260px] opacity-40 object-contain pointer-events-none"
+        />
       </div>
       <div className="s2-deco-bld">
-        <svg width="100%" height="80" viewBox="0 0 400 100" preserveAspectRatio="xMidYMax meet" fill="none">
-          <rect x="10"  y="55" width="30" height="45" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="50"  y="35" width="40" height="65" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="100" y="50" width="25" height="50" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="135" y="30" width="50" height="70" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="195" y="45" width="35" height="55" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="240" y="55" width="28" height="45" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="278" y="38" width="42" height="62" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="330" y="50" width="30" height="50" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="370" y="60" width="25" height="40" stroke="white" strokeWidth="1.5" fill="none" />
-        </svg>
+        <BuildingSVG className="w-full opacity-60" />
       </div>
 
       {/* Layout */}
@@ -235,14 +261,13 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         {/* ══ Colonne gauche ══ */}
         <div className={`s2-left transition-transform duration-500 ease-in-out ${(isMetierComboOpen || isComboOpen) ? "lg:-translate-y-20 -translate-y-12" : "translate-y-0"}`}>
           <div className="s2-scroll">
-
-            {/* Retour */}
-            {onRetour && (
-              <button onClick={onRetour} className="s2-back" aria-label="Retour"
-                style={{ animation: "s2In 0.5s cubic-bezier(0.16,1,0.3,1) 0.1s both" }}>
-                <IoArrowBackCircleOutline size={42} />
-              </button>
-            )}
+            <div className="flex items-center justify-between mb-2">
+              {onRetour && (
+                <button onClick={onRetour} className="s2-back" aria-label="Retour">
+                  <IoArrowBackCircleOutline size={42} />
+                </button>
+              )}
+            </div>
 
             {/* Titre et description centrés sur mobile */}
             <div 
@@ -288,7 +313,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                   </div>
                   <div className="s2-drop-list">
                     {filteredMetiers.length > 0 ? filteredMetiers.map((m, i) => (
-                      <button key={m.id} onClick={() => handleSelectMetier(m)}
+                      <button key={m.id} onClick={() => handleSelectMetier(m, false)}
                         className={`s2-drop-item ${localSelected?.id === m.id ? "active-blue" : ""} ${i !== filteredMetiers.length - 1 ? "bordered" : ""}`}>
                         <div className="s2-drop-row">
                           <span className="s2-drop-name">{m.label}</span>
@@ -307,12 +332,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
               )}
             </div>
 
-            {/* Fiche métier mobile */}
-            {mode === "metier" && localSelected && (
-              <div className="s2-fiche-mob s2-fadein lg:hidden">
-                <MetierDetailsCard metier={localSelected} onClose={() => { setLocalSelected(null); setMode("idle"); }} />
-              </div>
-            )}
+            {/* Fiche métier mobile removed as per user request */}
 
             {/* ── Séparateur + COMBOBOX 2 ── */}
             {mode !== "metier" && (
@@ -372,7 +392,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                     <p className="s2-dom-name">{selectedDomaine.label}</p>
                     {metiersParDomaine.length > 0 ? (
                       <div className="s2-cards">
-                        {metiersParDomaine.map((m) => <MetierCard key={m.id} metier={m} onSelect={handleSelectMetier} />)}
+                        {metiersParDomaine.map((m) => <MetierCard key={m.id} metier={m} onSelect={(m) => handleSelectMetier(m, true)} />)}
                       </div>
                     ) : <p className="s2-nores">Aucun métier trouvé pour ce domaine.</p>}
                   </div>
@@ -381,24 +401,11 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             )}
           </div>
 
-          {/* Footer */}
-          <div className="s2-foot">
-            {mode === "metier" && localSelected && (
-              <button className="s2-btn-cont" onClick={handleValider}>Continuer →</button>
-            )}
-            <button className="s2-btn-home" onClick={onHome} aria-label="Accueil">
-              <HiOutlineHome size={26} />
-            </button>
-          </div>
         </div>
 
         {/* ══ Colonne droite — Desktop ══ */}
         <div className="s2-right">
-          {mode === "metier" && localSelected && (
-            <div className="h-full s2-fadein">
-              <MetierDetailsCard metier={localSelected} onClose={() => { setLocalSelected(null); setMode("idle"); }} />
-            </div>
-          )}
+          {/* Fiche métier desktop preview removed as per user request */}
           {mode === "domaine" && selectedDomaine && (
             <div className="s2-r-dom s2-fadein">
               <div className="s2-r-domhdr">
@@ -409,7 +416,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
               </div>
               {metiersParDomaine.length > 0 ? (
                 <div className="s2-r-list">
-                  {metiersParDomaine.map((m) => <MetierCard key={m.id} metier={m} onSelect={handleSelectMetier} />)}
+                  {metiersParDomaine.map((m) => <MetierCard key={m.id} metier={m} onSelect={(m) => handleSelectMetier(m, true)} />)}
                 </div>
               ) : <p className="s2-nores">Aucun métier trouvé pour ce domaine.</p>}
             </div>
@@ -431,6 +438,34 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         </div>
       </div>
 
+      {/* Lancer la recherche Button - ONLY for manual career search (mode === "metier") */}
+      {mode === "metier" && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[250] w-full max-w-sm px-6 pointer-events-none flex justify-center">
+          <button
+            onClick={() => handleLancerRecherche()}
+            disabled={!localSelected || isLoading}
+            className={`w-full py-4 rounded-full font-black text-sm lg:text-base transition-all shadow-lg active:scale-95 pointer-events-auto ${
+              localSelected && !isLoading
+                ? "bg-[#1250c8] text-white hover:bg-[#1a3ea8] hover:-translate-y-0.5"
+                : "bg-white/20 text-white/40 cursor-not-allowed"
+            }`}
+          >
+            {isLoading ? "Traitement..." : "Lancer la recherche"}
+          </button>
+        </div>
+      )}
+
+      {/* Home Fixed - Centered */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[200] pointer-events-none">
+        <button
+          onClick={onHome}
+          className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
+          aria-label="Accueil"
+        >
+          <HiOutlineHome size={30} />
+        </button>
+      </div>
+
       <style>{`
         /* Base */
         .s2-root *, .s2-root *::before, .s2-root *::after { box-sizing: border-box; font-family: 'Sora', sans-serif; }
@@ -439,33 +474,28 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-root {
           position: relative;
           width: 100%;
-          height: 100dvh;
-          min-height: 100svh;
-          overflow: hidden;
+          min-height: 100vh;
           display: flex;
           flex-direction: column;
           background: linear-gradient(135deg,#1250c8 0%,#1a6dcc 25%,#28b090 55%,#a0d820 80%,#c2e832 100%);
         }
-
         /* Décos */
         .s2-deco-tr { position:absolute;top:0;right:0;pointer-events:none;z-index:0;opacity:.75; }
-        .s2-deco-bld { position:absolute;bottom:0;left:0;right:0;pointer-events:none;z-index:0;opacity:.10; }
+        .s2-deco-bld { position:fixed;bottom:0;left:0;right:0;pointer-events:none;z-index:0;opacity:.80; }
 
         /* Layout principal */
-        .s2-layout { position:relative;z-index:10;display:flex;flex:1;height:100%;overflow:hidden; }
+        .s2-layout { position:relative;z-index:10;display:flex;flex:1; width: 100%; min-height: 100vh; }
 
         /* Colonne gauche */
-        .s2-left { display:flex;flex-direction:column;width:100%;height:100%; }
+        .s2-left { display:flex;flex-direction:column;width:100%;min-height:100%; }
         @media(min-width:1024px){ .s2-left{width:50%;} }
         @media(min-width:1280px){ .s2-left{width:52%;} }
 
         /* Zone scrollable — remplit l'espace restant */
         .s2-scroll {
-          flex:1;min-height:0;overflow-y:auto;
-          padding: clamp(1.25rem,4vw,2.5rem) clamp(1.25rem,5vw,3.5rem) 0.75rem;
-          scrollbar-width:none;-ms-overflow-style:none;
+          flex:1;min-height:0;overflow:visible;
+          padding: 1rem clamp(1.25rem,5vw,3.5rem) 2rem;
         }
-        .s2-scroll::-webkit-scrollbar{display:none;}
 
         /* Retour */
         .s2-back {
@@ -507,6 +537,9 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           position:relative; 
           width:100%; 
           max-width: 450px; 
+          z-index: 100;
+        }
+        .s2-cbwrap:focus-within { z-index: 200; }
           margin-bottom: 1.25rem; 
         }
         @media(max-width: 1023px) {
@@ -706,8 +739,8 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-fiche-mob{margin-bottom:1rem;height:15rem;}
 
         /* Résultats domaine mobile */
-        .s2-dom-res{margin-top:.75rem;padding-bottom:2rem;}
-        .s2-cards{display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem;}
+        .s2-dom-res{margin-top:.75rem;padding-bottom:5rem; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto;}
+        .s2-cards{display:flex;flex-direction:column;gap:.75rem;margin-top:.75rem;}
         .s2-dom-cnt{font-size:clamp(1.25rem,4vw,1.75rem);font-weight:900;color:white;margin:0;}
         .s2-dom-cnt.lg{font-size:clamp(2rem,5vw,3rem);line-height:1;}
         .s2-dom-cnt .sub{font-size:1.25rem;font-weight:600;color:rgba(255,255,255,.6);}
@@ -744,20 +777,6 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           transform: translateY(-2px);
           box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15);
           background: #eff6ff;
-        }
-        .s2-btn-home {
-          color: rgba(255, 255, 255, 0.6);
-          background: rgba(255, 255, 255, 0.05);
-          border: none;
-          cursor: pointer;
-          padding: 0.75rem;
-          border-radius: 1rem;
-          transition: all 0.2s;
-        }
-        .s2-btn-home:hover {
-          color: white;
-          background: rgba(255, 255, 255, 0.15);
-          transform: scale(1.05);
         }
 
         /* Colonne droite */
@@ -798,6 +817,76 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .scrollbar-thin-white::-webkit-scrollbar-track{background:transparent;}
         .scrollbar-thin-white::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:999px;}
         .scrollbar-thin-white::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.4);}
+
+        /* Loader Styles from Uiverse.io */
+        .loader {
+          position: relative;
+          width: 60px;
+          height: 60px;
+        }
+
+        .jimu-primary-loading:before,
+        .jimu-primary-loading:after {
+          position: absolute;
+          top: 0;
+          content: '';
+        }
+
+        .jimu-primary-loading:before {
+          left: -19.992px;
+        }
+
+        .jimu-primary-loading:after {
+          left: 19.992px;
+          -webkit-animation-delay: 0.32s !important;
+          animation-delay: 0.32s !important;
+        }
+
+        .jimu-primary-loading:before,
+        .jimu-primary-loading:after,
+        .jimu-primary-loading {
+          background: #ffffff;
+          -webkit-animation: loading-keys-app-loading 0.8s infinite ease-in-out;
+          animation: loading-keys-app-loading 0.8s infinite ease-in-out;
+          width: 13.6px;
+          height: 32px;
+        }
+
+        .jimu-primary-loading {
+          text-indent: -9999em;
+          margin: auto;
+          position: absolute;
+          right: calc(50% - 6.8px);
+          top: calc(50% - 16px);
+          -webkit-animation-delay: 0.16s !important;
+          animation-delay: 0.16s !important;
+        }
+
+        @-webkit-keyframes loading-keys-app-loading {
+          0%, 80%, 100% {
+            opacity: .75;
+            box-shadow: 0 0 #ffffff;
+            height: 32px;
+          }
+          40% {
+            opacity: 1;
+            box-shadow: 0 -8px #ffffff;
+            height: 40px;
+          }
+        }
+
+        @keyframes loading-keys-app-loading {
+          0%, 80%, 100% {
+            opacity: .75;
+            box-shadow: 0 0 #ffffff;
+            height: 32px;
+          }
+          40% {
+            opacity: 1;
+            box-shadow: 0 -8px #ffffff;
+            height: 40px;
+          }
+        }
       `}</style>
     </div>
   );

@@ -99,7 +99,7 @@ const InstallPWA = () => {
           <p className="text-gray-500 text-xs mt-0.5 leading-tight">
             {isIOS 
               ? "Sur iOS : touchez Partager puis 'Sur l'écran d'accueil'."
-              : "Ajoutez Orientation Scolaire à votre bureau pour un accès rapide."}
+              : "Ajoutez OSP à votre bureau pour un accès rapide."}
           </p>
         </div>
       </div>

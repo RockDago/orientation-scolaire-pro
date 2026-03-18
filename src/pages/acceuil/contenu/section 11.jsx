@@ -4,28 +4,14 @@ import { HiOutlineHome } from "react-icons/hi";
 import { FiArrowRight, FiCheckCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { getMetierById, getAllMetiersCache } from "../../../services/metier.services";
+import BuildingSVG from "./BuildingSVG";
+import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
 
 function GradBg() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      <div className="absolute top-0 right-0 opacity-90 scale-110 lg:scale-125 origin-top-right">
-        <svg width="260" height="240" viewBox="0 0 260 240" fill="none">
-          <path d="M130 38 L232 94 L130 150 L28 94 Z" stroke="white" strokeWidth="2.6" fill="none" strokeLinejoin="round"/>
-          <path d="M52 108 Q52 160 130 188 Q208 160 208 108" stroke="white" strokeWidth="2.6" fill="none" strokeLinecap="round"/>
-          <line x1="232" y1="94" x2="232" y2="148" stroke="white" strokeWidth="2.6" strokeLinecap="round"/>
-          <circle cx="232" cy="155" r="7" fill="white"/>
-          <line x1="130" y1="150" x2="130" y2="188" stroke="white" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4"/>
-          <circle cx="130" cy="94" r="5" fill="white"/>
-        </svg>
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 opacity-10">
-        <svg width="100%" height="100" viewBox="0 0 400 100" preserveAspectRatio="xMidYMax meet" fill="none">
-          <rect x="50"  y="35" width="40" height="65" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="135" y="30" width="50" height="70" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="195" y="45" width="35" height="55" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="278" y="38" width="42" height="62" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="330" y="50" width="30" height="50" stroke="white" strokeWidth="1.5" fill="none"/>
-        </svg>
+      <div className="absolute top-0 right-0 pointer-events-none opacity-20 z-0 origin-top-right">
+        <img src={pictoOrientation} alt="" className="w-[200px] lg:w-[280px] object-contain" />
       </div>
       <div className="absolute top-[42%] left-0 right-0 opacity-15">
         <svg width="100%" height="60" viewBox="0 0 1200 60" preserveAspectRatio="none" fill="none">
@@ -41,7 +27,6 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
   const [metierDetails, setMetierDetails] = useState(metier || null);
   const [loading,        setLoading]       = useState(false);
   const [metiersSimilaires, setMetiersSimilaires] = useState([]);
-
 
   useEffect(() => {
     if (!metier) return;
@@ -123,19 +108,23 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
   }
 
   return (
-    <div className="relative w-full h-screen font-['Sora'] overflow-hidden flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
+    <div className="relative w-full min-h-screen font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
       <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet"
       />
       <GradBg />
 
-      <div className="relative z-10 flex flex-col h-full w-full px-5 sm:px-8 pt-5 pb-4">
+      {/* Background Building SVG Decoration */}
+      <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-0 opacity-[0.8]">
+        <BuildingSVG />
+      </div>
 
+      <div className="relative z-10 flex flex-col h-full w-full px-5 sm:px-8 pt-5 pb-4 overflow-hidden">
         {/* Retour */}
         <button
           onClick={onRetour}
-          className="self-start shrink-0 text-white/80 hover:text-white transition-colors flex items-center justify-center p-0"
+          className="self-start shrink-0 text-white/80 hover:text-white transition-colors flex items-center justify-center p-0 mb-4"
           aria-label="Retour"
         >
           <IoArrowBackCircleOutline size={42} />
@@ -143,42 +132,35 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
 
         {/* Zone scrollable */}
         <div className="flex-1 min-h-0 overflow-y-auto py-2 scrollbar-hide">
-
-          {/* Badge */}
           <span
-            className="inline-block text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full mt-2 mb-2"
+            className="inline-block text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full mb-2"
             style={{ background: "rgba(255,255,255,0.18)", color: "white" }}
           >
             Parcours de formation
           </span>
 
-          {/* Formation sélectionnée */}
           <div className="mb-8">
             <p className="text-sm text-white/70 font-semibold mb-2 uppercase tracking-wider">Formation sélectionnée :</p>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight break-words">
+            <h1 className="text-4xl sm:text-5xl lg:text-3xl xl:text-4xl font-black text-white leading-tight tracking-tight break-words">
               {m?.label || "—"}
             </h1>
           </div>
 
-          {/* Badge mention */}
-          <span className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-5">
-            {m?.mention || "—"}
-          </span>
-
-          {/* Badge niveau */}
-          {m?.niveau && (
-            <span className="inline-block bg-white/15 text-white text-xs font-semibold px-3 py-1 rounded-full mb-5 ml-2">
-              {m.niveau}
+          <div className="flex flex-wrap gap-2 mb-5">
+            <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
+              {m?.mention || "—"}
             </span>
-          )}
+            {m?.niveau && (
+              <span className="bg-white/15 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                {m.niveau}
+              </span>
+            )}
+          </div>
 
-          {/* ✅ Étapes du parcours — depuis parcoursFormation BDD */}
           <div className="flex flex-col items-center w-full">
-            <div className="w-full max-w-2xl flex flex-col gap-0 mb-6">
+            <div className="w-full max-w-2xl flex flex-col gap-0 mb-4">
               {parcours.map((etape, i) => (
                 <div key={i} className="flex items-stretch gap-4">
-
-                  {/* Numéro + ligne verticale */}
                   <div className="flex flex-col items-center flex-shrink-0">
                     <div
                       className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0 z-10"
@@ -197,10 +179,8 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
                       />
                     )}
                   </div>
-
-                  {/* Contenu de l'étape */}
                   <div
-                    className="flex-1 rounded-2xl px-4 py-3"
+                    className="flex-1 rounded-2xl px-4 py-3 mb-2"
                     style={{
                       background: i === parcours.length - 1
                         ? "rgba(255,255,255,0.20)"
@@ -208,10 +188,9 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
                       border: i === parcours.length - 1
                         ? "1px solid rgba(255,255,255,0.45)"
                         : "1px solid rgba(255,255,255,0.18)",
-                      marginBottom: i < parcours.length - 1 ? "8px" : "0",
                     }}
                   >
-                    <p className="text-sm sm:text-base font-semibold text-white leading-snug break-words">
+                    <p className="text-sm font-semibold text-white leading-snug break-words">
                       {etape}
                     </p>
                     {i === parcours.length - 1 && (
@@ -228,10 +207,9 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
             </div>
           </div>
 
-          {/* ✅ Autres métiers du même domaine */}
           {metiersSimilaires.length > 0 && (
-            <div className="w-full max-w-2xl mx-auto mt-8 mb-10">
-              <h3 className="text-white font-bold text-lg mb-4 px-1">Autres métiers dans ce domaine</h3>
+            <div className="w-full max-w-2xl mx-auto mt-6 mb-8">
+              <h3 className="text-white font-bold text-lg mb-3 px-1">Autres métiers dans ce domaine</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {metiersSimilaires.map(sim => (
                   <button
@@ -254,27 +232,28 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
             </div>
           )}
         </div>
+      </div>
 
-        {/* Boutons bas */}
-        <div className="shrink-0 flex flex-col items-center gap-4 pt-3">
-          {/* ✅ Bouton → Section5 (carte avec établissements) */}
-          <button
-            onClick={handleVoirFormations}
-            className="w-full max-w-xs py-4 rounded-full font-bold text-sm transition-all inline-flex items-center justify-center gap-2 bg-[#1a3ea8] hover:bg-[#122d88] text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-          >
-            Voir l'établissement
-            <FiArrowRight size={16} />
-          </button>
+      {/* Boutons bas - Centrés au milieu en haut de Home */}
+      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-sm px-6 pointer-events-none flex justify-center">
+        <button
+          onClick={handleVoirFormations}
+          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white font-black py-4 px-6 rounded-full flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 pointer-events-auto"
+        >
+          <span className="text-sm">Établissements proposant ce parcours</span>
+          <FiArrowRight size={18} />
+        </button>
+      </div>
 
-          {/* Home */}
-          <button
-            onClick={onHome}
-            className="text-white hover:text-white/80 transition-colors"
-            aria-label="Accueil"
-          >
-            <HiOutlineHome size={30} />
-          </button>
-        </div>
+      {/* Home Fixed - Centered */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
+        <button
+          onClick={onHome}
+          className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
+          aria-label="Accueil"
+        >
+          <HiOutlineHome size={30} />
+        </button>
       </div>
 
       <style>{`

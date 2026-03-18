@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
+import BuildingSVG from "./BuildingSVG";
 import { HiOutlineHome } from "react-icons/hi";
 import {
   FiX,
@@ -258,7 +259,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
 
   if (loading) {
     return (
-      <div className="relative w-full h-screen overflow-hidden font-['Sora'] flex items-center justify-center bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] to-[#c2e832]">
+      <div className="relative w-full min-h-screen font-['Sora'] flex items-center justify-center bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] to-[#c2e832]">
         <div className="text-white text-center">
           <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4" />
           <p className="text-lg font-semibold">Chargement des établissements…</p>
@@ -269,49 +270,23 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
 
   return (
     <div
-      className="relative w-full h-screen overflow-hidden font-['Sora'] flex flex-col"
+      className="relative w-full min-h-screen font-['Sora'] flex flex-col"
       style={{
         background:
           "linear-gradient(135deg,#1250c8 0%,#1a6dcc 20%,#28b090 55%,#a0d820 80%,#c2e832 100%)",
       }}
     >
+      {/* Background Building SVG Decoration */}
+      <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-0 opacity-[0.8]">
+        <BuildingSVG />
+      </div>
       <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet"
       />
 
-      <div className="absolute top-0 right-0 pointer-events-none z-0 opacity-70 origin-top-right">
-        <svg width="220" height="200" viewBox="0 0 260 240" fill="none">
-          <path d="M130 38 L232 94 L130 150 L28 94 Z" stroke="white" strokeWidth="2.6" fill="none" strokeLinejoin="round" />
-          <path d="M52 108 Q52 160 130 188 Q208 160 208 108" stroke="white" strokeWidth="2.6" fill="none" strokeLinecap="round" />
-          <line x1="232" y1="94"  x2="232" y2="148" stroke="white" strokeWidth="2.6" strokeLinecap="round" />
-          <circle cx="232" cy="155" r="7" fill="white" />
-          <line x1="130" y1="150" x2="130" y2="188" stroke="white" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4" />
-          <circle cx="130" cy="94" r="5" fill="white" />
-        </svg>
-      </div>
-
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-0 opacity-10">
-        <svg width="100%" height="90" viewBox="0 0 400 100" preserveAspectRatio="xMidYMax meet" fill="none">
-          <rect x="10"  y="55" width="30" height="45" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="50"  y="35" width="40" height="65" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="100" y="50" width="25" height="50" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="135" y="30" width="50" height="70" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="195" y="45" width="35" height="55" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="240" y="55" width="28" height="45" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="278" y="38" width="42" height="62" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="330" y="50" width="30" height="50" stroke="white" strokeWidth="1.5" fill="none" />
-          <rect x="370" y="60" width="25" height="40" stroke="white" strokeWidth="1.5" fill="none" />
-        </svg>
-      </div>
-
-      <div className="absolute top-[45%] left-0 right-0 pointer-events-none z-0 opacity-10">
-        <svg width="100%" height="60" viewBox="0 0 1200 60" preserveAspectRatio="none" fill="none">
-          <path d="M0,30 Q150,10 300,30 T600,30 T900,30 T1200,30" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" />
-        </svg>
-      </div>
-
       {/* Conteneur principal avec flex column et min-height */}
+
       <div className="relative z-10 flex flex-col h-full w-full px-5 sm:px-8 pt-5 pb-4">
         {/* Bouton retour */}
         <button
@@ -325,7 +300,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
         {/* Contenu scrollable */}
         <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin-white pr-1">
           <div className="mb-6">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-3">
+            <h1 className="text-4xl sm:text-5xl lg:text-4xl xl:text-5xl font-black text-white leading-tight tracking-tight mb-2">
               UNIVERSITÉS<br className="sm:hidden" />&amp; INSTITUTS
             </h1>
             <div className="flex flex-wrap items-center gap-2">
@@ -341,7 +316,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
             </div>
           </div>
 
-          <div className="mb-6 space-y-3">
+          <div className="mb-4 lg:mb-3 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] text-white/70 font-semibold">Type :</span>
               <div className="flex flex-wrap gap-1.5">
@@ -395,12 +370,12 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
             )}
           </div>
 
-          <p className="text-xs text-white/60 mb-4 font-medium">
+          <p className="text-xs text-white/60 mb-3 lg:mb-2 font-medium">
             {etablissementsFiltres.length} établissement
             {etablissementsFiltres.length !== 1 ? "s" : ""}
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-2 mb-8 lg:mb-6">
             {etablissementsFiltres.length > 0 ? (
               etablissementsFiltres.map((etab, i) => (
                 <button
@@ -409,8 +384,8 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
                   onClick={() => handleSelectEtablissement(etab)}
                   className="group w-full text-left rounded-2xl p-4 flex flex-col gap-3 cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1"
                   style={{
-                    background:    "rgba(255,255,255,0.88)",
-                    backdropFilter: "blur(8px)",
+                    background:    "rgba(255,255,255,0.98)",
+                    backdropFilter: "blur(4px)",
                     border:        "1px solid rgba(255,255,255,0.7)",
                   }}
                 >
@@ -472,10 +447,11 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
         </div>
 
         {/* Icône Home fixée en bas */}
-        <div className="shrink-0 flex justify-center pt-4 pb-2">
+        {/* Home Fixed - Centered */}
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
           <button
             onClick={onHome}
-            className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all backdrop-blur-md text-white border border-white/20"
+            className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
             aria-label="Accueil"
           >
             <HiOutlineHome size={26} />

@@ -4,48 +4,13 @@ import { HiOutlineHome } from "react-icons/hi";
 import { FiChevronLeft, FiChevronRight, FiArrowRight } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { getAllMetiers } from "../../../services/metier.services";
+import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
 
 function GradBg() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      <div className="absolute top-0 right-0 opacity-90 scale-110 lg:scale-125 origin-top-right">
-        <svg width="260" height="240" viewBox="0 0 260 240" fill="none">
-          <path
-            d="M130 38 L232 94 L130 150 L28 94 Z"
-            stroke="white"
-            strokeWidth="2.6"
-            fill="none"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M52 108 Q52 160 130 188 Q208 160 208 108"
-            stroke="white"
-            strokeWidth="2.6"
-            fill="none"
-            strokeLinecap="round"
-          />
-          <line
-            x1="232"
-            y1="94"
-            x2="232"
-            y2="148"
-            stroke="white"
-            strokeWidth="2.6"
-            strokeLinecap="round"
-          />
-          <circle cx="232" cy="155" r="7" fill="white" />
-          <line
-            x1="130"
-            y1="150"
-            x2="130"
-            y2="188"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeDasharray="5 4"
-          />
-          <circle cx="130" cy="94" r="5" fill="white" />
-        </svg>
+      <div className="absolute top-0 right-0 pointer-events-none opacity-20 z-0 origin-top-right">
+        <img src={pictoOrientation} alt="" className="w-[200px] lg:w-[280px] object-contain" />
       </div>
       <div className="absolute bottom-0 left-0 right-0 opacity-10">
         <svg
@@ -141,7 +106,6 @@ function filtrerMetiers(metiers, reponseDomaine, reponseEtudes) {
       const domaineNorm = normalize(reponseDomaine);
       const metierDomNorm = normalize(metier.domaine);
       const mentionNorm = normalize(metier.mention);
-      // On vérifie le domaine en priorité, puis la mention par sécurité
       if (metierDomNorm !== domaineNorm && mentionNorm !== domaineNorm) return false;
     }
   
@@ -188,20 +152,7 @@ export default function Section10({
         if (cancelled) return;
 
         setLoadingText("Application des filtres…");
-
-        if (process.env.NODE_ENV === "development") {
-          console.log("reponseDomaine:", reponseDomaine);
-          console.log("reponseEtudes:", reponseEtudes);
-          console.log("Exemple métier BDD:", tous[0]);
-          console.log("Total avant filtre:", tous.length);
-        }
-
         const filtres = filtrerMetiers(tous, reponseDomaine, reponseEtudes);
-
-        if (process.env.NODE_ENV === "development") {
-          console.log("Total après filtre:", filtres.length);
-        }
-
         if (!cancelled) setMetiersFiltres(filtres);
       } catch (err) {
         console.error("Erreur chargement métiers:", err);
@@ -261,7 +212,7 @@ export default function Section10({
       />
       <GradBg />
 
-      {/* ✅ Page de chargement plein écran */}
+      {/* Page de chargement plein écran */}
       {loading && (
         <div
           className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-6"
@@ -300,7 +251,7 @@ export default function Section10({
                     color: "white",
                   }}
                 >
-                  📚 {reponseDomaine}
+                  {reponseDomaine}
                 </span>
               )}
               {reponseEtudes && (
@@ -311,7 +262,7 @@ export default function Section10({
                     color: "white",
                   }}
                 >
-                  🎓 {reponseEtudes === "court" ? "≤ Bac+3" : "≥ Bac+4"}
+                  {reponseEtudes === "court" ? "≤ Bac+3" : "≥ Bac+4"}
                 </span>
               )}
             </div>
@@ -332,8 +283,8 @@ export default function Section10({
         </div>
 
         {/* Titre giant */}
-        <div className="mb-6">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
+        <div className="mb-6 lg:mb-4">
+          <h1 className="text-4xl sm:text-5xl lg:text-4xl xl:text-5xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
             Métiers<br />Suggérés
           </h1>
           {!loading && (
@@ -343,7 +294,7 @@ export default function Section10({
           )}
         </div>
 
-        {/* Zone de la carte (flexible) */}
+        {/* Zone de la carte */}
         <div
           className="flex-1 flex flex-col w-full max-w-2xl mx-auto min-h-0"
           onTouchStart={handleTouchStart}
@@ -367,10 +318,10 @@ export default function Section10({
             </div>
           )}
 
-          {/* Carte métier - Remplit bien l'écran */}
+          {/* Carte métier */}
           {!loading && total > 0 && metier && (
             <div
-              className="flex-1 flex flex-col rounded-3xl p-6 sm:p-8 slide-in overflow-hidden"
+              className="flex-1 flex flex-col rounded-3xl p-6 sm:p-8 slide-in overflow-hidden mb-4"
               key={metier.id || index}
               style={{
                 background: "rgba(255,255,255,0.14)",
@@ -393,14 +344,14 @@ export default function Section10({
                   </div>
                 )}
 
-                <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-4 pr-4">
+                <h2 className="text-2xl sm:text-4xl lg:text-3xl font-black text-white leading-tight mb-4 pr-4">
                   {metier.label}
                 </h2>
 
                 {metier.description && (
                   <div className="space-y-2 mb-6">
                     <p className="text-xs font-black text-white/50 uppercase tracking-widest">Description</p>
-                    <p className="text-base sm:text-lg text-white/90 leading-relaxed font-medium">
+                    <p className="text-sm sm:text-lg lg:text-base text-white/90 leading-relaxed font-medium">
                       {metier.description}
                     </p>
                   </div>
@@ -438,12 +389,12 @@ export default function Section10({
 
         {/* Pagination & Home */}
         {!loading && total > 0 && (
-          <div className="shrink-0 pt-4">
+          <div className="shrink-0 pt-2 pb-12">
             <div className="flex items-center justify-between max-w-2xl mx-auto w-full px-2 mb-4">
               <button
                 onClick={handlePrev}
                 disabled={total <= 1}
-                className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all disabled:opacity-30 bg-white/10 text-white border border-white/10"
+                className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all disabled:opacity-30 bg-white/10 text-white border border-white/10 pointer-events-auto"
                 aria-label="Précédent"
               >
                 <FiChevronLeft size={24} />
@@ -474,24 +425,25 @@ export default function Section10({
               <button
                 onClick={handleNext}
                 disabled={total <= 1}
-                className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all disabled:opacity-30 bg-white/10 text-white border border-white/10"
+                className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all disabled:opacity-30 bg-white/10 text-white border border-white/10 pointer-events-auto"
                 aria-label="Suivant"
               >
                 <FiChevronRight size={24} />
               </button>
             </div>
-
-            <div className="flex justify-center">
-              <button
-                onClick={onHome}
-                className="text-white hover:text-white/80 transition-colors bg-white/10 p-2 rounded-full"
-                aria-label="Accueil"
-              >
-                <HiOutlineHome size={26} />
-              </button>
-            </div>
           </div>
         )}
+      </div>
+
+      {/* Home Fixed - Centered at the global standard position */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
+        <button
+          onClick={onHome}
+          className="text-white hover:text-white/80 transition-colors bg-black/10 p-2 rounded-full backdrop-blur-sm pointer-events-auto shadow-lg"
+          aria-label="Accueil"
+        >
+          <HiOutlineHome size={30} />
+        </button>
       </div>
 
       <style>{`

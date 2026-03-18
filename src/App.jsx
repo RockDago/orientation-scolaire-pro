@@ -97,31 +97,32 @@ function App() {
           <Route path="/" element={<LoadingPage />} />
 
           {/* Routes publiques */}
-          <Route path="/acceuil/:uuid/*" element={<Acceuil />} />
-          <Route path="/acceuil/*" element={<Navigate to={`/acceuil/${Math.random().toString(36).substring(2, 11)}/orientation`} replace />} />
+          <Route path="/acceuil/*" element={<Acceuil />} />
           <Route path="/login/:uuid" element={<Login />} />
           <Route path="/login" element={<Navigate to={`/login/${Math.random().toString(36).substring(2, 11)}`} replace />} />
 
           {/* Routes protégées - Dashboard Admin */}
           <Route
-            path="/dashboard/admin/:uuid"
+            path="/dashboard/admin/*"
             element={
               <ProtectedRoute>
                 <DashboardAdmin />
               </ProtectedRoute>
             }
           >
-            <Route index element={<DashboardAdminView />} />
-            <Route path="profile" element={<ProfileView />} />
-            <Route path="parametres/domaine" element={<DomainesView />} />
-            <Route path="parametres/metier" element={<MetiersView />} />
-            <Route path="parametres/parcours" element={<ParcoursView />} />
-            <Route path="parametres/mention" element={<MentionsView />} />
-            <Route path="parametres/serie" element={<SeriesView />} />
+            <Route path=":uuid" element={<DashboardAdminView />} />
+            <Route path="profile/:uuid" element={<ProfileView />} />
+            <Route path="parametres/domaine/:uuid" element={<DomainesView />} />
+            <Route path="parametres/metier/:uuid" element={<MetiersView />} />
+            <Route path="parametres/parcours/:uuid" element={<ParcoursView />} />
+            <Route path="parametres/mention/:uuid" element={<MentionsView />} />
+            <Route path="parametres/serie/:uuid" element={<SeriesView />} />
             <Route
-              path="parametres/etablissement"
+              path="parametres/etablissement/:uuid"
               element={<EtablissementsView />}
             />
+            {/* Fallback to index with random UUID if missing */}
+            <Route path="*" element={<Navigate to={`/dashboard/admin/${Math.random().toString(36).substring(2, 11)}`} replace />} />
           </Route>
 
           {/* Page 404 */}

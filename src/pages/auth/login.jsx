@@ -67,7 +67,7 @@ const Login = () => {
         if (utilisateur.role === "admin") {
           navigate(`/dashboard/admin/${uuid}`, { replace: true });
         } else {
-          navigate(`/acceuil/${uuid}/orientation`, { replace: true });
+          navigate(`/acceuil/orientation/${uuid}`, { replace: true });
         }
       }, 2000);
 

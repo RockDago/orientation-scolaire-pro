@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { HiOutlineHome } from "react-icons/hi";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
+import BuildingSVG from "./BuildingSVG";
 import { FiMapPin, FiChevronRight } from "react-icons/fi";
 import { searchMetier } from "../../../services/metier.services";
 import {
@@ -162,32 +163,20 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
   );
 
   return (
-    <div className="relative w-full h-screen overflow-hidden font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
+    <div className="relative w-full min-h-screen font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
       <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet"
       />
 
-      {/* ── Déco cercles ── */}
-      <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/5 pointer-events-none z-0" />
-      <div className="absolute top-1/2 -left-20 w-80 h-80 rounded-full bg-blue-500/10 pointer-events-none z-0" />
 
-      {/* ── Silhouette ville bas ── */}
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-0 opacity-10">
-        <svg width="100%" height="90" viewBox="0 0 400 90" preserveAspectRatio="xMidYMax meet" fill="none">
-          <rect x="8"   y="45" width="28" height="45" stroke="white" strokeWidth="1.2" fill="none" />
-          <rect x="42"  y="26" width="38" height="64" stroke="white" strokeWidth="1.2" fill="none" />
-          <rect x="86"  y="34" width="26" height="56" stroke="white" strokeWidth="1.2" fill="none" />
-          <rect x="118" y="18" width="48" height="72" stroke="white" strokeWidth="1.2" fill="none" />
-          <rect x="172" y="30" width="34" height="60" stroke="white" strokeWidth="1.2" fill="none" />
-          <rect x="212" y="44" width="26" height="46" stroke="white" strokeWidth="1.2" fill="none" />
-          <rect x="244" y="28" width="40" height="62" stroke="white" strokeWidth="1.2" fill="none" />
-          <rect x="290" y="40" width="28" height="50" stroke="white" strokeWidth="1.2" fill="none" />
-          <rect x="352" y="36" width="36" height="54" stroke="white" strokeWidth="1.2" fill="none" />
-        </svg>
+      {/* Background Building SVG Decoration */}
+      <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-0 opacity-[0.8]">
+        <BuildingSVG />
       </div>
 
-      <div className="relative z-10 flex flex-col h-full w-full px-5 sm:px-8 pt-5 pb-4">
+
+      <div className="relative z-10 flex flex-col w-full px-5 sm:px-8 pt-5 pb-4">
         
         {/* Header */}
         <div className="flex items-center justify-between mb-0">
@@ -201,8 +190,8 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
         </div>
 
         {/* Titre giant */}
-        <div className="mb-6">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
+        <div className="mb-4 lg:mb-3">
+          <h1 className="text-4xl sm:text-5xl lg:text-4xl xl:text-5xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
             Choisir une<br />Région
           </h1>
           <p className="text-xs sm:text-sm text-white/60 font-bold tracking-widest uppercase">
@@ -211,7 +200,7 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
         </div>
 
         {/* Info parcours */}
-        <div className="mb-6">
+        <div className="mb-4 lg:mb-3">
           <p className="text-xs text-white/70 font-semibold mb-1">Métier sélectionné :</p>
           <div className="inline-block bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
             <p className="text-white font-bold text-sm leading-tight">{metierLabel}</p>
@@ -226,7 +215,7 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
                 <p className="text-white font-bold text-sm">Chargement des régions…</p>
              </div>
           ) : sortedRegionIds.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 max-w-6xl mx-auto">
               {sortedRegionIds.map((id) => {
                 const count = etablissementsParRegion[id] || 0;
                 const label = REGION_LABELS[id];
@@ -273,7 +262,7 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
               </p>
               <button 
                 onClick={onRetour}
-                className="mt-6 px-6 py-3 bg-white text-[#1250c8] rounded-full font-bold text-sm hover:shadow-lg transition-all active:scale-95"
+                className="mt-6 px-8 py-3.5 bg-[#1250c8] text-white rounded-full font-black text-sm lg:text-base shadow-lg hover:shadow-xl transition-all active:scale-95"
               >
                 Retour
               </button>
@@ -282,10 +271,11 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 flex justify-center pt-4 pb-2">
+        {/* Home Fixed - Centered */}
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
           <button
             onClick={onHome}
-            className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all backdrop-blur-md text-white border border-white/20"
+            className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
             aria-label="Accueil"
           >
             <HiOutlineHome size={26} />
