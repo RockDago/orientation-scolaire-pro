@@ -21,11 +21,11 @@ function MetierDetailPanel({ metier }) {
         </h2>
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
           <span className="text-white text-[10px] sm:text-xs font-bold bg-white/20 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full">
-            {metier.mention}
+            {Array.isArray(metier.mention) ? metier.mention.join(", ") : metier.mention}
           </span>
           {metier.niveau && (
             <span className="text-white text-[10px] sm:text-xs font-bold bg-[#155faa]/60 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full">
-              Niveau : {metier.niveau}
+              Niveau : {Array.isArray(metier.niveau) ? metier.niveau.join(", ") : metier.niveau}
             </span>
           )}
         </div>
@@ -191,11 +191,11 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
                     <div className="flex justify-between items-start mb-1.5 sm:mb-2">
                       <h3 className="font-bold text-white text-sm sm:text-base leading-snug">{item.label}</h3>
                       <span className="text-[9px] sm:text-[10px] bg-white/25 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full shrink-0 ml-2 font-bold">
-                        {item.niveau}
+                        {Array.isArray(item.niveau) ? item.niveau.join(", ") : item.niveau}
                       </span>
                     </div>
                     <p className="text-white/75 text-[11px] sm:text-xs leading-relaxed line-clamp-2">{item.description}</p>
-                    <p className="text-white/50 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider mt-1.5 sm:mt-2">{item.mention}</p>
+                    <p className="text-white/50 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider mt-1.5 sm:mt-2">{Array.isArray(item.mention) ? item.mention.join(", ") : item.mention}</p>
                   </div>
                 );
               })}
@@ -264,7 +264,7 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
               {m?.label || "Métier"}
             </h1>
             <div className="inline-block bg-white/90 rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-semibold text-gray-800 mb-1.5 sm:mb-2">
-              {m?.mention || "Formation"}
+              {Array.isArray(m?.mention) ? m.mention.join(", ") : (m?.mention || "Formation")}
             </div>
           </div>
 

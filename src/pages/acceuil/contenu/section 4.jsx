@@ -8,7 +8,6 @@ import {
   FiPhone,
   FiBook,
   FiAward,
-  FiClock,
   FiUsers,
   FiChevronRight,
 } from "react-icons/fi";
@@ -55,35 +54,32 @@ function FicheModal({ fiche, metier, onClose }) {
 
   if (!fiche) return null;
 
-  const getDuree = (niveau) => {
-    if (!niveau) return "Variable";
-    const n = niveau.toLowerCase();
-    if (n.includes("doctorat"))                          return "7 à 11 ans (Bac +7 à +11)";
-    if (n.includes("ingénieur") || n.includes("master")) return "5 ans (Bac +5)";
-    if (n.includes("licence") && n.includes("master"))   return "3 à 5 ans (Bac +3 à +5)";
-    if (n.includes("licence"))                           return "3 ans (Bac +3)";
-    if (n.includes("dut") || n.includes("bts"))          return "2 ans (Bac +2)";
-    if (n.includes("diplôme d'état"))                    return "3 ans (Bac +3)";
-    return niveau;
-  };
+
 
   const getAdmission = (type) =>
     type === "Public" ? "Concours d'entrée" : "Sur dossier / entretien";
 
+  // Helper pour convertir un tableau JSON ou une string en texte affichable
+  const toDisplay = (val) => {
+    if (!val) return "";
+    if (Array.isArray(val)) return val.join(", ");
+    return String(val);
+  };
+
+  // Pour getDuree, on prend le premier élément du tableau ou la string directement
+  const niveauStr = Array.isArray(fiche.niveau) ? fiche.niveau.join(", ") : (fiche.niveau || "");
+  const admissionStr = Array.isArray(fiche.admission) ? fiche.admission.join(", ") : (fiche.admission || "");
+
   const fields = [
     { icon: <FiBook size={15} />,  label: "Établissement", value: fiche.nom },
-    { icon: <FiAward size={15} />, label: "Mention",       value: fiche.mention },
-    { icon: <FiBook size={15} />,  label: "Parcours",      value: fiche.parcours },
-    { icon: <FiAward size={15} />, label: "Niveau",        value: fiche.niveau },
-    {
-      icon:  <FiClock size={15} />,
-      label: "Durée",
-      value: fiche.duree || getDuree(fiche.niveau),
-    },
+    { icon: <FiAward size={15} />, label: "Mention",       value: toDisplay(fiche.mention) },
+    { icon: <FiBook size={15} />,  label: "Parcours",      value: toDisplay(fiche.parcours) },
+    { icon: <FiAward size={15} />, label: "Niveau",        value: niveauStr },
+
     {
       icon:  <FiUsers size={15} />,
       label: "Admission",
-      value: fiche.admission || getAdmission(fiche.type),
+      value: admissionStr || getAdmission(fiche.type),
     },
     { icon: <FiPhone size={15} />,  label: "Contact",      value: fiche.contact },
     {
@@ -98,10 +94,10 @@ function FicheModal({ fiche, metier, onClose }) {
       fields.unshift({ icon: <FiAward size={15} />, label: "Métier",          value: metier.label });
     }
     if (metier.serie) {
-      fields.push({    icon: <FiBook size={15} />,  label: "Série",           value: metier.serie });
+      fields.push({    icon: <FiBook size={15} />,  label: "Série",           value: toDisplay(metier.serie) });
     }
     if (metier.parcours) {
-      fields.push({    icon: <FiBook size={15} />,  label: "Parcours Métier", value: metier.parcours });
+      fields.push({    icon: <FiBook size={15} />,  label: "Parcours Métier", value: toDisplay(metier.parcours) });
     }
   }
 
@@ -118,62 +114,80 @@ function FicheModal({ fiche, metier, onClose }) {
         style={{ background: "linear-gradient(90deg,#1250c8,#28b090,#a0d820)" }}
       />
       <div
-        className="flex-shrink-0 px-4 sm:px-6 lg:px-10 pt-5 pb-4 flex items-center justify-between gap-3"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.12)" }}
+        className="flex-shrink-0 px-6 sm:px-10 lg:px-16 pt-8 pb-6 flex items-center justify-between gap-6"
+        style={{ 
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
+          background: "rgba(0,0,0,0.1)",
+          backdropFilter: "blur(20px)"
+        }}
       >
         <div className="min-w-0 flex-1">
           <span
-            className="inline-block text-[10px] font-bold tracking-widest uppercase px-2.5 py-0.5 rounded-full mb-2"
+            className="inline-block text-[10px] font-black tracking-[0.3em] uppercase px-4 py-1.5 rounded-full mb-4"
             style={{
               background: "rgba(255,255,255,0.15)",
-              color:      "rgba(255,255,255,0.9)",
+              color:      "white",
+              border: "1px solid rgba(255,255,255,0.1)"
             }}
           >
             Fiche établissement
           </span>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white leading-snug break-words">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight break-words">
             {fiche.nom}
           </h2>
-          <div className="flex items-start gap-1.5 mt-1.5 text-white/60 text-xs">
-            <FiMapPin size={12} className="mt-0.5 flex-shrink-0" />
-            <span>{fiche.ville || fiche.region || fiche.province}</span>
+          <div className="flex items-center gap-2 mt-4 text-white/60">
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+              <FiMapPin size={14} className="text-white/80" />
+            </div>
+            <span className="text-sm font-bold tracking-wide uppercase">{fiche.ville || fiche.region || fiche.province}</span>
           </div>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
-          style={{ background: "rgba(255,255,255,0.12)" }}
+          className="flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 hover:bg-white/20 hover:scale-110 active:scale-95 group"
+          style={{ 
+            background: "rgba(255,255,255,0.1)",
+            border: "1px solid rgba(255,255,255,0.1)"
+          }}
         >
-          <FiX size={16} className="text-white" />
+          <FiX size={24} className="text-white/80 group-hover:text-white transition-colors" />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-10 py-5 custom-scrollbar-dark">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-w-7xl mx-auto">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-8 lg:px-12 py-8 custom-scrollbar-dark">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {fields.map(({ icon, label, value }) => (
             <div
               key={label}
-              className="rounded-2xl p-4 flex flex-col gap-2"
+              className="group rounded-3xl p-6 flex flex-col gap-3 transition-all duration-300 hover:bg-white/15 hover:shadow-2xl hover:-translate-y-1"
               style={{
-                background: "rgba(255,255,255,0.08)",
-                border:     "1px solid rgba(255,255,255,0.14)",
+                background: "rgba(255,255,255,0.06)",
+                border:     "1px solid rgba(255,255,255,0.12)",
+                backdropFilter: "blur(10px)",
               }}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center"
-                  style={{ background: "rgba(255,255,255,0.15)" }}
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-white/20"
+                  style={{ 
+                    background: "rgba(255,255,255,0.1)",
+                    border: "1px solid rgba(255,255,255,0.1)"
+                  }}
                 >
-                  <span className="text-white/80">{icon}</span>
+                  <div className="text-white/80 group-hover:text-white transition-colors">
+                    {icon}
+                  </div>
                 </div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">
+                <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">
                   {label}
                 </p>
               </div>
-              <p className="text-sm font-semibold text-white leading-snug break-words">
-                {value}
-              </p>
+              <div className="mt-1">
+                <p className="text-white font-bold text-base sm:text-lg lg:text-xl leading-relaxed break-words">
+                  {value || "—"}
+                </p>
+              </div>
             </div>
           ))}
         </div>
@@ -207,14 +221,37 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
           ? REGION_LABELS[selectedRegion] || selectedRegion
           : null;
 
-        const data = tous.filter((e) => {   
+        // Helper: vérifie si un champ JSON (array ou string) contient une valeur
+        const fieldContains = (field, value) => {
+          if (!field || !value) return false;
+          const valLower = value.toLowerCase().trim();
+          if (Array.isArray(field)) {
+            return field.some((item) => 
+              String(item).toLowerCase().trim() === valLower ||
+              String(item).toLowerCase().trim().includes(valLower) ||
+              valLower.includes(String(item).toLowerCase().trim())
+            );
+          }
+          const fieldLower = String(field).toLowerCase().trim();
+          return fieldLower === valLower || fieldLower.includes(valLower) || valLower.includes(fieldLower);
+        };
+
+        const data = tous.filter((e) => {
           if (metierLabel) {
-            if (e.metier?.toLowerCase() !== metierLabel.toLowerCase()) return false;
+            // e.metier peut être un tableau JSON ["Développeur web", ...] ou une string
+            if (!fieldContains(e.metier, metierLabel)) return false;
           } else if (reponseDomaine) {
-            if (e.mention?.toLowerCase() !== reponseDomaine.toLowerCase()) return false;
-          }  
+            // e.mention peut être un tableau JSON ["Informatique", ...] ou une string
+            // On cherche aussi dans e.domaine
+            const inMention = fieldContains(e.mention, reponseDomaine);
+            const inDomaine = fieldContains(e.domaine, reponseDomaine);
+            if (!inMention && !inDomaine) return false;
+          }
           if (regionLabel) {
-            if (e.region !== regionLabel && e.province !== regionLabel) return false;
+            const regionLower = regionLabel.toLowerCase().trim();
+            const regionOk = (e.region && e.region.toLowerCase().trim() === regionLower) ||
+                             (e.province && e.province.toLowerCase().trim() === regionLower);
+            if (!regionOk) return false;
           }
           return true;
         });
@@ -429,7 +466,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
 
                   {etab.mention && (
                     <p className="text-xs text-gray-600 line-clamp-1">
-                      {etab.mention}
+                      {Array.isArray(etab.mention) ? etab.mention.join(", ") : etab.mention}
                     </p>
                   )}
                 </button>

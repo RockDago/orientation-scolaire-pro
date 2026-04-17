@@ -31,6 +31,15 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
   useEffect(() => {
     if (!metier) return;
 
+    const normalize = (str) => (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+    // Helper pour normaliser un champ qui peut être array ou string
+    const normalizeField = (field) => {
+      if (!field) return [];
+      if (Array.isArray(field)) return field.map(normalize);
+      return [normalize(String(field))];
+    };
+
     const loadDetails = async () => {
       if (metier.parcoursFormation?.length > 0) {
         setMetierDetails(metier);
@@ -52,18 +61,20 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
       // Charger les métiers du même domaine
       try {
         const tous = await getAllMetiersCache();
-        const domaine = normalize(metier.domaine || metier.mention);
-        const filtrés = tous.filter(other => 
-          other.id !== metier.id && 
-          (normalize(other.domaine) === domaine || normalize(other.mention) === domaine)
+        // domaine et mention peuvent être des tableaux JSON
+        const domainesRef = normalizeField(metier.domaine || metier.mention);
+        const filtrés = tous.filter(other =>
+          other.id !== metier.id &&
+          (
+            normalizeField(other.domaine).some(d => domainesRef.includes(d)) ||
+            normalizeField(other.mention).some(d => domainesRef.includes(d))
+          )
         ).slice(0, 4);
         setMetiersSimilaires(filtrés);
       } catch (err) {
         console.error("Erreur chargement métiers similaires:", err);
       }
     };
-
-    const normalize = (str) => (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
     loadDetails();
   }, [metier?.id, metier?.domaine, metier?.mention]);
@@ -149,11 +160,11 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
 
           <div className="flex flex-wrap gap-2 mb-5">
             <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
-              {m?.mention || "—"}
+              {Array.isArray(m?.mention) ? m.mention.join(", ") : (m?.mention || "—")}
             </span>
             {m?.niveau && (
               <span className="bg-white/15 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                {m.niveau}
+                {Array.isArray(m.niveau) ? m.niveau.join(", ") : m.niveau}
               </span>
             )}
           </div>
@@ -224,7 +235,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
                   >
                     <div className="flex-1 text-left">
                       <p className="text-white font-bold text-sm leading-tight">{sim.label}</p>
-                      <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider mt-1">{sim.niveau}</p>
+                      <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider mt-1">{Array.isArray(sim.niveau) ? sim.niveau.join(", ") : sim.niveau}</p>
                     </div>
                     <FiArrowRight size={14} className="text-white/60" />
                   </button>

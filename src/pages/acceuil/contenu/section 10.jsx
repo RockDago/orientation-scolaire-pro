@@ -99,22 +99,41 @@ function normalize(str) {
     .trim();
 }
 
+// Vérifie si un champ JSON (array ou string) contient une valeur normalisée
+function fieldContainsNorm(field, valueNorm) {
+  if (!field || !valueNorm) return false;
+  if (Array.isArray(field)) {
+    return field.some((item) => {
+      const n = normalize(String(item));
+      return n === valueNorm || n.includes(valueNorm) || valueNorm.includes(n);
+    });
+  }
+  const n = normalize(String(field));
+  return n === valueNorm || n.includes(valueNorm) || valueNorm.includes(n);
+}
+
 function filtrerMetiers(metiers, reponseDomaine, reponseEtudes) {
   return metiers.filter((metier) => {
-  
+
     if (reponseDomaine) {
       const domaineNorm = normalize(reponseDomaine);
-      const metierDomNorm = normalize(metier.domaine);
-      const mentionNorm = normalize(metier.mention);
-      if (metierDomNorm !== domaineNorm && mentionNorm !== domaineNorm) return false;
+      // domaine et mention sont des tableaux JSON dans la BDD
+      const inDomaine = fieldContainsNorm(metier.domaine, domaineNorm);
+      const inMention = fieldContainsNorm(metier.mention, domaineNorm);
+      if (!inDomaine && !inMention) return false;
     }
-  
+
     if (reponseEtudes) {
-      const niveau = (metier.niveau || "").trim(); 
+      // niveau peut être un tableau JSON ou une string
+      const niveaux = Array.isArray(metier.niveau)
+        ? metier.niveau
+        : metier.niveau
+          ? [metier.niveau]
+          : [];
       if (reponseEtudes === "court") {
-        if (!NIVEAUX_COURTS.includes(niveau)) return false;
+        if (!niveaux.some((n) => NIVEAUX_COURTS.includes(n.trim()))) return false;
       } else if (reponseEtudes === "long") {
-        if (!NIVEAUX_LONGS.includes(niveau)) return false;
+        if (!niveaux.some((n) => NIVEAUX_LONGS.includes(n.trim()))) return false;
       }
     }
 
@@ -297,7 +316,7 @@ export default function Section10({
 
         {/* Zone de la carte */}
         <div
-          className="flex-1 flex flex-col w-full max-w-2xl mx-auto min-h-0"
+          className="flex-1 flex flex-col w-full max-w-2xl lg:max-w-4xl mx-auto min-h-0"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -331,7 +350,7 @@ export default function Section10({
               }}
             >
               <div className="flex-1 overflow-y-auto pr-1 scrollbar-hide">
-                {metier.mention && metier.mention !== "—" && (
+                {metier.mention && (Array.isArray(metier.mention) ? metier.mention.length > 0 : metier.mention !== "—") && (
                   <div className="mb-4">
                     <span
                       className="inline-block text-[11px] font-black tracking-widest uppercase px-3 py-1.5 rounded-full"
@@ -340,12 +359,12 @@ export default function Section10({
                         color: "white",
                       }}
                     >
-                      {metier.mention}
+                      {Array.isArray(metier.mention) ? metier.mention.join(", ") : metier.mention}
                     </span>
                   </div>
                 )}
 
-                <h2 className="text-2xl sm:text-4xl lg:text-3xl font-black text-white leading-tight mb-4 pr-4">
+                <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-6 pr-4">
                   {metier.label}
                 </h2>
 
@@ -359,16 +378,16 @@ export default function Section10({
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                  {metier.niveau && (
+                  {metier.niveau && (Array.isArray(metier.niveau) ? metier.niveau.length > 0 : true) && (
                     <div className="bg-white/10 rounded-2xl p-3 border border-white/10">
                       <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Niveau Requis</p>
-                      <p className="text-white font-bold text-sm">{metier.niveau}</p>
+                      <p className="text-white font-bold text-sm">{Array.isArray(metier.niveau) ? metier.niveau.join(", ") : metier.niveau}</p>
                     </div>
                   )}
-                  {metier.serie && (
+                  {metier.serie && (Array.isArray(metier.serie) ? metier.serie.length > 0 : true) && (
                     <div className="bg-white/10 rounded-2xl p-3 border border-white/10">
                       <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Série</p>
-                      <p className="text-white font-bold text-sm">{metier.serie}</p>
+                      <p className="text-white font-bold text-sm">{Array.isArray(metier.serie) ? metier.serie.join(", ") : metier.serie}</p>
                     </div>
                   )}
                 </div>
@@ -391,7 +410,7 @@ export default function Section10({
         {/* Pagination & Home */}
         {!loading && total > 0 && (
           <div className="shrink-0 pt-2 pb-12">
-            <div className="flex items-center justify-between max-w-2xl mx-auto w-full px-2 mb-4">
+            <div className="flex items-center justify-between max-w-2xl lg:max-w-4xl mx-auto w-full px-2 mb-4">
               <button
                 onClick={handlePrev}
                 disabled={total <= 1}

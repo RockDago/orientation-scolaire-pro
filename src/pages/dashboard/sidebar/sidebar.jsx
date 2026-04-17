@@ -39,9 +39,9 @@ const Sidebar = ({
   const isSettingsChildActive = () => {
     const settingsPaths = [
       `/dashboard/admin/parametres/serie/${uuid}`,
+      `/dashboard/admin/parametres/domaine/${uuid}`,
       `/dashboard/admin/parametres/mention/${uuid}`,
       `/dashboard/admin/parametres/parcours/${uuid}`,
-      `/dashboard/admin/parametres/domaine/${uuid}`,
       `/dashboard/admin/parametres/metier/${uuid}`,
       `/dashboard/admin/parametres/etablissement/${uuid}`,
     ];
@@ -75,9 +75,14 @@ const Sidebar = ({
 
   const settingsItems = [
     {
-      label: "Séries",
+      label: "Series",
       path: `/dashboard/admin/parametres/serie/${uuid}`,
       icon: FaListAlt,
+    },
+    {
+      label: "Domaines",
+      path: `/dashboard/admin/parametres/domaine/${uuid}`,
+      icon: FaGlobe,
     },
     {
       label: "Mentions",
@@ -90,17 +95,12 @@ const Sidebar = ({
       icon: FaLayerGroup,
     },
     {
-      label: "Domaines",
-      path: `/dashboard/admin/parametres/domaine/${uuid}`,
-      icon: FaGlobe,
-    },
-    {
-      label: "Métiers",
+      label: "Metiers",
       path: `/dashboard/admin/parametres/metier/${uuid}`,
       icon: FaBuilding,
     },
     {
-      label: "Établissements",
+      label: "Etablissement",
       path: `/dashboard/admin/parametres/etablissement/${uuid}`,
       icon: FaUniversity,
     },

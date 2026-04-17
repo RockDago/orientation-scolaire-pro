@@ -56,28 +56,18 @@ API.interceptors.response.use(
       const requestUrl  = error.config?.url || "";
       const currentPath = window.location.pathname;
 
-      console.error("❌ [Axios] 401 détecté:", {
-        url:     requestUrl,
-        method:  error.config?.method?.toUpperCase(),
-        message: error.response?.data?.message,
-        fullUrl: error.config?.baseURL + requestUrl,
-      });
-
       // 1. Déjà sur /login → ne pas boucler
       if (currentPath === "/login") {
         return Promise.reject(error);
       }
 
       // 2. Route publique (appels depuis /acceuil) → ignorer le 401 silencieusement
-      //    Le visiteur continue sa navigation normalement.
       if (isPublicRoute(requestUrl)) {
-        console.warn("⚠️ [Axios] 401 sur route publique — ignoré, pas de redirection:", requestUrl);
         return Promise.reject(error);
       }
 
       // 3. L'utilisateur est sur une page publique /acceuil → ne pas rediriger
       if (currentPath.startsWith("/acceuil")) {
-        console.warn("⚠️ [Axios] 401 depuis /acceuil — ignoré:", requestUrl);
         return Promise.reject(error);
       }
 
@@ -94,4 +84,4 @@ API.interceptors.response.use(
   },
 );
 
-export default API;
+export default API;

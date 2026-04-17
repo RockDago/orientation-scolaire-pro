@@ -43,24 +43,19 @@ const typeOptions      = ["Public", "Privé"];
 const niveauOptions    = ["Licence", "Master", "Doctorat"];
 const admissionOptions = ["Concours", "Dossier", "Entretien", "Test", "Concours + Dossier"];
 
-const niveauDureeMap = {
-  Licence:  "3 ans",
-  Master:   "5 ans",
-  Doctorat: "8 ans",
-};
+// (niveauDureeMap supprimé)
 
 const emptyForm = {
   nom:       "",
   province:  "",
   region:    "",
   type:      "Public",
-  mention:   "",
-  domaine:   "",
+  mention:   [],
+  domaine:   [],
   parcours:  [],
-  metier:    "",
-  niveau:    "",
-  duree:     "",
-  admission: "",
+  metier:    [],
+  niveau:    [],
+  admission: [],
   contact:   "",
 };
 
@@ -165,7 +160,7 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
   const containerRef = useRef(null);
 
   const filteredOptions = useMemo(() => {
-    return options.filter(opt =>
+    return (options || []).filter(opt =>
       (opt.label || opt).toLowerCase().includes(search.toLowerCase())
     );
   }, [options, search]);
@@ -180,7 +175,7 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedOption = options.find(opt => (opt.value || opt) === value);
+  const selectedOption = (options || []).find(opt => (opt.value || opt) === value);
 
   return (
     <div className="relative" ref={containerRef}>
@@ -253,6 +248,72 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
   );
 };
 
+// ── MultiSelect Component ──────────────────────────────────────────────
+const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, placeholder = "Ajouter..." }) => {
+  const [selectedValue, setSelectedValue] = useState("");
+
+  const handleAdd = () => {
+    if (selectedValue) {
+      onAdd(selectedValue);
+      setSelectedValue("");
+    }
+  };
+
+  return (
+    <div className="md:col-span-2 space-y-4">
+      <h3 className="text-sm font-semibold text-gray-800 border-b pb-2">
+        {label} <span className="text-red-500">*</span>
+      </h3>
+
+      <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-lg border border-gray-200">
+        {(values || []).map((val, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm transition-shadow"
+          >
+            <span className="text-xs text-gray-700 font-medium">{val}</span>
+            <button
+              onClick={() => onRemove(val)}
+              className="text-gray-400 hover:text-red-500 transition-colors"
+              type="button"
+            >
+              <FaTimes size={12} />
+            </button>
+          </div>
+        ))}
+        {(values || []).length === 0 && (
+          <span className="text-gray-400 text-xs w-full text-center py-2 italic">
+            Aucun élément ajouté
+          </span>
+        )}
+      </div>
+
+      <div className="flex gap-3 items-end">
+        <div className="flex-1">
+          <SearchableSelect
+            id={id}
+            label={placeholder}
+            value={selectedValue}
+            options={(options || [])
+              .filter((opt) => !(values || []).includes(opt.label || opt))
+              .map((opt) => ({ value: opt.label || opt, label: opt.label || opt }))}
+            onChange={(e) => setSelectedValue(e.target.value)}
+          />
+        </div>
+        <button
+          onClick={handleAdd}
+          className="px-4 py-2.5 h-[54px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm font-medium"
+          type="button"
+          disabled={!selectedValue}
+        >
+          <FaPlusCircle size={14} />
+          Ajouter
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ── ModalShell — fond blanc pur ───────────────────────────────────────────────
 const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -302,9 +363,9 @@ const BtnPrimary = ({ onClick, children, loading, disabled }) => (
 
 // ── Modale établissement ─────────────────────────────────────────────────────
 const EtablissementModal = ({
-  isEditing, formData, onClose, onSubmit, onChange, onProvinceChange, onNiveauChange, onDomaineChange, onMetierChange,
+  isEditing, formData, onClose, onSubmit, onChange, onProvinceChange,
   loadingSave, isFormValid, mentionOptions, domaineOptions, parcoursOptions, metierOptions,
-  newParcours, setNewParcours, handleAddParcours, handleRemoveParcours
+  handleAddCollection, handleRemoveCollection
 }) => {
   const handleSubmit = (e) => { e.preventDefault(); onSubmit(); };
 
@@ -322,7 +383,6 @@ const EtablissementModal = ({
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Nom (pleine largeur) */}
           <div className="md:col-span-2">
             <FloatInput
               id="nom"
@@ -333,7 +393,6 @@ const EtablissementModal = ({
             />
           </div>
 
-          {/* Province */}
           <SearchableSelect
             id="province"
             label="Province *"
@@ -342,7 +401,6 @@ const EtablissementModal = ({
             onChange={(e) => onProvinceChange(e.target.value)}
           />
 
-          {/* Région */}
           <SearchableSelect
             id="region"
             label="Région *"
@@ -352,7 +410,6 @@ const EtablissementModal = ({
             disabled={!formData.province}
           />
 
-          {/* Type */}
           <SearchableSelect
             id="type"
             label="Type *"
@@ -361,7 +418,6 @@ const EtablissementModal = ({
             onChange={(e) => onChange('type')(e)}
           />
 
-          {/* Contact */}
           <FloatInput
             id="contact"
             name="contact"
@@ -370,131 +426,70 @@ const EtablissementModal = ({
             onChange={(e) => onChange('contact')(e)}
           />
 
-          {/* Mention */}
-          <SearchableSelect
-            id="mention"
-            label="Mention *"
-            value={formData.mention}
-            options={mentionOptions.map(m => ({ value: m.label, label: m.label }))}
-            onChange={(e) => onChange('mention')(e)}
+          {/* Domaines */}
+          <MultiSelect 
+            label="Domaines"
+            id="domaine_select"
+            placeholder="Sélectionner un domaine"
+            values={formData.domaine}
+            options={domaineOptions}
+            onAdd={(val) => handleAddCollection('domaine', val)}
+            onRemove={(val) => handleRemoveCollection('domaine', val)}
           />
 
-          {/* Domaine */}
-          <SearchableSelect
-            id="domaine"
-            label="Domaine *"
-            value={formData.domaine}
-            onChange={(e) => onDomaineChange(e.target.value)}
-            options={domaineOptions.map(d => ({ value: d.label, label: d.label }))}
-            disabled={!!formData.metier}
+          {/* Mentions */}
+          <MultiSelect 
+            label="Mentions"
+            id="mention_select"
+            placeholder="Sélectionner une mention"
+            values={formData.mention}
+            options={mentionOptions}
+            onAdd={(val) => handleAddCollection('mention', val)}
+            onRemove={(val) => handleRemoveCollection('mention', val)}
           />
 
-          {/* Métier */}
-          <SearchableSelect
-            id="metier"
-            label="Métier *"
-            value={formData.metier}
-            options={metierOptions.map(m => ({ value: m.label, label: m.label }))}
-            onChange={(e) => onMetierChange(e.target.value)}
+          {/* Métiers */}
+          <MultiSelect 
+            label="Métiers"
+            id="metier_select"
+            placeholder="Sélectionner un métier"
+            values={formData.metier}
+            options={metierOptions}
+            onAdd={(val) => handleAddCollection('metier', val)}
+            onRemove={(val) => handleRemoveCollection('metier', val)}
           />
 
-          {/* Parcours de formation */}
-          <div className="md:col-span-2 space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
-              Parcours de formation <span className="text-red-500">*</span>
-              <span className="text-xs text-gray-500 ml-2">(Vous pouvez ajouter plusieurs parcours)</span>
-            </h3>
+          {/* Parcours */}
+          <MultiSelect 
+            label="Parcours de formation"
+            id="parcours_select"
+            placeholder="Sélectionner un parcours"
+            values={formData.parcours}
+            options={parcoursOptions}
+            onAdd={(val) => handleAddCollection('parcours', val)}
+            onRemove={(val) => handleRemoveCollection('parcours', val)}
+          />
 
-            {/* Liste des parcours ajoutés */}
-            <div className="flex flex-wrap gap-2 min-h-[80px] p-4 bg-gray-50 rounded-lg border border-gray-200">
-              {formData.parcours.map((parcours, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <span className="text-sm text-gray-700 font-medium">{parcours}</span>
-                  <button
-                    onClick={() => handleRemoveParcours(parcours)}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
-                    type="button"
-                  >
-                    <FaTimes size={14} />
-                  </button>
-                </div>
-              ))}
-              {formData.parcours.length === 0 && (
-                <span className="text-gray-400 text-sm w-full text-center py-4">
-                  Aucun parcours de formation ajouté
-                </span>
-              )}
-            </div>
-
-            {/* Ajout d'un nouveau parcours */}
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <SearchableSelect
-                  id="newParcours"
-                  label="Sélectionner un parcours"
-                  value={newParcours}
-                  options={parcoursOptions
-                    .filter((p) => !formData.parcours.includes(p.label))
-                    .map((p) => ({ value: p.label, label: p.label }))}
-                  onChange={(e) => setNewParcours(e.target.value)}
-                />
-              </div>
-              <button
-                onClick={handleAddParcours}
-                className="px-6 py-2.5 h-[54px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm font-medium self-end"
-                type="button"
-              >
-                <FaPlusCircle size={16} />
-                Ajouter
-              </button>
-            </div>
-          </div>
-
-          {/* Niveau */}
-          <SearchableSelect
-            id="niveau"
-            label="Niveau *"
-            value={formData.niveau}
+          {/* Niveaux */}
+          <MultiSelect 
+            label="Niveaux"
+            id="niveau_select"
+            placeholder="Sélectionner un niveau"
+            values={formData.niveau}
             options={niveauOptions}
-            onChange={(e) => onNiveauChange(e.target.value)}
+            onAdd={(val) => handleAddCollection('niveau', val)}
+            onRemove={(val) => handleRemoveCollection('niveau', val)}
           />
 
-          {/* Durée */}
-          <div className="relative">
-            <input
-              type="text"
-              id="duree"
-              name="duree"
-              value={formData.duree}
-              readOnly
-              className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer
-                ${formData.niveau
-                  ? "bg-blue-50 text-blue-600 font-semibold border-blue-300"
-                  : "bg-gray-50 text-gray-400 border-gray-200"
-                }`}
-              placeholder=" "
-            />
-            <label
-              htmlFor="duree"
-              className="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 text-gray-500"
-            >
-              Durée
-              {formData.niveau && (
-                <span className="ml-2 text-xs text-blue-500 font-normal">(auto)</span>
-              )}
-            </label>
-          </div>
-
-          {/* Admission */}
-          <SearchableSelect
-            id="admission"
-            label="Admission *"
-            value={formData.admission}
+          {/* Admissions */}
+          <MultiSelect 
+            label="Admissions"
+            id="admission_select"
+            placeholder="Sélectionner un mode d'admission"
+            values={formData.admission}
             options={admissionOptions}
-            onChange={(e) => onChange('admission')(e)}
+            onAdd={(val) => handleAddCollection('admission', val)}
+            onRemove={(val) => handleRemoveCollection('admission', val)}
           />
         </div>
       </form>
@@ -564,9 +559,12 @@ const EtablissementCard = ({ etablissement, onEdit, onDelete }) => (
       <Pill tone={etablissement.type === "Public" ? "green" : "purple"}>
         {etablissement.type}
       </Pill>
-      <Pill tone="blue">{etablissement.domaine}</Pill>
-      <Pill tone="blue">{etablissement.niveau}</Pill>
-      <Pill tone="orange">{etablissement.admission}</Pill>
+      {Array.isArray(etablissement.domaine) && etablissement.domaine.map((d, i) => (
+        <Pill key={i} tone="blue">{d}</Pill>
+      ))}
+      {Array.isArray(etablissement.niveau) && etablissement.niveau.map((n, i) => (
+        <Pill key={i} tone="orange">{n}</Pill>
+      ))}
     </div>
 
     {/* Contact */}
@@ -580,7 +578,7 @@ const EtablissementCard = ({ etablissement, onEdit, onDelete }) => (
 const exportToExcel = (data) => {
   try {
     const worksheetData = [
-      ['ID', 'ÉTABLISSEMENT', 'PROVINCE', 'RÉGION', 'TYPE', 'MENTION', 'PARCOURS', 'MÉTIER', 'NIVEAU', 'DURÉE', 'ADMISSION', 'CONTACT'],
+      ['ID', 'ÉTABLISSEMENT', 'PROVINCE', 'RÉGION', 'TYPE', 'MENTION', 'PARCOURS', 'MÉTIER', 'NIVEAU', 'ADMISSION', 'CONTACT'],
       ...data.map(e => [
         e.id,
         e.nom,
@@ -591,7 +589,6 @@ const exportToExcel = (data) => {
         e.parcours,
         e.metier,
         e.niveau,
-        e.duree,
         e.admission,
         e.contact
       ])
@@ -606,12 +603,11 @@ const exportToExcel = (data) => {
       { wch: 15 }, // Province
       { wch: 20 }, // Région
       { wch: 10 }, // Type
-      { wch: 20 }, // Mention
-      { wch: 25 }, // Parcours
-      { wch: 25 }, // Métier
-      { wch: 12 }, // Niveau
-      { wch: 10 }, // Durée
-      { wch: 20 }, // Admission
+      { wch: 30 }, // Mention
+      { wch: 30 }, // Parcours
+      { wch: 30 }, // Métier
+      { wch: 20 }, // Niveau
+      { wch: 30 }, // Admission
       { wch: 20 }  // Contact
     ];
 
@@ -654,18 +650,17 @@ const exportToPDF = (data) => {
       e.province,
       e.region,
       e.type,
-      e.mention,
-      e.parcours,
-      e.metier,
-      e.niveau,
-      e.duree,
-      e.admission,
+      Array.isArray(e.mention) ? e.mention.join(', ') : e.mention,
+      Array.isArray(e.parcours) ? e.parcours.join(', ') : e.parcours,
+      Array.isArray(e.metier) ? e.metier.join(', ') : e.metier,
+      Array.isArray(e.niveau) ? e.niveau.join(', ') : e.niveau,
+      Array.isArray(e.admission) ? e.admission.join(', ') : e.admission,
       e.contact
     ]);
 
     autoTable(doc, {
       startY: 38,
-      head: [['ID', 'Établissement', 'Province', 'Région', 'Type', 'Mention', 'Parcours', 'Métier', 'Niveau', 'Durée', 'Admission', 'Contact']],
+      head: [['ID', 'Établissement', 'Province', 'Région', 'Type', 'Mention', 'Parcours', 'Métier', 'Niveau', 'Admission', 'Contact']],
       body: tableData,
       theme: 'grid',
       headStyles: {
@@ -686,13 +681,12 @@ const exportToPDF = (data) => {
         2: { halign: 'left', cellWidth: 20 },
         3: { halign: 'left', cellWidth: 22 },
         4: { halign: 'center', cellWidth: 12 },
-        5: { halign: 'left', cellWidth: 22 },
+        5: { halign: 'left', cellWidth: 25 },
         6: { halign: 'left', cellWidth: 25 },
         7: { halign: 'left', cellWidth: 25 },
-        8: { halign: 'center', cellWidth: 15 },
-        9: { halign: 'center', cellWidth: 12 },
-        10: { halign: 'left', cellWidth: 22 },
-        11: { halign: 'left', cellWidth: 22 }
+        8: { halign: 'center', cellWidth: 20 },
+        9: { halign: 'left', cellWidth: 25 },
+        10: { halign: 'left', cellWidth: 22 }
       },
       alternateRowStyles: {
         fillColor: [249, 250, 251]
@@ -754,7 +748,6 @@ export default function EtablissementsView() {
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
   
   const [formData, setFormData] = useState(emptyForm);
-  const [newParcours, setNewParcours] = useState("");
 
   // ── Toast ──────────────────────────────────────────────────────────
   const showToast = (message, type = "success") => {
@@ -867,12 +860,12 @@ export default function EtablissementsView() {
     formData.province !== "" &&
     formData.region !== "" &&
     formData.type !== "" &&
-    formData.mention !== "" &&
-    formData.domaine !== "" &&
+    formData.mention.length > 0 &&
+    formData.domaine.length > 0 &&
     formData.parcours.length > 0 &&
-    formData.metier !== "" &&
-    formData.niveau !== "" &&
-    formData.admission !== "" &&
+    formData.metier.length > 0 &&
+    formData.niveau.length > 0 &&
+    formData.admission.length > 0 &&
     formData.contact.trim() !== "";
 
   // ── Gestion formulaire ─────────────────────────────────────────────
@@ -881,53 +874,24 @@ export default function EtablissementsView() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // ── Synchro province → reset région ───────────────────────────────
+  const handleAddCollection = (field, value) => {
+    if (value && !formData[field].includes(value)) {
+      setFormData(prev => ({
+        ...prev,
+        [field]: [...prev[field], value]
+      }));
+    }
+  };
+
+  const handleRemoveCollection = (field, valueToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].filter(v => v !== valueToRemove)
+    }));
+  };
+
   const handleProvinceChange = (province) => {
     setFormData({ ...formData, province, region: "" });
-  };
-
-  // ── Synchro niveau → durée automatique ────────────────────────────
-  const handleNiveauChange = (niveau) => {
-    setFormData({
-      ...formData,
-      niveau,
-      duree: niveauDureeMap[niveau] ?? "",
-    });
-  };
-
-  const handleDomaineChange = (domaine) => {
-    setFormData({ ...formData, domaine, metier: "", parcours: [] });
-  };
-
-  const handleMetierChange = (metierLabel) => {
-    const metierObj = metierOptions.find(m => m.label === metierLabel);
-    if (metierObj) {
-      setFormData({ 
-        ...formData, 
-        metier: metierLabel, 
-        domaine: metierObj.domaine || formData.domaine,
-        parcours: Array.isArray(metierObj.parcours) ? metierObj.parcours : []
-      });
-    } else {
-      setFormData({ ...formData, metier: metierLabel });
-    }
-  };
-
-  const handleAddParcours = () => {
-    if (newParcours && !formData.parcours.includes(newParcours)) {
-      setFormData({
-        ...formData,
-        parcours: [...formData.parcours, newParcours]
-      });
-      setNewParcours("");
-    }
-  };
-
-  const handleRemoveParcours = (pToRemove) => {
-    setFormData({
-      ...formData,
-      parcours: formData.parcours.filter(p => p !== pToRemove)
-    });
   };
 
   // ── Ouvrir modal ───────────────────────────────────────────────────
@@ -939,13 +903,12 @@ export default function EtablissementsView() {
         province: etab.province,
         region: etab.region,
         type: etab.type,
-        mention: etab.mention,
-        domaine: etab.domaine || "",
+        mention: Array.isArray(etab.mention) ? etab.mention : [],
+        domaine: Array.isArray(etab.domaine) ? etab.domaine : [],
         parcours: Array.isArray(etab.parcours) ? etab.parcours : [],
-        metier: etab.metier,
-        niveau: etab.niveau,
-        duree: etab.duree,
-        admission: etab.admission,
+        metier: Array.isArray(etab.metier) ? etab.metier : [],
+        niveau: Array.isArray(etab.niveau) ? etab.niveau : [],
+        admission: Array.isArray(etab.admission) ? etab.admission : [],
         contact: etab.contact,
       });
     } else {
@@ -1041,15 +1004,15 @@ export default function EtablissementsView() {
     { key: 'province', label: 'Province' },
     { key: 'region', label: 'Région' },
     { key: 'type', label: 'Type' },
-    { key: 'domaine', label: 'Domaine' },
-    { key: 'mention', label: 'Mention' },
+    { key: 'domaine', label: 'Domaines' },
+    { key: 'mention', label: 'Mentions' },
     { key: 'parcours', label: 'Parcours' },
-    { key: 'niveau', label: 'Niveau' },
+    { key: 'niveau', label: 'Niveaux' },
   ];
 
   // ── Rendu ──────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-white p-3 sm:p-4 lg:p-6 xl:p-8">
+    <div className="min-h-screen bg-white p-0">
       <ToastContainer />
 
       {/* Modales */}
@@ -1061,22 +1024,14 @@ export default function EtablissementsView() {
           onSubmit={handleSave}
           onChange={handleInputChange}
           onProvinceChange={handleProvinceChange}
-          onNiveauChange={handleNiveauChange}
-          onDomaineChange={handleDomaineChange}
-          onMetierChange={handleMetierChange}
           loadingSave={loadingSave}
           isFormValid={isFormValid}
           mentionOptions={mentionOptions}
           domaineOptions={domaineOptions}
           parcoursOptions={parcoursOptions}
-          metierOptions={formData.domaine 
-            ? metierOptions.filter(m => m.domaine === formData.domaine || !m.domaine)
-            : metierOptions
-          }
-          newParcours={newParcours}
-          setNewParcours={setNewParcours}
-          handleAddParcours={handleAddParcours}
-          handleRemoveParcours={handleRemoveParcours}
+          metierOptions={metierOptions}
+          handleAddCollection={handleAddCollection}
+          handleRemoveCollection={handleRemoveCollection}
         />
       )}
       
@@ -1093,7 +1048,7 @@ export default function EtablissementsView() {
         />
       )}
 
-      <div className="max-w-screen-2xl mx-auto space-y-4 sm:space-y-5 lg:space-y-6">
+      <div className="max-w-screen-2xl mx-auto space-y-4">
 
         {/* En-tête */}
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
@@ -1118,8 +1073,7 @@ export default function EtablissementsView() {
         {/* Bloc principal */}
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
 
-          {/* Barre de recherche */}
-          <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
             <div className="relative w-full">
               <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
               <input 
@@ -1141,7 +1095,7 @@ export default function EtablissementsView() {
           </div>
 
           {/* Barre d'actions (Afficher X entrées + Export) */}
-          <div className="px-3 sm:px-4 py-2 border-b border-gray-200">
+          <div className="px-4 py-3 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">Afficher</span>
@@ -1253,8 +1207,20 @@ export default function EtablissementsView() {
                         {etab.type}
                       </Pill>
                     </td>
-                    <td className="px-3 py-3 text-sm text-gray-700 text-center whitespace-nowrap">{etab.domaine}</td>
-                    <td className="px-3 py-3 text-sm text-gray-700 text-center whitespace-nowrap">{etab.mention}</td>
+                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                      <div className="flex flex-wrap gap-1 max-w-[150px] justify-center">
+                        {Array.isArray(etab.domaine) && etab.domaine.length > 0 ? etab.domaine.map((d, i) => (
+                          <Pill key={i} tone="blue">{d}</Pill>
+                        )) : <Pill tone="gray">-</Pill>}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                      <div className="flex flex-wrap gap-1 max-w-[150px] justify-center">
+                        {Array.isArray(etab.mention) && etab.mention.length > 0 ? etab.mention.map((m, i) => (
+                          <Pill key={i} tone="blue">{m}</Pill>
+                        )) : <Pill tone="gray">-</Pill>}
+                      </div>
+                    </td>
                     <td className="px-3 py-3 text-center whitespace-nowrap">
                       <div className="flex flex-wrap gap-1 max-w-[200px] justify-center">
                         {Array.isArray(etab.parcours) && etab.parcours.length > 0 ? etab.parcours.map((p, i) => (
@@ -1263,7 +1229,11 @@ export default function EtablissementsView() {
                       </div>
                     </td>
                     <td className="px-3 py-3 text-center whitespace-nowrap">
-                      <Pill tone="blue">{etab.niveau}</Pill>
+                      <div className="flex flex-wrap gap-1 max-w-[150px] justify-center">
+                        {Array.isArray(etab.niveau) && etab.niveau.length > 0 ? etab.niveau.map((n, i) => (
+                          <Pill key={i} tone="orange">{n}</Pill>
+                        )) : <Pill tone="gray">-</Pill>}
+                      </div>
                     </td>
                     <td className="px-3 py-3 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1">
@@ -1291,7 +1261,7 @@ export default function EtablissementsView() {
 
           {/* Pagination */}
           {totalItems > 0 && (
-            <div className="px-3 sm:px-4 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+            <div className="px-4 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <span className="text-xs text-gray-500 order-2 sm:order-1">
                 Affichage de {startItem} à {endItem} sur {totalItems} établissement{totalItems > 1 ? 's' : ''}
               </span>

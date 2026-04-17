@@ -20,6 +20,7 @@ import {
   updateMention,
   deleteMention,
 } from "../../../services/mention.services";
+import { getAllDomaines } from "../../../services/domaine.services";
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 const PER_PAGE_OPTIONS = [10, 20, 30, 50, 100];
@@ -35,7 +36,7 @@ const TONES = {
 };
 
 const Pill = ({ children, tone = "gray" }) => (
-  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${TONES[tone]}`}>
+  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${TONES[tone] || TONES.gray}`}>
     {children}
   </span>
 );
@@ -115,6 +116,104 @@ const FloatInput = ({ id, name, label, value, onChange, type = "text", error, di
   );
 };
 
+// ── SearchableSelect Component ──────────────────────────────────────────────
+const SearchableSelect = ({ label, value, options = [], onChange, disabled, error, id }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef(null);
+
+  const filteredOptions = useMemo(() => {
+    if (!Array.isArray(options)) return [];
+    return options.filter(opt => 
+      String(opt.label || opt).toLowerCase().includes(search.toLowerCase())
+    );
+  }, [options, search]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = useMemo(() => {
+    if (!Array.isArray(options)) return null;
+    return options.find(opt => String(opt.value || opt) === String(value));
+  }, [options, value]);
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <div 
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 cursor-pointer transition-colors
+          ${error ? "border-red-500" : isOpen ? "border-blue-600" : "border-gray-300"}
+          ${disabled ? "bg-gray-50 cursor-not-allowed text-gray-400" : ""}`}
+      >
+        <span className="block truncate">
+          {selectedOption ? (selectedOption.label || selectedOption) : "Sélectionner..."}
+        </span>
+        <ChevronDown 
+          size={14} 
+          className={`absolute right-3 top-1/2 -translate-y-1/2 transition-transform duration-200 text-gray-400 ${isOpen ? 'rotate-180' : ''}`} 
+        />
+        <label
+          className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 pointer-events-none
+            ${selectedOption || isOpen ? "scale-75 -translate-y-4" : ""}
+            ${error ? "text-red-500" : isOpen ? "text-blue-600" : "text-gray-500"}`}
+        >
+          {label.includes('*') ? (
+            <>
+              {label.replace('*', '')}
+              <span className="text-red-500 ml-0.5">*</span>
+            </>
+          ) : label}
+        </label>
+      </div>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] overflow-hidden max-h-60 flex flex-col">
+          <div className="p-2 border-b border-gray-100 sticky top-0 bg-white">
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
+              <input
+                type="text"
+                className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-100 rounded-md focus:outline-none focus:border-blue-500"
+                placeholder="Rechercher..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                autoFocus
+              />
+            </div>
+          </div>
+          <div className="overflow-y-auto">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt, i) => (
+                <div
+                  key={opt.id || opt.value || opt || i}
+                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 transition-colors
+                    ${String(opt.value || opt) === String(value) ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"}`}
+                  onClick={() => {
+                    onChange({ target: { name: id, value: (opt.value || opt) } });
+                    setIsOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  {opt.label || opt}
+                </div>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-sm text-gray-400 text-center italic">Aucun résultat</div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ── ModalShell — fond blanc pur ───────────────────────────────────────────────
 const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -163,7 +262,7 @@ const BtnPrimary = ({ onClick, children, loading, disabled }) => (
 );
 
 // ── Modale mention ───────────────────────────────────────────────────────────
-const MentionModal = ({ isEditing, formData, onClose, onSubmit, onChange, loadingSave, isFormValid }) => {
+const MentionModal = ({ isEditing, formData, onClose, onSubmit, onChange, loadingSave, isFormValid, domaineOptions = [] }) => {
   const handleSubmit = (e) => { e.preventDefault(); onSubmit(); };
 
   return (
@@ -179,6 +278,14 @@ const MentionModal = ({ isEditing, formData, onClose, onSubmit, onChange, loadin
       </>}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
+        <SearchableSelect
+          id="domaine_id"
+          label="Domaine *"
+          value={formData.domaine_id}
+          onChange={(e) => onChange('domaine_id')(e)}
+          options={(domaineOptions || []).map(d => ({ value: d.id, label: d.label }))}
+        />
+
         <FloatInput 
           id="label"
           name="label"
@@ -217,7 +324,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
       <button 
         onClick={onConfirm} 
         disabled={loading}
-        className={`px-4 py-2 rounded-xl text-white text-xs font-semibold ${CONFIRM_COLORS[confirmColor]} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`px-4 py-2 rounded-xl text-white text-xs font-semibold ${CONFIRM_COLORS[confirmColor] || CONFIRM_COLORS.blue} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? (
           <div className="flex items-center gap-2">
@@ -237,9 +344,8 @@ const MentionCard = ({ mention, onEdit, onDelete }) => (
     className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
     onClick={() => onEdit(mention)}
   >
-    {/* Ligne 1 : ID + actions */}
     <div className="flex items-center justify-between">
-      <span className="text-xs font-bold text-gray-400">ID {mention.id}</span>
+      <span className="text-xs font-bold text-gray-400">ID {mention?.id}</span>
       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
         <button onClick={() => onEdit(mention)}
           className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Modifier">
@@ -252,50 +358,48 @@ const MentionCard = ({ mention, onEdit, onDelete }) => (
       </div>
     </div>
 
-    {/* Infos */}
     <div className="space-y-2">
       <div>
+        <p className="text-xs text-gray-400">Domaine</p>
+        <Pill tone="blue">{mention?.domaine_label || "Non défini"}</Pill>
+      </div>
+      <div>
         <p className="text-xs text-gray-400">Mention</p>
-        <p className="text-sm font-semibold text-gray-900">{mention.label}</p>
+        <p className="text-sm font-semibold text-gray-900">{mention?.label}</p>
       </div>
       <div className="border-t border-gray-100 pt-2">
         <p className="text-xs text-gray-400">Description</p>
-        <p className="text-sm text-gray-700 line-clamp-2">{mention.description}</p>
+        <p className="text-sm text-gray-700 line-clamp-2">{mention?.description}</p>
       </div>
     </div>
   </div>
 );
 
 // ── Export Excel professionnel avec XLSX ───────────────────────────────────
-const exportToExcel = (data) => {
+const exportToExcel = (data = []) => {
   try {
-    // Préparer les données pour Excel
     const worksheetData = [
-      ['ID', 'MENTION', 'DESCRIPTION'], // En-têtes
+      ['ID', 'DOMAINE', 'MENTION', 'DESCRIPTION'],
       ...data.map(mention => [
         mention.id,
+        mention.domaine_label || "N/A",
         mention.label,
         mention.description
       ])
     ];
 
-    // Créer un classeur et une feuille de calcul
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(worksheetData);
 
-    // Styles des colonnes (largeurs)
     ws['!cols'] = [
-      { wch: 10 }, // ID
-      { wch: 30 }, // Mention
-      { wch: 50 }  // Description
+      { wch: 10 },
+      { wch: 25 },
+      { wch: 30 },
+      { wch: 50 }
     ];
 
-    // Ajouter la feuille au classeur
     XLSX.utils.book_append_sheet(wb, ws, 'Mentions');
-
-    // Générer le fichier Excel
     XLSX.writeFile(wb, `mentions_${new Date().toISOString().split('T')[0]}.xlsx`);
-    
     return true;
   } catch (error) {
     console.error("Erreur génération Excel:", error);
@@ -304,43 +408,38 @@ const exportToExcel = (data) => {
 };
 
 // ── Export PDF professionnel avec jsPDF et autoTable ──────────────────────
-const exportToPDF = (data) => {
+const exportToPDF = (data = []) => {
   try {
-    // Créer un nouveau document PDF
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: 'a4'
     });
 
-    // Titre du document
     doc.setFontSize(18);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
     doc.text('LISTE DES MENTIONS', 14, 20);
 
-    // Sous-titre avec date
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     doc.setFont("helvetica", "normal");
     const dateStr = `Exporté le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}`;
     doc.text(dateStr, 14, 28);
 
-    // Ligne de séparation
     doc.setDrawColor(200, 200, 200);
     doc.line(14, 32, 200, 32);
 
-    // Préparer les données pour le tableau
     const tableData = data.map(mention => [
-      mention.id.toString(),
+      String(mention.id),
+      mention.domaine_label || "N/A",
       mention.label,
       mention.description
     ]);
 
-    // Générer le tableau avec autoTable
     autoTable(doc, {
       startY: 38,
-      head: [['ID', 'Mention', 'Description']],
+      head: [['ID', 'Domaine', 'Mention', 'Description']],
       body: tableData,
       theme: 'grid',
       headStyles: {
@@ -356,9 +455,10 @@ const exportToPDF = (data) => {
         cellPadding: 4
       },
       columnStyles: {
-        0: { halign: 'center', cellWidth: 25 },
-        1: { halign: 'left', cellWidth: 70 },
-        2: { halign: 'left', cellWidth: 90 }
+        0: { halign: 'center', cellWidth: 20 },
+        1: { halign: 'left', cellWidth: 40 },
+        2: { halign: 'left', cellWidth: 50 },
+        3: { halign: 'left', cellWidth: 70 }
       },
       alternateRowStyles: {
         fillColor: [249, 250, 251]
@@ -370,7 +470,6 @@ const exportToPDF = (data) => {
         lineWidth: 0.1
       },
       didDrawPage: () => {
-        // Pied de page
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
           doc.setPage(i);
@@ -386,16 +485,13 @@ const exportToPDF = (data) => {
       }
     });
 
-    // Statistiques en bas de page
     const finalY = doc.lastAutoTable.finalY || 200;
     doc.setFontSize(9);
     doc.setTextColor(80, 80, 80);
     doc.setFont("helvetica", "italic");
     doc.text(`Total : ${data.length} mention(s)`, 14, finalY + 10);
 
-    // Sauvegarder le PDF
     doc.save(`mentions_${new Date().toISOString().split('T')[0]}.pdf`);
-    
     return true;
   } catch (error) {
     console.error("Erreur génération PDF:", error);
@@ -405,6 +501,7 @@ const exportToPDF = (data) => {
 
 export default function MentionsView() {
   const [mentions, setMentions] = useState([]);
+  const [domaines, setDomaines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingSave, setLoadingSave] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
@@ -413,7 +510,6 @@ export default function MentionsView() {
   const [deleteItem, setDeleteItem] = useState(null);
   const [editingId, setEditingId] = useState(null);
   
-  // Pagination et tri
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
@@ -421,9 +517,9 @@ export default function MentionsView() {
   const [formData, setFormData] = useState({
     label: "",
     description: "",
+    domaine_id: "",
   });
 
-  // ── Toast ──────────────────────────────────────────────────────────
   const showToast = (message, type = "success") => {
     toast[type](message, {
       position: "top-right",
@@ -436,32 +532,36 @@ export default function MentionsView() {
     });
   };
 
-  // ── Chargement initial depuis l'API ────────────────────────────────
-  const fetchMentions = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await getAllMentions(searchTerm);
-      setMentions(data);
+      const [mentionsData, domainesData] = await Promise.all([
+        getAllMentions(searchTerm),
+        getAllDomaines()
+      ]);
+      setMentions(Array.isArray(mentionsData) ? mentionsData : []);
+      setDomaines(Array.isArray(domainesData) ? domainesData : []);
     } catch (error) {
-      showToast("Erreur lors du chargement des mentions", "error");
-      console.error("Erreur chargement mentions:", error);
+      showToast("Erreur lors du chargement des données", "error");
+      console.error("Erreur chargement données:", error);
+      setMentions([]);
+      setDomaines([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMentions();
+    fetchData();
   }, []);
 
-  // ── Recherche en temps réel ─────────────────────────────────────────
   useEffect(() => {
     if (loading) return;
 
     const delaySearch = setTimeout(async () => {
       try {
         const data = await getAllMentions(searchTerm);
-        setMentions(data);
+        setMentions(Array.isArray(data) ? data : []);
         setCurrentPage(1);
       } catch {
         showToast("Erreur lors de la recherche", "error");
@@ -469,26 +569,28 @@ export default function MentionsView() {
     }, 400);
 
     return () => clearTimeout(delaySearch);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
-  // ── Tri et pagination ───────────────────────────────────────────────
   const sortedMentions = useMemo(() => {
+    if (!Array.isArray(mentions)) return [];
     const sortableMentions = [...mentions];
     sortableMentions.sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
+      const valA = a[sortConfig.key];
+      const valB = b[sortConfig.key];
+      if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     });
     return sortableMentions;
   }, [mentions, sortConfig]);
 
   const paginatedMentions = useMemo(() => {
+    if (!Array.isArray(sortedMentions)) return [];
     const start = (currentPage - 1) * perPage;
     return sortedMentions.slice(start, start + perPage);
   }, [sortedMentions, currentPage, perPage]);
 
-  const totalItems = mentions.length;
+  const totalItems = Array.isArray(mentions) ? mentions.length : 0;
   const totalPages = Math.ceil(totalItems / perPage);
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * perPage + 1;
   const endItem = Math.min(currentPage * perPage, totalItems);
@@ -519,25 +621,27 @@ export default function MentionsView() {
     setCurrentPage(1);
   };
 
-  // ── Validation ─────────────────────────────────────────────────────
   const isFormValid = () =>
     formData.label.trim() !== "" &&
-    formData.description.trim() !== "";
+    formData.description.trim() !== "" &&
+    formData.domaine_id !== "";
 
-  // ── Gestion formulaire ─────────────────────────────────────────────
   const handleInputChange = (field) => (e) => {
-    const value = e.target.value;
+    const value = e?.target?.value ?? e;
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // ── Ouvrir modal ───────────────────────────────────────────────────
   const handleOpenModal = (m = null) => {
     if (m) {
       setEditingId(m.id);
-      setFormData({ label: m.label, description: m.description });
+      setFormData({ 
+        label: m.label, 
+        description: m.description,
+        domaine_id: m.domaine_id 
+      });
     } else {
       setEditingId(null);
-      setFormData({ label: "", description: "" });
+      setFormData({ label: "", description: "", domaine_id: "" });
     }
     setShowModal(true);
   };
@@ -547,7 +651,6 @@ export default function MentionsView() {
     handleOpenModal(mention); 
   };
 
-  // ── Sauvegarder (créer ou modifier) ───────────────────────────────
   const handleSave = async () => {
     if (!isFormValid()) {
       showToast("Veuillez remplir tous les champs obligatoires", "error");
@@ -557,14 +660,13 @@ export default function MentionsView() {
     setLoadingSave(true);
     try {
       if (editingId) {
-        const updated = await updateMention(editingId, formData);
-        setMentions(mentions.map((m) => (m.id === editingId ? updated : m)));
+        await updateMention(editingId, formData);
         showToast("Mention modifiée avec succès", "success");
       } else {
-        const created = await createMention(formData);
-        setMentions([...mentions, created]);
+        await createMention(formData);
         showToast("Mention ajoutée avec succès", "success");
       }
+      fetchData();
       setShowModal(false);
       resetForm();
     } catch (error) {
@@ -575,12 +677,12 @@ export default function MentionsView() {
     }
   };
 
-  // ── Supprimer ──────────────────────────────────────────────────────
   const handleDeleteClick = (mention) => {
     setDeleteItem(mention);
   };
 
   const handleConfirmDelete = async () => {
+    if (!deleteItem) return;
     setLoadingDelete(true);
     try {
       await deleteMention(deleteItem.id);
@@ -596,47 +698,43 @@ export default function MentionsView() {
   };
 
   const resetForm = () => {
-    setFormData({ label: "", description: "" });
+    setFormData({ label: "", description: "", domaine_id: "" });
   };
 
-  // ── Export ─────────────────────────────────────────────────────────
   const handleExport = (type, data) => {
     if (type === 'excel') {
       try {
         exportToExcel(data);
         showToast(`Export Excel réussi ! (${data.length} entrées)`);
       } catch(e) { 
-        console.error("Erreur export Excel:", e);
-        showToast("Erreur export Excel : " + e.message, "error"); 
+        showToast("Erreur export Excel", "error"); 
       }
     } else {
       try {
         exportToPDF(data);
         showToast(`Export PDF réussi ! (${data.length} entrées)`);
       } catch(e) { 
-        console.error("Erreur export PDF:", e);
-        showToast("Erreur export PDF : " + e.message, "error"); 
+        showToast("Erreur export PDF", "error"); 
       }
     }
   };
 
-  // Colonnes du tableau
   const COLS = [
     { key: 'id', label: 'ID' },
+    { key: 'domaine_label', label: 'Domaine' },
     { key: 'label', label: 'Mention' },
     { key: 'description', label: 'Description' },
   ];
 
-  // ── Rendu ──────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-white p-3 sm:p-4 lg:p-6 xl:p-8">
+    <div className="min-h-screen bg-white p-0">
       <ToastContainer />
 
-      {/* Modales */}
       {showModal && (
         <MentionModal 
           isEditing={!!editingId}
           formData={formData}
+          domaineOptions={domaines}
           onClose={() => { setShowModal(false); resetForm(); }}
           onSubmit={handleSave}
           onChange={handleInputChange}
@@ -658,9 +756,7 @@ export default function MentionsView() {
         />
       )}
 
-      <div className="max-w-screen-2xl mx-auto space-y-4 sm:space-y-5 lg:space-y-6">
-
-        {/* En-tête */}
+      <div className="max-w-screen-2xl mx-auto space-y-4">
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
           <div>
             <h1 className="text-lg sm:text-xl lg:text-2xl font-black tracking-tight text-gray-900">
@@ -680,11 +776,8 @@ export default function MentionsView() {
           </button>
         </div>
 
-        {/* Bloc principal */}
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-
-          {/* Barre de recherche */}
-          <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
             <div className="relative w-full">
               <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
               <input 
@@ -705,8 +798,7 @@ export default function MentionsView() {
             </div>
           </div>
 
-          {/* Barre d'actions (Afficher X entrées + Export) */}
-          <div className="px-3 sm:px-4 py-2 border-b border-gray-200">
+          <div className="px-4 py-3 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">Afficher</span>
@@ -736,7 +828,6 @@ export default function MentionsView() {
             )}
           </div>
 
-          {/* VUE CARTE — mobile */}
           <div className="md:hidden p-3 space-y-3">
             {loading ? (
               <div className="flex items-center justify-center py-16">
@@ -762,7 +853,6 @@ export default function MentionsView() {
             ))}
           </div>
 
-          {/* VUE TABLEAU — tablette et desktop */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
@@ -785,7 +875,7 @@ export default function MentionsView() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={4} className="py-16 text-center text-gray-500">
+                    <td colSpan={5} className="py-16 text-center text-gray-500">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                         <span className="text-sm">Chargement...</span>
@@ -794,7 +884,7 @@ export default function MentionsView() {
                   </tr>
                 ) : paginatedMentions.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-12 text-center text-gray-500">
+                    <td colSpan={5} className="py-12 text-center text-gray-500">
                       <div className="flex flex-col items-center gap-2 opacity-50">
                         <FaSearch size={24}/>
                         <span className="text-sm">
@@ -809,9 +899,12 @@ export default function MentionsView() {
                     className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer"
                     onClick={(e) => handleRowClick(mention, e)}
                   >
-                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center whitespace-nowrap">{mention.id}</td>
-                    <td className="px-3 py-3 text-sm text-gray-900 text-center whitespace-nowrap">{mention.label}</td>
-                    <td className="px-3 py-3 text-sm text-gray-700 text-center max-w-xs truncate">{mention.description}</td>
+                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center whitespace-nowrap">{mention?.id}</td>
+                    <td className="px-3 py-3 text-sm text-gray-900 text-center whitespace-nowrap">
+                      <Pill tone="blue">{mention?.domaine_label || "N/A"}</Pill>
+                    </td>
+                    <td className="px-3 py-3 text-sm text-gray-900 text-center whitespace-nowrap">{mention?.label}</td>
+                    <td className="px-3 py-3 text-sm text-gray-700 text-center max-w-xs truncate">{mention?.description}</td>
                     <td className="px-3 py-3 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1">
                         <button 
@@ -836,9 +929,8 @@ export default function MentionsView() {
             </table>
           </div>
 
-          {/* Pagination */}
           {totalItems > 0 && (
-            <div className="px-3 sm:px-4 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+            <div className="px-4 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <span className="text-xs text-gray-500 order-2 sm:order-1">
                 Affichage de {startItem} à {endItem} sur {totalItems} mention{totalItems > 1 ? 's' : ''}
               </span>
@@ -850,7 +942,6 @@ export default function MentionsView() {
                 >
                   <ChevronLeft size={15} className="text-blue-600" />
                 </button>
-                
                 {pageNumbers.map((p, i) =>
                   p === "..." ? (
                     <span key={`e-${i}`} className="text-sm text-gray-500 px-1">…</span>
@@ -868,7 +959,6 @@ export default function MentionsView() {
                     </button>
                   )
                 )}
-                
                 <button 
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
                   disabled={currentPage === totalPages}

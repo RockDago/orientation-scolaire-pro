@@ -36,10 +36,10 @@ const emptyForm = {
   label: "",
   description: "",
   parcours: [], // Parcours d'études possibles (multiple)
-  mention: "",
-  domaine: "",
+  mention: [],
+  domaine: [],
   serie: [], // Série recommandée (multiple)
-  niveau: "",
+  niveau: [],
   parcoursFormation: [], // Parcours de formation (multiple)
 };
 
@@ -146,7 +146,7 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
   const containerRef = useRef(null);
 
   const filteredOptions = useMemo(() => {
-    return options.filter(opt => 
+    return (options || []).filter(opt => 
       (opt.label || opt).toLowerCase().includes(search.toLowerCase())
     );
   }, [options, search]);
@@ -161,7 +161,7 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedOption = options.find(opt => (opt.value || opt) === value);
+  const selectedOption = (options || []).find(opt => (opt.value || opt) === value);
 
   return (
     <div className="relative" ref={containerRef}>
@@ -233,6 +233,72 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
   );
 };
 
+// ── MultiSelect Component ──────────────────────────────────────────────
+const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, placeholder = "Ajouter..." }) => {
+  const [selectedValue, setSelectedValue] = useState("");
+
+  const handleAdd = () => {
+    if (selectedValue) {
+      onAdd(selectedValue);
+      setSelectedValue("");
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-sm font-bold text-gray-900 border-b-2 border-blue-500 pb-1.5 w-fit">
+        {label} <span className="text-red-500">*</span>
+      </h3>
+
+      <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-lg border border-gray-200">
+        {(values || []).map((val, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm transition-shadow"
+          >
+            <span className="text-xs text-gray-700 font-medium">{val}</span>
+            <button
+              onClick={() => onRemove(val)}
+              className="text-gray-400 hover:text-red-500 transition-colors"
+              type="button"
+            >
+              <FaTimes size={12} />
+            </button>
+          </div>
+        ))}
+        {(values || []).length === 0 && (
+          <span className="text-gray-400 text-xs w-full text-center py-2 italic">
+            Aucun élément ajouté
+          </span>
+        )}
+      </div>
+
+      <div className="flex gap-3 items-end">
+        <div className="flex-1">
+          <SearchableSelect
+            id={id}
+            label={placeholder}
+            value={selectedValue}
+            options={(options || [])
+              .filter((opt) => !(values || []).includes(opt.label || opt))
+              .map((opt) => ({ value: opt.label || opt, label: opt.label || opt }))}
+            onChange={(e) => setSelectedValue(e.target.value)}
+          />
+        </div>
+        <button
+          onClick={handleAdd}
+          className="px-4 py-2.5 h-[54px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm font-medium"
+          type="button"
+          disabled={!selectedValue}
+        >
+          <FaPlusCircle size={14} />
+          Ajouter
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ── ModalShell — fond blanc pur ───────────────────────────────────────────────
 const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -284,8 +350,7 @@ const BtnPrimary = ({ onClick, children, loading, disabled }) => (
 const MetierModal = ({ 
   isEditing, formData, onClose, onSubmit, onChange, loadingSave, isFormValid,
   mentionOptions, parcoursOptions, serieOptions, domaineOptions,
-  newParcours, setNewParcours, handleAddParcours, handleRemoveParcours,
-  newSerieRecommanded, setNewSerieRecommanded, handleAddSerieRecommanded, handleRemoveSerieRecommanded,
+  handleAddCollection, handleRemoveCollection,
   newParcoursFormation, setNewParcoursFormation, handleAddParcoursFormation, handleRemoveParcoursFormation
 }) => {
   const handleSubmit = (e) => { e.preventDefault(); onSubmit(); };
@@ -302,15 +367,14 @@ const MetierModal = ({
         </BtnPrimary>
       </>}
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Première rangée : 2 colonnes pour les infos de base */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Colonne 1 : Informations générales */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
-              Informations générales
-            </h3>
+      <form onSubmit={handleSubmit} className="space-y-10">
+        {/* Informations générales */}
+        <div className="space-y-6">
+          <h3 className="text-lg font-bold text-gray-900 border-b-2 border-blue-500 pb-2 w-fit">
+            Informations générales
+          </h3>
 
+          <div className="space-y-6">
             <FloatInput 
               id="label"
               name="label"
@@ -328,160 +392,71 @@ const MetierModal = ({
               type="textarea"
               rows={3}
             />
-
-            <SearchableSelect
-              id="domaine"
-              label="Domaine *"
-              value={formData.domaine}
-              onChange={(e) => onChange('domaine')(e)}
-              options={domaineOptions.map(d => ({ value: d.label, label: d.label }))}
-            />
-          </div>
-
-          {/* Colonne 2 : Classification */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
-              Classification
-            </h3>
-
-            <SearchableSelect
-              id="mention"
-              label="Mention *"
-              value={formData.mention}
-              onChange={(e) => onChange('mention')(e)}
-              options={mentionOptions.map(m => ({ value: m.label, label: m.label }))}
-            />
-
-            <SearchableSelect
-              id="niveau"
-              label="Niveau *"
-              value={formData.niveau}
-              onChange={(e) => onChange('niveau')(e)}
-              options={niveauOptions}
-            />
           </div>
         </div>
 
-        {/* Sections sur une seule colonne */}
-        <div className="space-y-8">
+        {/* Sections multi-valeurs */}
+        <div className="space-y-10">
+          {/* Domaines */}
+          <MultiSelect 
+            label="Domaines"
+            id="domaine_select"
+            placeholder="Sélectionner un domaine"
+            values={formData.domaine}
+            options={domaineOptions}
+            onAdd={(val) => handleAddCollection('domaine', val)}
+            onRemove={(val) => handleRemoveCollection('domaine', val)}
+          />
+
+          {/* Mentions */}
+          <MultiSelect 
+            label="Mentions"
+            id="mention_select"
+            placeholder="Sélectionner une mention"
+            values={formData.mention}
+            options={mentionOptions}
+            onAdd={(val) => handleAddCollection('mention', val)}
+            onRemove={(val) => handleRemoveCollection('mention', val)}
+          />
+
+          {/* Niveaux */}
+          <MultiSelect 
+            label="Niveaux"
+            id="niveau_select"
+            placeholder="Sélectionner un niveau"
+            values={formData.niveau}
+            options={niveauOptions}
+            onAdd={(val) => handleAddCollection('niveau', val)}
+            onRemove={(val) => handleRemoveCollection('niveau', val)}
+          />
+
           {/* Parcours d'études possibles */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
-              Parcours d'études possibles <span className="text-red-500">*</span>
-              <span className="text-xs text-gray-500 ml-2">(Vous pouvez ajouter plusieurs parcours)</span>
-            </h3>
-
-            {/* Affichage des parcours sélectionnés */}
-            <div className="flex flex-wrap gap-2 min-h-[80px] p-4 bg-gray-50 rounded-lg border border-gray-200">
-              {formData.parcours && formData.parcours.length > 0 ? (
-                formData.parcours.map((p) => (
-                  <div
-                    key={p}
-                    className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <span className="text-sm font-medium text-gray-700">{p}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveParcours(p)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <FaTimes size={14} />
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <span className="text-gray-400 text-sm w-full text-center py-4">
-                  Aucun parcours sélectionné
-                </span>
-              )}
-            </div>
-
-            {/* Sélecteur et bouton d'ajout */}
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <SearchableSelect
-                  id="newParcours"
-                  label="Sélectionner un parcours"
-                  value={newParcours}
-                  onChange={(e) => setNewParcours(e.target.value)}
-                  options={parcoursOptions
-                    .filter((p) => !formData.parcours.includes(p.label))
-                    .map((p) => ({ value: p.label, label: p.label }))}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleAddParcours}
-                className="px-6 py-2.5 h-[54px] bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 whitespace-nowrap text-sm font-medium self-end"
-              >
-                <FaPlusCircle size={16} />
-                Ajouter
-              </button>
-            </div>
-          </div>
+          <MultiSelect 
+            label="Parcours d'études possibles"
+            id="parcours_select"
+            placeholder="Sélectionner un parcours"
+            values={formData.parcours}
+            options={parcoursOptions}
+            onAdd={(val) => handleAddCollection('parcours', val)}
+            onRemove={(val) => handleRemoveCollection('parcours', val)}
+          />
 
           {/* Séries recommandées */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
-              Séries recommandées <span className="text-red-500">*</span>
-              <span className="text-xs text-gray-500 ml-2">(Vous pouvez ajouter plusieurs séries)</span>
-            </h3>
-
-            {/* Liste des séries ajoutées */}
-            <div className="flex flex-wrap gap-2 min-h-[80px] p-4 bg-gray-50 rounded-lg border border-gray-200">
-              {formData.serie.map((serieCode) => {
-                return (
-                  <div
-                    key={serieCode}
-                    className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <span className="text-sm text-gray-700 font-medium">{serieCode}</span>
-                    <button
-                      onClick={() => handleRemoveSerieRecommanded(serieCode)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                      type="button"
-                    >
-                      <FaTimes size={14} />
-                    </button>
-                  </div>
-                );
-              })}
-              {formData.serie.length === 0 && (
-                <span className="text-gray-400 text-sm w-full text-center py-4">
-                  Aucune série ajoutée
-                </span>
-              )}
-            </div>
-
-            {/* Ajout d'une nouvelle série */}
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <SearchableSelect
-                  id="newSerieRecommanded"
-                  label="Sélectionner une série"
-                  value={newSerieRecommanded}
-                  onChange={(e) => setNewSerieRecommanded(e.target.value)}
-                  options={serieOptions
-                    .filter((s) => !formData.serie.includes(s.code))
-                    .map((s) => ({ value: s.code, label: s.code }))}
-                />
-              </div>
-              <button
-                onClick={handleAddSerieRecommanded}
-                className="px-6 py-2.5 h-[54px] bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm font-medium self-end"
-                type="button"
-              >
-                <FaPlusCircle size={16} />
-                Ajouter
-              </button>
-            </div>
-          </div>
+          <MultiSelect 
+            label="Séries recommandées"
+            id="serie_select"
+            placeholder="Sélectionner une série"
+            values={formData.serie}
+            options={serieOptions.map(s => s.code)}
+            onAdd={(val) => handleAddCollection('serie', val)}
+            onRemove={(val) => handleRemoveCollection('serie', val)}
+          />
 
           {/* Parcours de formation */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+            <h3 className="text-lg font-bold text-gray-900 border-b-2 border-blue-500 pb-2 w-fit">
               Parcours de formation <span className="text-red-500">*</span>
-              <span className="text-xs text-gray-500 ml-2">(Vous pouvez ajouter plusieurs parcours)</span>
+              <span className="text-xs text-gray-500 ml-2 font-normal">(Vous pouvez ajouter plusieurs parcours)</span>
             </h3>
 
             {/* Liste des parcours ajoutés */}
@@ -598,8 +573,15 @@ const MetierCard = ({ metier, onEdit, onDelete }) => (
 
     {/* Badges */}
     <div className="flex flex-wrap gap-1 border-t border-gray-100 pt-2">
-      <Pill tone="blue">{metier.mention}</Pill>
-      <Pill tone="purple">{metier.niveau}</Pill>
+      {Array.isArray(metier.domaine) && metier.domaine.map((d, i) => (
+        <Pill key={i} tone="blue">{d}</Pill>
+      ))}
+      {Array.isArray(metier.mention) && metier.mention.map((m, i) => (
+        <Pill key={i} tone="green">{m}</Pill>
+      ))}
+      {Array.isArray(metier.niveau) && metier.niveau.map((n, i) => (
+        <Pill key={i} tone="purple">{n}</Pill>
+      ))}
     </div>
 
     {/* Séries */}
@@ -619,13 +601,14 @@ const MetierCard = ({ metier, onEdit, onDelete }) => (
 const exportToExcel = (data) => {
   try {
     const worksheetData = [
-      ['ID', 'MÉTIER', 'DESCRIPTION', 'MENTION', 'NIVEAU', 'SÉRIES', 'PARCOURS ÉTUDES', 'PARCOURS FORMATION'],
+      ['ID', 'MÉTIER', 'DESCRIPTION', 'DOMAINES', 'MENTIONS', 'NIVEAUX', 'SÉRIES', 'PARCOURS ÉTUDES', 'PARCOURS FORMATION'],
       ...data.map(m => [
         m.id,
         m.label,
         m.description,
-        m.mention,
-        m.niveau,
+        (m.domaine || []).join(', '),
+        (m.mention || []).join(', '),
+        (m.niveau || []).join(', '),
         (m.serie || []).join(', '),
         (m.parcours || []).join(', '),
         (m.parcoursFormation || []).join(', ')
@@ -683,8 +666,9 @@ const exportToPDF = (data) => {
       m.id.toString(),
       m.label,
       m.description,
-      m.mention,
-      m.niveau,
+      (m.domaine || []).join(', '),
+      (m.mention || []).join(', '),
+      (m.niveau || []).join(', '),
       (m.serie || []).join(', '),
       (m.parcours || []).join(', '),
       (m.parcoursFormation || []).join(', ')
@@ -692,7 +676,7 @@ const exportToPDF = (data) => {
 
     autoTable(doc, {
       startY: 38,
-      head: [['ID', 'Métier', 'Description', 'Mention', 'Niveau', 'Séries', 'Parcours études', 'Parcours formation']],
+      head: [['ID', 'Métier', 'Description', 'Domaines', 'Mentions', 'Niveaux', 'Séries', 'Parcours études', 'Parcours formation']],
       body: tableData,
       theme: 'grid',
       headStyles: {
@@ -708,14 +692,15 @@ const exportToPDF = (data) => {
         cellPadding: 2
       },
       columnStyles: {
-        0: { halign: 'center', cellWidth: 15 },
-        1: { halign: 'left', cellWidth: 35 },
-        2: { halign: 'left', cellWidth: 50 },
-        3: { halign: 'left', cellWidth: 30 },
-        4: { halign: 'center', cellWidth: 20 },
-        5: { halign: 'left', cellWidth: 30 },
-        6: { halign: 'left', cellWidth: 35 },
-        7: { halign: 'left', cellWidth: 35 }
+        0: { halign: 'center', cellWidth: 10 },
+        1: { halign: 'left', cellWidth: 25 },
+        2: { halign: 'left', cellWidth: 40 },
+        3: { halign: 'left', cellWidth: 25 },
+        4: { halign: 'left', cellWidth: 25 },
+        5: { halign: 'left', cellWidth: 20 },
+        6: { halign: 'left', cellWidth: 20 },
+        7: { halign: 'left', cellWidth: 30 },
+        8: { halign: 'left', cellWidth: 30 }
       },
       alternateRowStyles: {
         fillColor: [249, 250, 251]
@@ -778,8 +763,6 @@ export default function MetiersView() {
   
   const [formData, setFormData] = useState(emptyForm);
   const [newParcoursFormation, setNewParcoursFormation] = useState("");
-  const [newSerieRecommanded, setNewSerieRecommanded] = useState("");
-  const [newParcours, setNewParcours] = useState("");
 
   // ── Toast ──────────────────────────────────────────────────────────
   const showToast = (message, type = "success") => {
@@ -904,102 +887,58 @@ export default function MetiersView() {
 
   // ── Validation ─────────────────────────────────────────────────────
   const isFormValid = () =>
-    formData.label.trim() !== "" &&
-    formData.description.trim() !== "" &&
-    formData.parcours.length > 0 &&
-    formData.mention !== "" &&
-    formData.domaine !== "" &&
-    formData.serie.length > 0 &&
-    formData.niveau !== "" &&
-    formData.parcoursFormation.length > 0;
-
-  // ── Gestion des séries recommandées ───────────────────────────────
-  const handleAddSerieRecommanded = () => {
-    if (newSerieRecommanded.trim() === "") {
-      showToast("Veuillez sélectionner une série", "error");
-      return;
-    }
-
-    if (formData.serie.includes(newSerieRecommanded.trim())) {
-      showToast("Cette série existe déjà", "error");
-      return;
-    }
-
-    setFormData({
-      ...formData,
-      serie: [...formData.serie, newSerieRecommanded.trim()],
-    });
-    setNewSerieRecommanded("");
-  };
-
-  const handleRemoveSerieRecommanded = (serieToRemove) => {
-    setFormData({
-      ...formData,
-      serie: formData.serie.filter((s) => s !== serieToRemove),
-    });
-  };
-
-  // ── Gestion des parcours d'études possibles ──────────────────────────
-  const handleAddParcours = () => {
-    if (newParcours.trim() === "") {
-      showToast("Veuillez sélectionner un parcours", "error");
-      return;
-    }
-
-    if (formData.parcours.includes(newParcours.trim())) {
-      showToast("Ce parcours existe déjà", "error");
-      return;
-    }
-
-    setFormData({
-      ...formData,
-      parcours: [...formData.parcours, newParcours.trim()],
-    });
-    setNewParcours("");
-  };
-
-  const handleRemoveParcours = (parcoursToRemove) => {
-    setFormData({
-      ...formData,
-      parcours: formData.parcours.filter((p) => p !== parcoursToRemove),
-    });
-  };
-
-  // ── Gestion des parcours de formation ─────────────────────────────
-  const handleAddParcoursFormation = () => {
-    if (newParcoursFormation.trim() === "") {
-      showToast("Veuillez saisir un parcours de formation", "error");
-      return;
-    }
-
-    if (formData.parcoursFormation.includes(newParcoursFormation.trim())) {
-      showToast("Ce parcours existe déjà", "error");
-      return;
-    }
-
-    setFormData({
-      ...formData,
-      parcoursFormation: [
-        ...formData.parcoursFormation,
-        newParcoursFormation.trim(),
-      ],
-    });
-    setNewParcoursFormation("");
-  };
-
-  const handleRemoveParcoursFormation = (parcoursToRemove) => {
-    setFormData({
-      ...formData,
-      parcoursFormation: formData.parcoursFormation.filter(
-        (p) => p !== parcoursToRemove,
-      ),
-    });
-  };
+    (formData.label || "").trim() !== "" &&
+    (formData.description || "").trim() !== "" &&
+    (formData.parcours || []).length > 0 &&
+    (formData.mention || []).length > 0 &&
+    (formData.domaine || []).length > 0 &&
+    (formData.serie || []).length > 0 &&
+    (formData.niveau || []).length > 0 &&
+    (formData.parcoursFormation || []).length > 0;
 
   // ── Gestion formulaire ─────────────────────────────────────────────
   const handleInputChange = (field) => (e) => {
     const value = e.target.value;
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddCollection = (field, value) => {
+    if (value && !formData[field].includes(value)) {
+      setFormData(prev => ({
+        ...prev,
+        [field]: [...prev[field], value]
+      }));
+    }
+  };
+
+  const handleRemoveCollection = (field, valueToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].filter(v => v !== valueToRemove)
+    }));
+  };
+
+  const handleAddParcoursFormation = () => {
+    if (newParcoursFormation.trim() === "") {
+      showToast("Veuillez saisir un parcours de formation", "error");
+      return;
+    }
+    if (formData.parcoursFormation.includes(newParcoursFormation.trim())) {
+      showToast("Ce parcours existe déjà", "error");
+      return;
+    }
+    setFormData(prev => ({
+      ...prev,
+      parcoursFormation: [...prev.parcoursFormation, newParcoursFormation.trim()]
+    }));
+    setNewParcoursFormation("");
+  };
+
+  const handleRemoveParcoursFormation = (pfToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      parcoursFormation: prev.parcoursFormation.filter(pf => pf !== pfToRemove)
+    }));
   };
 
   // ── Ouvrir modal ───────────────────────────────────────────────────
@@ -1009,24 +948,18 @@ export default function MetiersView() {
       setFormData({
         label: metier.label,
         description: metier.description,
-        parcours: metier.parcours,
-        mention: metier.mention,
-        domaine: metier.domaine || "",
-        serie: Array.isArray(metier.serie)
-          ? metier.serie
-          : metier.serie
-            ? [metier.serie]
-            : [],
-        niveau: metier.niveau,
-        parcoursFormation: metier.parcoursFormation || [],
+        parcours: Array.isArray(metier.parcours) ? metier.parcours : [],
+        mention: Array.isArray(metier.mention) ? metier.mention : [],
+        domaine: Array.isArray(metier.domaine) ? metier.domaine : [],
+        serie: Array.isArray(metier.serie) ? metier.serie : [],
+        niveau: Array.isArray(metier.niveau) ? metier.niveau : [],
+        parcoursFormation: Array.isArray(metier.parcoursFormation) ? metier.parcoursFormation : [],
       });
     } else {
       setEditingId(null);
       setFormData(emptyForm);
     }
     setNewParcoursFormation("");
-    setNewSerieRecommanded("");
-    setNewParcours("");
     setShowModal(true);
   };
 
@@ -1077,8 +1010,6 @@ const handleSave = async () => {
 
     setShowModal(false);
     setFormData(emptyForm);
-    setNewParcours("");
-    setNewSerieRecommanded("");
     setNewParcoursFormation("");
 
     await fetchData();
@@ -1150,7 +1081,7 @@ const handleSave = async () => {
 
   // ── Rendu ──────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-white p-3 sm:p-4 lg:p-6 xl:p-8">
+    <div className="min-h-screen bg-white p-0">
       <ToastContainer />
 
       {/* Modales */}
@@ -1167,14 +1098,8 @@ const handleSave = async () => {
           parcoursOptions={parcoursOptions}
           serieOptions={serieOptions}
           domaineOptions={domaineOptions}
-          newParcours={newParcours}
-          setNewParcours={setNewParcours}
-          handleAddParcours={handleAddParcours}
-          handleRemoveParcours={handleRemoveParcours}
-          newSerieRecommanded={newSerieRecommanded}
-          setNewSerieRecommanded={setNewSerieRecommanded}
-          handleAddSerieRecommanded={handleAddSerieRecommanded}
-          handleRemoveSerieRecommanded={handleRemoveSerieRecommanded}
+          handleAddCollection={handleAddCollection}
+          handleRemoveCollection={handleRemoveCollection}
           newParcoursFormation={newParcoursFormation}
           setNewParcoursFormation={setNewParcoursFormation}
           handleAddParcoursFormation={handleAddParcoursFormation}
@@ -1195,7 +1120,7 @@ const handleSave = async () => {
         />
       )}
 
-      <div className="max-w-screen-2xl mx-auto space-y-4 sm:space-y-5 lg:space-y-6">
+      <div className="max-w-screen-2xl mx-auto space-y-4">
 
         {/* En-tête */}
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
@@ -1220,8 +1145,7 @@ const handleSave = async () => {
         {/* Bloc principal */}
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
 
-          {/* Barre de recherche */}
-          <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
             <div className="relative w-full">
               <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
               <input 
@@ -1243,7 +1167,7 @@ const handleSave = async () => {
           </div>
 
           {/* Barre d'actions (Afficher X entrées + Export) */}
-          <div className="px-3 sm:px-4 py-2 border-b border-gray-200">
+          <div className="px-4 py-3 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">Afficher</span>
@@ -1348,11 +1272,27 @@ const handleSave = async () => {
                   >
                     <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center whitespace-nowrap">{metier.id}</td>
                     <td className="px-3 py-3 text-sm text-gray-900 text-center whitespace-nowrap">{metier.label}</td>
-                    <td className="px-3 py-3 text-sm text-gray-700 text-center whitespace-nowrap">{metier.domaine}</td>
+                    <td className="px-3 py-3 text-sm text-gray-700 text-center">
+                      <div className="flex flex-wrap justify-center gap-1">
+                        {Array.isArray(metier.domaine) && metier.domaine.map((d, i) => (
+                          <Pill key={i} tone="blue">{d}</Pill>
+                        ))}
+                      </div>
+                    </td>
                     <td className="px-3 py-3 text-sm text-gray-700 text-center max-w-xs truncate">{metier.description}</td>
-                    <td className="px-3 py-3 text-sm text-gray-700 text-center whitespace-nowrap">{metier.mention}</td>
-                    <td className="px-3 py-3 text-center whitespace-nowrap">
-                      <Pill tone="purple">{metier.niveau}</Pill>
+                    <td className="px-3 py-3 text-sm text-gray-700 text-center">
+                      <div className="flex flex-wrap justify-center gap-1">
+                        {Array.isArray(metier.mention) && metier.mention.map((m, i) => (
+                          <Pill key={i} tone="green">{m}</Pill>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <div className="flex flex-wrap justify-center gap-1">
+                        {Array.isArray(metier.niveau) && metier.niveau.map((n, i) => (
+                          <Pill key={i} tone="purple">{n}</Pill>
+                        ))}
+                      </div>
                     </td>
                     <td className="px-3 py-3 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1">
@@ -1380,7 +1320,7 @@ const handleSave = async () => {
 
           {/* Pagination */}
           {totalItems > 0 && (
-            <div className="px-3 sm:px-4 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+            <div className="px-4 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <span className="text-xs text-gray-500 order-2 sm:order-1">
                 Affichage de {startItem} à {endItem} sur {totalItems} métier{totalItems > 1 ? 's' : ''}
               </span>

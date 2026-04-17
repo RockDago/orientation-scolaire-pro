@@ -228,13 +228,13 @@ const ProfileView = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white p-3 sm:p-4 lg:p-6 xl:p-8">
+    <div className="min-h-screen bg-white p-0">
       <ToastContainer />
 
-      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-5 lg:space-y-6">
+       <div className="max-w-screen-2xl mx-auto space-y-4">
 
         {/* En-tête du profil */}
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
           <div className="flex items-center gap-5 flex-wrap">
             {/* Avatar avec upload */}
             <div

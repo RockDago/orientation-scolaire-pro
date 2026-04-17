@@ -15,6 +15,7 @@ export const createMention = async (data) => {
   const response = await API.post("/mentions", {
     label: data.label,
     description: data.description,
+    domaine_id: data.domaine_id,
   });
   return response.data.mention;
 };
@@ -23,6 +24,7 @@ export const updateMention = async (id, data) => {
   const response = await API.put(`/mentions/${id}`, {
     label: data.label,
     description: data.description,
+    domaine_id: data.domaine_id,
   });
   return response.data.mention;
 };

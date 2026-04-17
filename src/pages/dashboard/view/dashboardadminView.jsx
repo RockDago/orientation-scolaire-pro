@@ -987,10 +987,10 @@ const DashboardAdminView = () => {
   ];
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-white font-sans text-gray-900 transition-colors duration-300">
-      <div className="mx-auto max-w-7xl space-y-8">
+    <div className="min-h-screen p-0 bg-white font-sans text-gray-900 transition-colors duration-300">
+      <div className="mx-auto max-w-screen-2xl space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">
               Vue d'ensemble
@@ -1026,14 +1026,14 @@ const DashboardAdminView = () => {
         </div>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <StatCardModerne {...statGlobal} />
           <StatCardModerne {...statMetier} />
         </div>
 
         {/* Graphiques */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 md:p-6 border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b border-gray-100">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50/50 text-blue-600">
                 <PiChartLineUp className="w-5 h-5" />
@@ -1068,7 +1068,7 @@ const DashboardAdminView = () => {
             </div>
           </div>
 
-          <div className="p-6 md:p-8 bg-white">
+          <div className="p-4 bg-white">
             <div className="mx-auto max-w-4xl">
               {loadingDash && (
                 <div className="flex justify-center py-12">

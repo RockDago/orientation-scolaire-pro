@@ -32,8 +32,8 @@ function MetierDetailsCard({ metier, onClose }) {
         <div>
           <h3 className="text-white font-black text-xl leading-snug pr-8">{metier.label}</h3>
           <div className="flex flex-wrap gap-2 mt-2">
-            <span className="text-white text-xs font-bold bg-white/20 px-2.5 py-1 rounded-md">{metier.domaine}</span>
-            <span className="text-white text-xs font-bold bg-white/20 px-2.5 py-1 rounded-md">Niveau : {metier.niveau}</span>
+            <span className="text-white text-xs font-bold bg-white/20 px-2.5 py-1 rounded-md">{Array.isArray(metier.domaine) ? metier.domaine.join(", ") : metier.domaine}</span>
+            <span className="text-white text-xs font-bold bg-white/20 px-2.5 py-1 rounded-md">Niveau : {Array.isArray(metier.niveau) ? metier.niveau.join(", ") : metier.niveau}</span>
           </div>
         </div>
         <div>
@@ -74,12 +74,12 @@ function MetierCard({ metier, onSelect }) {
     >
       <div className="flex items-start justify-between gap-2 mb-1">
         <span className="text-white font-bold text-base leading-snug flex-1">{metier.label}</span>
-        <span className="text-white/90 text-[10px] font-bold bg-[#1a3ea8]/80 px-2 py-0.5 rounded-full shrink-0">{metier.niveau}</span>
+        <span className="text-white/90 text-[10px] font-bold bg-[#1a3ea8]/80 px-2 py-0.5 rounded-full shrink-0">{Array.isArray(metier.niveau) ? metier.niveau.join(", ") : metier.niveau}</span>
       </div>
       {metier.description && (
         <p className="text-white/75 text-xs leading-relaxed line-clamp-2 mb-1.5">{metier.description}</p>
       )}
-      <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider">{metier.domaine}</p>
+      <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider">{Array.isArray(metier.domaine) ? metier.domaine.join(", ") : metier.domaine}</p>
     </button>
   );
 }
@@ -140,10 +140,11 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
   const filteredMetiers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return allMetiers;
-    return allMetiers.filter((m) =>
-      (m.label + " " + m.domaine + " " + m.description + " " + (m.parcours?.join(" ") || ""))
-        .toLowerCase().includes(q)
-    );
+    return allMetiers.filter((m) => {
+      const domaineStr = Array.isArray(m.domaine) ? m.domaine.join(" ") : (m.domaine || "");
+      return (m.label + " " + domaineStr + " " + m.description + " " + (m.parcours?.join(" ") || ""))
+        .toLowerCase().includes(q);
+    });
   }, [searchQuery, allMetiers]);
 
   const filteredDomaines = useMemo(() => {
@@ -154,9 +155,16 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
 
   const metiersParDomaine = useMemo(() => {
     if (!selectedDomaine) return [];
+    const domaineNorm = selectedDomaine.label.toLowerCase().trim();
     return allMetiers.filter((m) => {
+      // m.domaine peut être un tableau JSON ["Informatique", ...] ou une string
+      if (Array.isArray(m.domaine)) {
+        return m.domaine.some((d) => {
+          const dNorm = String(d).toLowerCase().trim();
+          return dNorm === domaineNorm || dNorm.includes(domaineNorm) || domaineNorm.includes(dNorm);
+        });
+      }
       const fieldDomNorm = (m.domaine || "").toLowerCase().trim();
-      const domaineNorm = selectedDomaine.label.toLowerCase().trim();
       return fieldDomNorm === domaineNorm || fieldDomNorm.includes(domaineNorm) || domaineNorm.includes(fieldDomNorm);
     });
   }, [selectedDomaine, allMetiers]);
@@ -320,7 +328,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                           <span className="s2-drop-name">{m.label}</span>
                           {localSelected?.id === m.id && <HiCheck className="s2-chk blue" />}
                         </div>
-                        <span className="s2-badge blue">{m.domaine}</span>
+                        <span className="s2-badge blue">{Array.isArray(m.domaine) ? m.domaine.join(", ") : m.domaine}</span>
                       </button>
                     )) : (
                       <div className="s2-empty">

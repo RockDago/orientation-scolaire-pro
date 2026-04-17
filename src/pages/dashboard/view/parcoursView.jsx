@@ -746,7 +746,7 @@ export default function ParcoursView() {
 
   // ── Rendu ──────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-white p-3 sm:p-4 lg:p-6 xl:p-8">
+    <div className="min-h-screen bg-white p-0">
       <ToastContainer />
 
       {/* Modales */}
@@ -777,7 +777,7 @@ export default function ParcoursView() {
         />
       )}
 
-      <div className="max-w-screen-2xl mx-auto space-y-4 sm:space-y-5 lg:space-y-6">
+      <div className="max-w-screen-2xl mx-auto space-y-4">
 
         {/* En-tête */}
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
@@ -803,7 +803,7 @@ export default function ParcoursView() {
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
 
           {/* Barre de recherche */}
-          <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
             <div className="relative w-full">
               <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
               <input 
@@ -825,7 +825,7 @@ export default function ParcoursView() {
           </div>
 
           {/* Barre d'actions (Afficher X entrées + Export) */}
-          <div className="px-3 sm:px-4 py-2 border-b border-gray-200">
+          <div className="px-4 py-3 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">Afficher</span>
@@ -963,7 +963,7 @@ export default function ParcoursView() {
 
           {/* Pagination */}
           {totalItems > 0 && (
-            <div className="px-3 sm:px-4 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+            <div className="px-4 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <span className="text-xs text-gray-500 order-2 sm:order-1">
                 Affichage de {startItem} à {endItem} sur {totalItems} parcours
               </span>

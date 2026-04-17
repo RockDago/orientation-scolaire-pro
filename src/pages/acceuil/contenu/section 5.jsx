@@ -97,11 +97,28 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
         const tous = await getAllEtablissementsCache();
         const metierLabel = metier?.label || "";
 
+        // Helper: vérifie si un champ JSON (array ou string) contient une valeur
+        const fieldContains = (field, value) => {
+          if (!field || !value) return false;
+          const valLower = value.toLowerCase().trim();
+          if (Array.isArray(field)) {
+            return field.some((item) =>
+              String(item).toLowerCase().trim() === valLower ||
+              String(item).toLowerCase().trim().includes(valLower) ||
+              valLower.includes(String(item).toLowerCase().trim())
+            );
+          }
+          const fieldLower = String(field).toLowerCase().trim();
+          return fieldLower === valLower || fieldLower.includes(valLower) || valLower.includes(fieldLower);
+        };
+
         const filtered = tous.filter((e) => {
           if (reponseDomaine && !metierLabel) {
-            return e.mention?.toLowerCase() === reponseDomaine.toLowerCase();
+            // e.mention et e.domaine peuvent être des tableaux JSON
+            return fieldContains(e.mention, reponseDomaine) || fieldContains(e.domaine, reponseDomaine);
           }
-          return e.metier?.toLowerCase() === metierLabel.toLowerCase();
+          // e.metier peut être un tableau JSON
+          return fieldContains(e.metier, metierLabel);
         });
 
         const regionsSet    = new Set();
@@ -216,7 +233,7 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
                 <p className="text-white font-bold text-sm">Chargement des régions…</p>
              </div>
           ) : sortedRegionIds.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-6xl">
               {sortedRegionIds.map((id) => {
                 const count = etablissementsParRegion[id] || 0;
                 const label = REGION_LABELS[id];

@@ -393,7 +393,7 @@ export default function DomainesView() {
   };
 
   return (
-    <div className="min-h-screen bg-white p-3 sm:p-4 lg:p-6 xl:p-8">
+    <div className="min-h-screen bg-white p-0">
       <ToastContainer />
       {showModal && (
         <DomaineModal 
@@ -413,7 +413,7 @@ export default function DomainesView() {
         />
       )}
 
-      <div className="max-w-screen-2xl mx-auto space-y-4 sm:space-y-6">
+      <div className="max-w-screen-2xl mx-auto space-y-4">
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
           <div>
             <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-gray-900">Gestion des domaines</h1>
@@ -427,7 +427,7 @@ export default function DomainesView() {
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-          <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
             <div className="relative w-full">
               <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
               <input 
@@ -445,7 +445,7 @@ export default function DomainesView() {
             </div>
           </div>
 
-          <div className="px-3 sm:px-4 py-2 border-b border-gray-200">
+          <div className="px-4 py-3 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">Afficher</span>
@@ -504,7 +504,7 @@ export default function DomainesView() {
           </div>
 
           {/* Pagination */}
-          <div className="px-3 sm:px-4 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="px-4 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <span className="text-xs text-gray-500">Affichage de {startItem} à {endItem} sur {totalItems} domaine{totalItems > 1 ? 's' : ''}</span>
             <div className="flex items-center gap-1">
               <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))} className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50"><ChevronLeft size={15}/></button>
