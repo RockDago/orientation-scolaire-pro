@@ -270,8 +270,15 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
 
   const etablissementsFiltres = useMemo(() => {
     return etablissements.filter((e) => {
-      if (filterType   !== "Tous" && e.type   !== filterType)                              return false;
-      if (filterNiveau !== "Tous" && !e.niveau?.toLowerCase().includes(filterNiveau.toLowerCase())) return false;
+      if (filterType !== "Tous" && e.type !== filterType) return false;
+      if (filterNiveau !== "Tous") {
+        const target = filterNiveau.toLowerCase();
+        if (Array.isArray(e.niveau)) {
+          if (!e.niveau.some(n => String(n).toLowerCase().includes(target))) return false;
+        } else if (!e.niveau || !String(e.niveau).toLowerCase().includes(target)) {
+          return false;
+        }
+      }
       return true;
     });
   }, [etablissements, filterType, filterNiveau]);

@@ -88,8 +88,15 @@ function GradBg() {
   );
 }
 
-const NIVEAUX_COURTS = ["Bac+2", "Bac+3"];
-const NIVEAUX_LONGS = ["Bac+4", "Bac+5", "Bac+6", "Bac+7", "Bac+8"];
+const NIVEAUX_COURTS = [
+  "bac+2", "bac+3", "bac +2", "bac +3",
+  "licence", "bts", "dut", "dts", "deug", "diplome d'etat"
+];
+const NIVEAUX_LONGS = [
+  "bac+4", "bac+5", "bac+6", "bac+7", "bac+8",
+  "bac +4", "bac +5", "bac +6", "bac +7", "bac +8",
+  "master", "doctorat", "ingenieur", "mba", "dea", "dess"
+];
 
 function normalize(str) {
   return (str || "")
@@ -125,15 +132,20 @@ function filtrerMetiers(metiers, reponseDomaine, reponseEtudes) {
 
     if (reponseEtudes) {
       // niveau peut être un tableau JSON ou une string
-      const niveaux = Array.isArray(metier.niveau)
+      const niveauxRaw = Array.isArray(metier.niveau)
         ? metier.niveau
         : metier.niveau
           ? [metier.niveau]
           : [];
+      
+      const niveauxNorm = niveauxRaw.map(n => normalize(String(n)));
+
       if (reponseEtudes === "court") {
-        if (!niveaux.some((n) => NIVEAUX_COURTS.includes(n.trim()))) return false;
+        // Au moins un niveau doit être dans les niveaux courts
+        if (!niveauxNorm.some((n) => NIVEAUX_COURTS.some(c => n.includes(c) || c.includes(n)))) return false;
       } else if (reponseEtudes === "long") {
-        if (!niveaux.some((n) => NIVEAUX_LONGS.includes(n.trim()))) return false;
+        // Au moins un niveau doit être dans les niveaux longs
+        if (!niveauxNorm.some((n) => NIVEAUX_LONGS.some(l => n.includes(l) || l.includes(n)))) return false;
       }
     }
 
