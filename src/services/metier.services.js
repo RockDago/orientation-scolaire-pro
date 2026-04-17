@@ -46,6 +46,10 @@ export const createMetier = async (data) => {
     parcoursFormation: data.parcoursFormation,
   });
 
+  // ✅ Log pour voir exactement ce que PHP répond
+  console.log("=== [createMetier] response.status ===", response.status);
+  console.log("=== [createMetier] response.data ===", JSON.stringify(response.data, null, 2));
+
   invalidateMetiersCache();
   return response.data.metier || response.data || null;
 };
