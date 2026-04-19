@@ -252,7 +252,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             </div>
             <div className="mt-20 flex flex-col items-center gap-2">
               <p className="text-white font-black text-2xl uppercase tracking-widest animate-pulse text-center px-4">
-                Recherche de détails...4
+                Recherche de détails...
               </p>
               <p className="text-white/60 text-sm font-medium">Préparation de la fiche métier...</p>
             </div>
