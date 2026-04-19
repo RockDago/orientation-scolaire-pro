@@ -184,7 +184,7 @@ function FicheModal({ fiche, metier, onClose }) {
                 </p>
               </div>
               <div className="mt-1">
-                <p className="text-white font-bold text-base sm:text-lg lg:text-xl leading-relaxed break-words">
+                <p className="text-white font-bold text-sm sm:text-base lg:text-lg leading-relaxed break-words">
                   {value || "—"}
                 </p>
               </div>

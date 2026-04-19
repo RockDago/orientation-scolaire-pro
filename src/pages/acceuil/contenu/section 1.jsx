@@ -205,8 +205,8 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
           .s1-cards-container { gap: 1rem; padding-left: 1rem; padding-right: 1rem; }
           .s1-card { padding: 1.5rem; border-radius: 1.25rem; }
           .s1-card-inner { gap: 0.75rem; }
-          .s1-card-title { font-size: 1.5rem; }
-          .s1-card-desc { font-size: 0.875rem; margin-top: 0.4rem; }
+          .s1-card-title { font-size: 1.25rem; }
+          .s1-card-desc { font-size: 0.75rem; margin-top: 0.4rem; }
           .s1-card-icon { width: 4.5rem; }
           .s1-footer { font-size: 0.75rem; }
 
@@ -248,23 +248,24 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             .s1-container { padding: 1.5rem 2.5rem 0; }
             .s1-logo { height: 8rem; }
             .s1-badge { font-size: 0.875rem; }
-            .s1-title-main { font-size: 3rem; }
+            .s1-title-main { font-size: 2.25rem; }
             .s1-description { font-size: 0.875rem; }
             .s1-card { padding: 2rem; border-radius: 1.5rem; }
-            .s1-card-title { font-size: 2rem; }
+            .s1-card-title { font-size: 1.5rem; }
             .s1-card-icon { width: 5.5rem; }
+            .s1-card-desc { font-size: 0.875rem; }
           }
 
 
           /* ─── MD (≥768px) ─── */
           @media (min-width: 768px) {
             .s1-container { padding-left: 2rem; padding-right: 2rem; }
-            .s1-title-main { font-size: 4rem; }
-            .s1-description { font-size: 1.4rem; }
+            .s1-title-main { font-size: 2.25rem; }
+            .s1-description { font-size: 0.875rem; }
             .s1-card { padding: 2.5rem; }
-            .s1-card-title { font-size: 2.5rem; }
+            .s1-card-title { font-size: 1.75rem; }
             .s1-card-icon { width: 6.5rem; }
-            .s1-footer { font-size: 1rem; }
+            .s1-footer { font-size: 0.875rem; }
           }
 
 
@@ -272,15 +273,16 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
           @media (min-width: 1024px) {
             .s1-container { padding-left: 3rem; padding-right: 3rem; padding-top: 1rem !important; }
             .s1-logo { height: 4.5rem; }
-            .s1-badge { font-size: 0.9rem; }
-            .s1-title-main { font-size: 2.2rem; }
-            .s1-description { font-size: 0.95rem; }
+            .s1-badge { font-size: 0.875rem; }
+            .s1-title-main { font-size: 3rem; }
+            .s1-description { font-size: 0.875rem; }
             .s1-cards-container { gap: 1rem; }
             .s1-card { padding: 1.1rem; border-radius: 1.35rem; }
             .s1-card-title { font-size: 1.5rem; }
             .s1-card-icon { width: 3.2rem; }
+            .s1-card-desc { font-size: 0.875rem; }
             .s1-header-text { margin-top: 1rem !important; margin-bottom: 1.25rem !important; }
-            .s1-footer { margin-top: 1rem !important; font-size: 0.85rem; }
+            .s1-footer { margin-top: 1rem !important; font-size: 0.875rem; }
           }
 
 
@@ -288,14 +290,15 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
           @media (min-width: 1280px) {
             .s1-container { padding-left: 4rem; padding-right: 4rem; padding-top: 1.5rem !important; }
             .s1-logo { height: 6.5rem; }
-            .s1-badge { font-size: 1rem; }
-            .s1-title-main { font-size: 3.2rem; }
-            .s1-description { font-size: 1.1rem; }
+            .s1-badge { font-size: 0.875rem; }
+            .s1-title-main { font-size: 3rem; }
+            .s1-description { font-size: 0.875rem; }
             .s1-cards-container { gap: 1.5rem; max-width: 1024px !important; }
             .s1-card { padding: 1.4rem; border-radius: 1.6rem; }
             .s1-card-title { font-size: 1.8rem; }
             .s1-card-icon { width: 4rem; }
-            .s1-footer { margin-top: 1.5rem !important; font-size: 1rem; }
+            .s1-card-desc { font-size: 0.875rem; }
+            .s1-footer { margin-top: 1.5rem !important; font-size: 0.875rem; }
           }
 
 

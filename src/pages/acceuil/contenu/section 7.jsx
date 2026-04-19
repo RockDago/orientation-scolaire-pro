@@ -60,11 +60,11 @@ export default function Section7({ onSuivant, onRetour, onHome }) {
         {/* Zone de contenu - centrée verticalement et horizontalement */}
         <div className="flex-1 flex flex-col justify-center items-center py-4">
           <div className="flex flex-col items-center text-center w-full max-w-lg">
-            <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tight mb-4">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-4 uppercase">
               Tu es actuellement :
             </h1>
             
-            <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-xs sm:max-w-md mb-6">
+            <p className="text-xs sm:text-sm text-white/85 leading-relaxed max-w-xs sm:max-w-md mb-6">
               Indique ta situation pour adapter les recommandations.
             </p>
 

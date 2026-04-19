@@ -193,10 +193,10 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
                 transform: open ? "translateY(-12px)" : "translateY(0)",
               }}
             >
-              <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tight mb-4">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-4 uppercase">
                 Explorer par<br />domaine
               </h1>
-              <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-xs sm:max-w-md mb-6">
+              <p className="text-xs sm:text-sm text-white/85 leading-relaxed max-w-xs sm:max-w-md mb-6">
                 Sélectionne le domaine qui t'intéresse pour découvrir
                 immédiatement les métiers disponibles.
               </p>

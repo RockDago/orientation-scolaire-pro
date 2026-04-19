@@ -152,18 +152,18 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
           </span>
 
           <div className="mb-8">
-            <p className="text-sm text-white/70 font-semibold mb-2 uppercase tracking-wider">Formation sélectionnée :</p>
+            <p className="text-[11px] sm:text-sm text-white/70 font-semibold mb-2 uppercase tracking-wider">Formation sélectionnée :</p>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight break-words">
               {m?.label || "—"}
             </h1>
           </div>
 
           <div className="flex flex-wrap gap-2 mb-5">
-            <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
+            <span className="bg-white/20 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full">
               {Array.isArray(m?.mention) ? m.mention.join(", ") : (m?.mention || "—")}
             </span>
             {m?.niveau && (
-              <span className="bg-white/15 text-white text-xs font-semibold px-3 py-1 rounded-full">
+              <span className="bg-white/15 text-white text-[10px] sm:text-xs font-semibold px-3 py-1 rounded-full">
                 {Array.isArray(m.niveau) ? m.niveau.join(", ") : m.niveau}
               </span>
             )}
@@ -175,7 +175,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
                 <div key={i} className="flex items-stretch gap-4">
                   <div className="flex flex-col items-center flex-shrink-0">
                     <div
-                      className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0 z-10"
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-black text-xs sm:text-sm flex-shrink-0 z-10"
                       style={{
                         background: i === parcours.length - 1 ? "white" : "rgba(255,255,255,0.25)",
                         color:      i === parcours.length - 1 ? "#1250c8" : "white",
@@ -202,13 +202,13 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
                         : "1px solid rgba(255,255,255,0.18)",
                     }}
                   >
-                    <p className="text-sm font-semibold text-white leading-snug break-words">
+                    <p className="text-xs sm:text-sm font-semibold text-white leading-snug break-words">
                       {etape}
                     </p>
                     {i === parcours.length - 1 && (
                       <div className="flex items-center gap-1 mt-1">
                         <FiCheckCircle size={12} style={{ color: "#1a3ea8" }} />
-                        <span className="text-[11px] font-semibold" style={{ color: "#1a3ea8" }}>
+                        <span className="text-[10px] sm:text-[11px] font-semibold" style={{ color: "#1a3ea8" }}>
                           Objectif final
                         </span>
                       </div>
@@ -221,7 +221,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
 
           {metiersSimilaires.length > 0 && (
             <div className="w-full max-w-2xl mx-auto mt-6 mb-8">
-              <h3 className="text-white font-bold text-lg mb-3 px-1">Autres métiers dans ce domaine</h3>
+              <h3 className="text-white font-bold text-base sm:text-lg mb-3 px-1">Autres métiers dans ce domaine</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {metiersSimilaires.map(sim => (
                   <button
@@ -234,7 +234,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
                     }}
                   >
                     <div className="flex-1 text-left">
-                      <p className="text-white font-bold text-sm leading-tight">{sim.label}</p>
+                      <p className="text-white font-bold text-xs sm:text-sm leading-tight">{sim.label}</p>
                       <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider mt-1">{Array.isArray(sim.niveau) ? sim.niveau.join(", ") : sim.niveau}</p>
                     </div>
                     <FiArrowRight size={14} className="text-white/60" />
@@ -243,30 +243,27 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
               </div>
             </div>
           )}
+
+          {/* Boutons bas - Intégrés au flux */}
+          <div className="flex flex-col items-center gap-4 mt-8 mb-12">
+            <button
+              onClick={handleVoirFormations}
+              className="w-full max-w-sm bg-[#1250c8] hover:bg-[#1a3ea8] text-white font-black py-4 px-6 rounded-full flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+            >
+              <span className="text-xs sm:text-sm">Établissements proposant ce parcours</span>
+              <FiArrowRight size={18} />
+            </button>
+
+            <button
+              onClick={onHome}
+              className="text-white hover:text-white/80 transition-colors shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
+              aria-label="Accueil"
+            >
+              <HiOutlineHome size={26} className="sm:hidden" />
+              <HiOutlineHome size={30} className="hidden sm:block" />
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Boutons bas - Centrés au milieu en haut de Home */}
-      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-sm px-6 pointer-events-none flex justify-center">
-        <button
-          onClick={handleVoirFormations}
-          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white font-black py-3 sm:py-4 px-6 rounded-full flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 pointer-events-auto"
-        >
-          <span className="text-sm">Établissements proposant ce parcours</span>
-          <FiArrowRight size={18} />
-        </button>
-      </div>
-
-      {/* Home Fixed - Centered */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
-        <button
-          onClick={onHome}
-          className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
-          aria-label="Accueil"
-        >
-          <HiOutlineHome size={26} className="sm:hidden" />
-          <HiOutlineHome size={30} className="hidden sm:block" />
-        </button>
       </div>
 
       <style>{`

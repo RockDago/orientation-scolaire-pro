@@ -55,7 +55,7 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
             </h1>
             
             {/* Sous-texte centré */}
-            <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-xs sm:max-w-sm mb-6 lg:mb-4">
+            <p className="text-xs sm:text-sm text-white/85 leading-relaxed max-w-xs sm:max-w-sm mb-6 lg:mb-4">
               Réponds à quelques questions. Cela prendra moins de 2 minutes.
             </p>
 

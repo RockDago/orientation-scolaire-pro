@@ -376,14 +376,14 @@ export default function Section10({
                   </div>
                 )}
 
-                <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-6 pr-4">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight mb-6 pr-4 uppercase">
                   {metier.label}
                 </h2>
 
                 {metier.description && (
                   <div className="space-y-2 mb-6">
                     <p className="text-xs font-black text-white/50 uppercase tracking-widest">Description</p>
-                    <p className="text-sm sm:text-lg lg:text-base text-white/90 leading-relaxed font-medium">
+                    <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-medium">
                       {metier.description}
                     </p>
                   </div>

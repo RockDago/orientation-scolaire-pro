@@ -110,6 +110,16 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
   const metierComboRef = useRef(null);
   const comboRef       = useRef(null);
 
+  // Reset state when return from parent (metierSelectionne becomes null)
+  useEffect(() => {
+    if (selectedMetier === null) {
+      setLocalSelected(null);
+      setSearchQuery("");
+      setMode("idle");
+      setSelectedDomaine(null);
+    }
+  }, [selectedMetier]);
+
   useEffect(() => {
     if (searchParam && searchParam.trim()) {
       setSearchQuery(searchParam);
@@ -242,7 +252,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             </div>
             <div className="mt-20 flex flex-col items-center gap-2">
               <p className="text-white font-black text-2xl uppercase tracking-widest animate-pulse text-center px-4">
-                Recherche de détails...
+                Recherche de détails...4
               </p>
               <p className="text-white/60 text-sm font-medium">Préparation de la fiche métier...</p>
             </div>
@@ -526,7 +536,10 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           color: white; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 0.75rem;
         }
         @media(min-width: 640px) {
-          .s2-h1 { font-size: 3rem; } /* text-5xl approx */
+          .s2-h1 { font-size: 2.25rem; } /* text-4xl */
+        }
+        @media(min-width: 1024px) {
+          .s2-h1 { font-size: 3rem; } /* text-5xl */
         }
         .s2-h1-sub { color: rgba(255, 255, 255, 0.65); }
         .s2-desc {
@@ -559,10 +572,9 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           width:100%; 
           max-width: 450px; 
           z-index: 100;
-        }
-        .s2-cbwrap:focus-within { z-index: 200; }
           margin-bottom: 1.25rem; 
         }
+        .s2-cbwrap:focus-within { z-index: 200; }
         @media(max-width: 1023px) {
           .s2-cbwrap { max-width: 100%; display: flex; flex-direction: column; align-items: center; }
         }

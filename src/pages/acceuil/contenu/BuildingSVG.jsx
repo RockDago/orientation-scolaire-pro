@@ -3,7 +3,7 @@ import React from 'react';
 const BuildingSVG = ({ className = "" }) => {
   return (
     <div className={`pointer-events-none select-none ${className}`}>
-      <svg width="100%" height="auto" viewBox="0 0 1883 332" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
+      <svg width="100%" viewBox="0 0 1883 332" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
         <g clipPath="url(#clip0_89_449)">
           <path d="M1459.47 198.963L1455.5 198.417C1421.77 193.752 1387.5 189.519 1353.65 185.81L1350.68 185.48L1349.52 125.789L1353.35 126.198C1387.18 129.805 1421.41 133.947 1455.09 138.498L1457.96 138.885L1459.47 198.963ZM1357.37 179.335C1388.99 182.829 1420.95 186.777 1452.47 191.101L1451.33 144.87C1419.9 140.649 1388.03 136.792 1356.48 133.389L1357.37 179.335Z" fill="white" fillOpacity="0.35"/>
           <path d="M1597.7 220.924L1593.57 220.195C1559.99 214.233 1525.86 208.669 1492.15 203.662L1489.32 203.241L1487.71 143.05L1491.72 143.63C1525.41 148.534 1559.5 153.996 1593.05 159.844L1595.78 160.322L1597.7 220.924ZM1495.97 197.325C1527.45 202.024 1559.26 207.201 1590.63 212.742L1589.14 166.091C1557.87 160.652 1526.14 155.577 1494.73 150.969L1495.97 197.325Z" fill="white" fillOpacity="0.35"/>

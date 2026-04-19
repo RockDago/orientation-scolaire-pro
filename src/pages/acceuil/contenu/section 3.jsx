@@ -34,7 +34,7 @@ function MetierDetailPanel({ metier }) {
       {/* Contenu scrollable */}
       <div className="flex-1 overflow-y-auto scrollbar-thin-white space-y-4 sm:space-y-5 pr-2">
         <div>
-          <p className="text-white/55 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold mb-1.5 sm:mb-2">
+          <p className="text-white/55 text-[10px] uppercase tracking-widest font-bold mb-1.5 sm:mb-2">
             Description du métier
           </p>
           <p className="text-white/95 text-xs sm:text-sm leading-relaxed">{metier.description}</p>
@@ -47,7 +47,7 @@ function MetierDetailPanel({ metier }) {
             </p>
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {metier.parcours.map((p, i) => (
-                <span key={i} className="text-[10px] sm:text-[12px] bg-white/15 border border-white/20 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-white">
+                <span key={i} className="text-[10px] sm:text-xs bg-white/15 border border-white/20 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-white">
                   {p}
                 </span>
               ))}
@@ -62,7 +62,7 @@ function MetierDetailPanel({ metier }) {
             </p>
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {metier.serie.map((p, i) => (
-                <span key={i} className="text-[10px] sm:text-[12px] bg-white/20 border border-white/30 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-full">
+                <span key={i} className="text-[10px] sm:text-xs bg-white/20 border border-white/30 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-full">
                   {p}
                 </span>
               ))}
@@ -258,15 +258,15 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
             <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
           </button>
 
-          {/* Titre */}
-          <div className="shrink-0 mb-2.5 sm:mb-3">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mt-0.5 mb-1">
-              {m?.label || "Métier"}
-            </h1>
-            <div className="inline-block bg-white/90 rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-semibold text-gray-800 mb-1.5 sm:mb-2">
-              {Array.isArray(m?.mention) ? m.mention.join(", ") : (m?.mention || "Formation")}
+            {/* Titre */}
+            <div className="shrink-0 mb-2.5 sm:mb-3">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mt-0.5 mb-1 uppercase">
+                {m?.label || "Métier"}
+              </h1>
+              <div className="inline-block bg-white/20 backdrop-blur-md rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-white mb-1.5 sm:mb-2 border border-white/20">
+                {Array.isArray(m?.mention) ? m.mention.join(", ") : (m?.mention || "Formation")}
+              </div>
             </div>
-          </div>
 
           {/* Zone scrollable */}
           <div className="flex-1 overflow-y-auto scrollbar-thin-white min-h-0 pr-2 pb-3 sm:pb-4">

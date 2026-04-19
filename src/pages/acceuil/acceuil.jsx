@@ -175,7 +175,10 @@ export default function Acceuil() {
                       setReponseDomaine(null);
                       naviguerVersMetier(metier, "forward");
                     }}
-                    onRetour={() => naviguerVers("/orientation", "back")}
+                    onRetour={() => {
+                      setMetierSelectionne(null);
+                      naviguerVers("/orientation", "back");
+                    }}
                     onHome={onHome}
                   />
                 }
@@ -191,7 +194,10 @@ export default function Acceuil() {
                       setReponseDomaine(null);
                       naviguerVersMetier(metier, "forward");
                     }}
-                    onRetour={() => naviguerVers("/orientation", "back")}
+                    onRetour={() => {
+                      setMetierSelectionne(null);
+                      naviguerVers("/orientation", "back");
+                    }}
                     onHome={onHome}
                   />
                 }
@@ -206,7 +212,10 @@ export default function Acceuil() {
                   <Section3Wrapper
                     metierSelectionne={metierSelectionne}
                     setMetierSelectionne={setMetierSelectionne}
-                    onRetour={() => naviguerVers("/trouver-metier", "back")}
+                    onRetour={() => {
+                      setMetierSelectionne(null);
+                      naviguerVers("/trouver-metier", "back");
+                    }}
                     onVoirCarte={(metier) => {
                       if (metier) setMetierSelectionne(metier);
                       naviguerVers("/region-map-madagascar", "forward");
