@@ -116,7 +116,7 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
 
           {/* Cards */}
           <div
-            className="s1-cards-container w-full lg:max-w-4xl xl:max-w-5xl mx-auto flex flex-col lg:flex-row flex-1 lg:flex-none pb-8 lg:pb-0 justify-center"
+            className="s1-cards-container w-full lg:max-w-3xl xl:max-w-4xl mx-auto flex flex-col lg:flex-row flex-1 lg:flex-none pb-8 lg:pb-0 justify-center"
             style={{ animation: "fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.35s both" }}
           >
             {/* Card Explorer */}
@@ -134,8 +134,8 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
               "
               style={{ boxShadow: "0 8px 40px rgba(13,71,161,0.2)" }}
             >
-              <div className="s1-card-inner flex items-center justify-between w-full">
-                <div className="flex-1 z-10">
+              <div className="s1-card-inner flex items-center justify-between w-full h-full relative">
+                <div className="flex-1 z-10 relative">
                   <h2 className="s1-card-title font-extrabold text-white leading-tight">
                     Explorer<br />les métiers
                   </h2>
@@ -146,9 +146,9 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
                 <img
                   src={pictoExplorer}
                   alt="Explorer"
-                  className="s1-card-icon shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 z-10 object-contain"
+                  className="absolute -right-2 top-1/2 -translate-y-1/2 w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-32 lg:h-32 xl:w-36 xl:h-36 object-contain object-right opacity-90 group-hover:scale-105 group-hover:rotate-3 transition-transform duration-500 z-0 pointer-events-none"
                 />
-                <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors duration-500" />
+                <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors duration-500 z-0" />
               </div>
             </button>
 
@@ -167,8 +167,8 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
               "
               style={{ boxShadow: "0 8px 40px rgba(117,184,42,0.2)" }}
             >
-              <div className="s1-card-inner flex items-center justify-between w-full">
-                <div className="flex-1 z-10">
+              <div className="s1-card-inner flex items-center justify-between w-full h-full relative">
+                <div className="flex-1 z-10 relative">
                   <h2 className="s1-card-title font-extrabold text-white leading-tight">
                     Trouver<br />mon orientation
                   </h2>
@@ -179,9 +179,9 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
                 <img
                   src={pictoOrientation}
                   alt="Orientation"
-                  className="s1-card-icon shrink-0 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500 z-10 object-contain"
+                  className="absolute -right-2 top-1/2 -translate-y-1/2 w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-32 lg:h-32 xl:w-36 xl:h-36 object-contain object-right opacity-90 group-hover:scale-105 group-hover:-rotate-3 transition-transform duration-500 z-0 pointer-events-none"
                 />
-                <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors duration-500" />
+                <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors duration-500 z-0" />
               </div>
             </button>
           </div>
@@ -207,7 +207,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
           .s1-card-inner { gap: 0.75rem; }
           .s1-card-title { font-size: 1.25rem; }
           .s1-card-desc { font-size: 0.75rem; margin-top: 0.4rem; }
-          .s1-card-icon { width: 4.5rem; }
           .s1-footer { font-size: 0.75rem; }
 
 
@@ -230,7 +229,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             .s1-card-inner { gap: 0.5rem; }
             .s1-card-title { font-size: 1.15rem; }
             .s1-card-desc { font-size: 0.72rem; margin-top: 0.25rem; }
-            .s1-card-icon { width: 3rem; }
 
             /* Footer */
             .s1-footer { margin-top: 0.6rem !important; font-size: 0.65rem; padding-bottom: 0.5rem; }
@@ -252,7 +250,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             .s1-description { font-size: 0.875rem; }
             .s1-card { padding: 2rem; border-radius: 1.5rem; }
             .s1-card-title { font-size: 1.5rem; }
-            .s1-card-icon { width: 5.5rem; }
             .s1-card-desc { font-size: 0.875rem; }
           }
 
@@ -264,7 +261,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             .s1-description { font-size: 0.875rem; }
             .s1-card { padding: 2.5rem; }
             .s1-card-title { font-size: 1.75rem; }
-            .s1-card-icon { width: 6.5rem; }
             .s1-footer { font-size: 0.875rem; }
           }
 
@@ -276,10 +272,9 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             .s1-badge { font-size: 0.875rem; }
             .s1-title-main { font-size: 3rem; }
             .s1-description { font-size: 0.875rem; }
-            .s1-cards-container { gap: 1rem; }
+            .s1-cards-container { gap: 1rem; max-width: 700px !important; }
             .s1-card { padding: 1.1rem; border-radius: 1.35rem; }
             .s1-card-title { font-size: 1.5rem; }
-            .s1-card-icon { width: 3.2rem; }
             .s1-card-desc { font-size: 0.875rem; }
             .s1-header-text { margin-top: 1rem !important; margin-bottom: 1.25rem !important; }
             .s1-footer { margin-top: 1rem !important; font-size: 0.875rem; }
@@ -293,10 +288,9 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             .s1-badge { font-size: 0.875rem; }
             .s1-title-main { font-size: 3rem; }
             .s1-description { font-size: 0.875rem; }
-            .s1-cards-container { gap: 1.5rem; max-width: 1024px !important; }
+            .s1-cards-container { gap: 1.5rem; max-width: 800px !important; }
             .s1-card { padding: 1.4rem; border-radius: 1.6rem; }
             .s1-card-title { font-size: 1.8rem; }
-            .s1-card-icon { width: 4rem; }
             .s1-card-desc { font-size: 0.875rem; }
             .s1-footer { margin-top: 1.5rem !important; font-size: 0.875rem; }
           }

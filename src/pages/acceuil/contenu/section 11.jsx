@@ -26,7 +26,6 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
   const navigate = useNavigate();
   const [metierDetails, setMetierDetails] = useState(metier || null);
   const [loading,        setLoading]       = useState(false);
-  const [metiersSimilaires, setMetiersSimilaires] = useState([]);
 
   useEffect(() => {
     if (!metier) return;
@@ -56,23 +55,6 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
         }
       } else {
         setMetierDetails(metier);
-      }
-
-      // Charger les métiers du même domaine
-      try {
-        const tous = await getAllMetiersCache();
-        // domaine et mention peuvent être des tableaux JSON
-        const domainesRef = normalizeField(metier.domaine || metier.mention);
-        const filtrés = tous.filter(other =>
-          other.id !== metier.id &&
-          (
-            normalizeField(other.domaine).some(d => domainesRef.includes(d)) ||
-            normalizeField(other.mention).some(d => domainesRef.includes(d))
-          )
-        ).slice(0, 4);
-        setMetiersSimilaires(filtrés);
-      } catch (err) {
-        console.error("Erreur chargement métiers similaires:", err);
       }
     };
 
@@ -143,7 +125,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
         </button>
 
         {/* Zone scrollable */}
-        <div className="flex-1 min-h-0 overflow-y-auto py-2 scrollbar-hide">
+        <div className="flex-1 min-h-0 overflow-y-auto py-2 pb-32 scrollbar-hide">
           <span
             className="inline-block text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full mb-2"
             style={{ background: "rgba(255,255,255,0.18)", color: "white" }}
@@ -219,51 +201,30 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
             </div>
           </div>
 
-          {metiersSimilaires.length > 0 && (
-            <div className="w-full max-w-2xl mx-auto mt-6 mb-8">
-              <h3 className="text-white font-bold text-base sm:text-lg mb-3 px-1">Autres métiers dans ce domaine</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {metiersSimilaires.map(sim => (
-                  <button
-                    key={sim.id}
-                    onClick={() => onVoirFormations?.(sim)}
-                    className="flex items-center justify-between gap-3 p-4 rounded-2xl transition-all"
-                    style={{
-                      background: "rgba(255,255,255,0.12)",
-                      border: "1px solid rgba(255,255,255,0.2)",
-                    }}
-                  >
-                    <div className="flex-1 text-left">
-                      <p className="text-white font-bold text-xs sm:text-sm leading-tight">{sim.label}</p>
-                      <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider mt-1">{Array.isArray(sim.niveau) ? sim.niveau.join(", ") : sim.niveau}</p>
-                    </div>
-                    <FiArrowRight size={14} className="text-white/60" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Boutons bas - Intégrés au flux */}
-          <div className="flex flex-col items-center gap-4 mt-8 mb-12">
-            <button
-              onClick={handleVoirFormations}
-              className="w-full max-w-sm bg-[#1250c8] hover:bg-[#1a3ea8] text-white font-black py-4 px-6 rounded-full flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-            >
-              <span className="text-xs sm:text-sm">Établissements proposant ce parcours</span>
-              <FiArrowRight size={18} />
-            </button>
-
-            <button
-              onClick={onHome}
-              className="text-white hover:text-white/80 transition-colors shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
-              aria-label="Accueil"
-            >
-              <HiOutlineHome size={26} className="sm:hidden" />
-              <HiOutlineHome size={30} className="hidden sm:block" />
-            </button>
-          </div>
         </div>
+      </div>
+
+      {/* Boutons bas - Fixés en bas */}
+      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-md px-6 pointer-events-none flex justify-center">
+        <button
+          onClick={handleVoirFormations}
+          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white border-none rounded-full px-6 py-3.5 sm:py-4 flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-xl transition-all font-black text-xs sm:text-sm active:scale-95 pointer-events-auto"
+        >
+          <span>Établissements proposant ce parcours</span>
+          <FiArrowRight size={18} />
+        </button>
+      </div>
+
+      {/* Home Fixed - Centered */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
+        <button
+          onClick={onHome}
+          className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
+          aria-label="Accueil"
+        >
+          <HiOutlineHome size={26} className="sm:hidden" />
+          <HiOutlineHome size={30} className="hidden sm:block" />
+        </button>
       </div>
 
       <style>{`

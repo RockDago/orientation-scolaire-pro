@@ -5,6 +5,7 @@ import { FiChevronLeft, FiChevronRight, FiArrowRight } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { getAllMetiers } from "../../../services/metier.services";
 import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
+import BuildingSVG from "./BuildingSVG";
 
 function GradBg() {
   return (
@@ -12,61 +13,7 @@ function GradBg() {
       <div className="absolute top-0 right-0 pointer-events-none opacity-20 z-0 origin-top-right">
         <img src={pictoOrientation} alt="" className="w-[160px] lg:w-[280px] object-contain" />
       </div>
-      <div className="absolute bottom-0 left-0 right-0 opacity-10">
-        <svg
-          width="100%"
-          height="100"
-          viewBox="0 0 400 100"
-          preserveAspectRatio="xMidYMax meet"
-          fill="none"
-        >
-          <rect
-            x="50"
-            y="35"
-            width="40"
-            height="65"
-            stroke="white"
-            strokeWidth="1.5"
-            fill="none"
-          />
-          <rect
-            x="135"
-            y="30"
-            width="50"
-            height="70"
-            stroke="white"
-            strokeWidth="1.5"
-            fill="none"
-          />
-          <rect
-            x="195"
-            y="45"
-            width="35"
-            height="55"
-            stroke="white"
-            strokeWidth="1.5"
-            fill="none"
-          />
-          <rect
-            x="278"
-            y="38"
-            width="42"
-            height="62"
-            stroke="white"
-            strokeWidth="1.5"
-            fill="none"
-          />
-          <rect
-            x="330"
-            y="50"
-            width="30"
-            height="50"
-            stroke="white"
-            strokeWidth="1.5"
-            fill="none"
-          />
-        </svg>
-      </div>
+
       <div className="absolute top-[42%] left-0 right-0 opacity-15">
         <svg
           width="100%"
@@ -231,7 +178,7 @@ export default function Section10({
 
   return (
     <div
-      className="relative w-full h-screen font-['Sora'] overflow-hidden flex flex-col"
+      className="relative w-full h-screen lg:h-auto lg:min-h-screen font-['Sora'] overflow-hidden lg:overflow-y-auto flex flex-col"
       style={{
         background:
           "linear-gradient(135deg,#1250c8 0%,#1a6dcc 20%,#28b090 55%,#a0d820 80%,#c2e832 100%)",
@@ -242,6 +189,11 @@ export default function Section10({
         rel="stylesheet"
       />
       <GradBg />
+
+      {/* Background Building SVG Decoration */}
+      <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-0 opacity-[0.8]">
+        <BuildingSVG />
+      </div>
 
       {/* Page de chargement plein écran */}
       {loading && (
@@ -328,7 +280,7 @@ export default function Section10({
 
         {/* Zone de la carte */}
         <div
-          className="flex-1 flex flex-col w-full max-w-2xl lg:max-w-4xl mx-auto min-h-0"
+          className="flex-1 flex flex-col w-full max-w-2xl lg:max-w-4xl mx-auto min-h-0 lg:h-auto"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -353,7 +305,7 @@ export default function Section10({
           {/* Carte métier */}
           {!loading && total > 0 && metier && (
             <div
-              className="flex-1 flex flex-col rounded-3xl p-6 sm:p-8 slide-in overflow-hidden mb-4"
+              className="flex-1 lg:flex-none flex flex-col rounded-3xl p-6 sm:p-8 slide-in overflow-hidden lg:overflow-visible mb-4"
               key={metier.id || index}
               style={{
                 background: "rgba(255,255,255,0.14)",
@@ -361,7 +313,7 @@ export default function Section10({
                 backdropFilter: "blur(12px)",
               }}
             >
-              <div className="flex-1 overflow-y-auto pr-1 scrollbar-hide">
+              <div className="flex-1 overflow-y-auto lg:overflow-visible pr-1 scrollbar-hide">
                 {metier.mention && (Array.isArray(metier.mention) ? metier.mention.length > 0 : metier.mention !== "—") && (
                   <div className="mb-4">
                     <span
@@ -405,14 +357,13 @@ export default function Section10({
                 </div>
               </div>
 
-              <div className="shrink-0 pt-4">
+              <div className="shrink-0 pt-6 flex justify-end">
                 <button
                   onClick={handleVoirParcours}
-                  className="w-full py-3 sm:py-4 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-3 hover:shadow-2xl active:scale-95 shadow-lg"
-                  style={{ background: "white", color: "#1250c8" }}
+                  className="group inline-flex items-center gap-2 text-white hover:text-[#c2e832] font-black text-sm sm:text-base transition-all uppercase tracking-wide"
                 >
                   Découvrir le parcours
-                  <FiArrowRight size={20} />
+                  <FiArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>
