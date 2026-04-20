@@ -94,7 +94,7 @@ const BtnPrimary = ({ onClick, children, loading, disabled, type = "button", ico
     type={type}
     onClick={onClick} 
     disabled={disabled || loading}
-    className={`px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-semibold shadow-md hover:brightness-110 transition-colors flex items-center justify-center gap-2 ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+    className={`px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center justify-center gap-2 ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
   >
     {loading ? (
       <>
@@ -115,7 +115,7 @@ const BtnSecondary = ({ onClick, children, disabled, type = "button" }) => (
     type={type}
     onClick={onClick} 
     disabled={disabled}
-    className={`px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 text-xs sm:text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    className={`px-3 sm:px-4 py-2 rounded-xl border border-gray-300 bg-white text-gray-700 text-xs sm:text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
   >
     {children}
   </button>

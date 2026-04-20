@@ -287,7 +287,7 @@ const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, pl
         </div>
         <button
           onClick={handleAdd}
-          className="px-4 py-2.5 h-[54px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm font-medium"
+          className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap"
           type="button"
           disabled={!selectedValue}
         >
@@ -328,14 +328,14 @@ const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
 );
 
 const BtnCancel  = ({ onClick }) => (
-  <button type="button" onClick={onClick} className="px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 text-xs font-semibold">Annuler</button>
+  <button type="button" onClick={onClick} className="px-3 sm:px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 text-xs sm:text-sm font-medium transition">Annuler</button>
 );
 const BtnPrimary = ({ onClick, children, loading, disabled }) => (
   <button 
     type="button" 
     onClick={onClick} 
     disabled={disabled || loading}
-    className={`px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold shadow-md hover:brightness-110 transition-colors ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+    className={`px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
   >
     {loading ? (
       <div className="flex items-center gap-2">
@@ -500,7 +500,7 @@ const MetierModal = ({
               />
               <button
                 onClick={handleAddParcoursFormation}
-                className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm font-medium"
+                className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap"
                 type="button"
               >
                 <FaPlusCircle size={16} />
@@ -530,7 +530,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
       <button 
         onClick={onConfirm} 
         disabled={loading}
-        className={`px-4 py-2 rounded-xl text-white text-xs font-semibold ${CONFIRM_COLORS[confirmColor]} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${confirmColor === 'red' ? 'bg-red-600 hover:bg-red-700' : 'bg-gradient-to-r from-blue-600 to-indigo-600'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? (
           <div className="flex items-center gap-2">
@@ -1240,7 +1240,7 @@ const handleSave = async () => {
                       </div>
                     </th>
                   ))}
-                  <th className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 whitespace-nowrap">Actions</th>
+                  <th className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -1270,8 +1270,8 @@ const handleSave = async () => {
                     className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer"
                     onClick={(e) => handleRowClick(metier, e)}
                   >
-                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center whitespace-nowrap">{metier.id}</td>
-                    <td className="px-3 py-3 text-sm text-gray-900 text-center whitespace-nowrap">{metier.label}</td>
+                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center">{metier.id}</td>
+                    <td className="px-3 py-3 text-sm text-gray-900 text-center truncate max-w-[200px]" title={metier.label}>{metier.label}</td>
                     <td className="px-3 py-3 text-sm text-gray-700 text-center">
                       <div className="flex flex-wrap justify-center gap-1">
                         {Array.isArray(metier.domaine) && metier.domaine.map((d, i) => (
@@ -1294,7 +1294,7 @@ const handleSave = async () => {
                         ))}
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                    <td className="px-3 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleOpenModal(metier); }}

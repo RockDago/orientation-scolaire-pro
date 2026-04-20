@@ -188,7 +188,7 @@ const DateRangePicker = ({ value, onChange }) => {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all bg-white border border-gray-200 text-gray-700 hover:border-gray-300"
+        className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium cursor-pointer transition-all bg-white border border-gray-200 text-gray-700 hover:border-gray-300"
       >
         <HiOutlineCalendar className="w-3.5 h-3.5 text-blue-500" />
         {value.label || "Période"}
@@ -1010,7 +1010,7 @@ const DashboardAdminView = () => {
             <button
               onClick={fetchDash}
               disabled={loadingDash}
-              className="p-2.5 text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 sm:px-4 py-2 text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               title="Actualiser les données"
             >
               <FaSync
@@ -1053,7 +1053,7 @@ const DashboardAdminView = () => {
                 <button
                   key={key}
                   onClick={() => setChart(key)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300 ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 ${
                     chart === key
                       ? "bg-blue-50/50 text-blue-600 shadow-sm border border-blue-100/50"
                       : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"

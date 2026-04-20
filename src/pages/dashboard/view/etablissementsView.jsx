@@ -25,6 +25,24 @@ import { getAllParcours } from "../../../services/parcours.services";
 import { getAllMetiers } from "../../../services/metier.services";
 import { getAllDomaines } from "../../../services/domaine.services";
 
+// ── Helpers ───────────────────────────────────────────────────────────────
+const formatPhone = (phone) => {
+  if (!phone) return "";
+  // Nettoyer le numéro
+  let cleaned = String(phone).replace(/\s/g, "").replace(/-/g, "");
+  
+  // Si c'est un format malgache standard (0341234567)
+  if (cleaned.length === 10 && cleaned.startsWith("0")) {
+    return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 8)} ${cleaned.slice(8, 10)}`;
+  }
+  // Si c'est un format avec indicatif (261341234567)
+  if (cleaned.length === 12 && cleaned.startsWith("261")) {
+    return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7, 10)} ${cleaned.slice(10, 12)}`;
+  }
+  // Retourner tel quel si format inconnu
+  return phone;
+};
+
 // ── Données statiques Madagascar ───────────────────────────────────────────
 const provinceRegions = {
   Antananarivo: ["Analamanga", "Itasy", "Vakinankaratra", "Bongolava"],
@@ -56,7 +74,7 @@ const emptyForm = {
   metier:    [],
   niveau:    [],
   admission: [],
-  contact:   "",
+  contact:   [],
 };
 
 // ── Configuration ─────────────────────────────────────────────────────────────
@@ -302,9 +320,81 @@ const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, pl
         </div>
         <button
           onClick={handleAdd}
-          className="px-4 py-2.5 h-[54px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm font-medium"
+          className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap"
           type="button"
           disabled={!selectedValue}
+        >
+          <FaPlusCircle size={14} />
+          Ajouter
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ── MultiInput Component (for phone numbers) ───────────────────────────
+const MultiInput = ({ label, values = [], onAdd, onRemove, id, placeholder = "Ajouter un numéro..." }) => {
+  const [inputValue, setInputValue] = useState("");
+
+  const handleAdd = () => {
+    if (inputValue.trim()) {
+      onAdd(inputValue.trim());
+      setInputValue("");
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAdd();
+    }
+  };
+
+  return (
+    <div className="md:col-span-2 space-y-4">
+      <h3 className="text-sm font-semibold text-gray-800 border-b pb-2">
+        {label} <span className="text-red-500">*</span>
+      </h3>
+
+      <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-lg border border-gray-200">
+        {(values || []).map((val, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm transition-shadow"
+          >
+            <span className="text-xs text-gray-700 font-medium">{formatPhone(val)}</span>
+            <button
+              onClick={() => onRemove(val)}
+              className="text-gray-400 hover:text-red-500 transition-colors"
+              type="button"
+            >
+              <FaTimes size={12} />
+            </button>
+          </div>
+        ))}
+        {(values || []).length === 0 && (
+          <span className="text-gray-400 text-xs w-full text-center py-2 italic">
+            Aucun numéro ajouté
+          </span>
+        )}
+      </div>
+
+      <div className="flex gap-3 items-end">
+        <div className="flex-1">
+          <FloatInput
+            id={id}
+            name={id}
+            label={placeholder}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+        <button
+          onClick={handleAdd}
+          className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap"
+          type="button"
+          disabled={!inputValue.trim()}
         >
           <FaPlusCircle size={14} />
           Ajouter
@@ -343,14 +433,14 @@ const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
 );
 
 const BtnCancel  = ({ onClick }) => (
-  <button type="button" onClick={onClick} className="px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 text-xs font-semibold">Annuler</button>
+  <button type="button" onClick={onClick} className="px-3 sm:px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 text-xs sm:text-sm font-medium transition">Annuler</button>
 );
 const BtnPrimary = ({ onClick, children, loading, disabled }) => (
   <button
     type="button"
     onClick={onClick}
     disabled={disabled || loading}
-    className={`px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold shadow-md hover:brightness-110 transition-colors ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+    className={`px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
   >
     {loading ? (
       <div className="flex items-center gap-2">
@@ -418,12 +508,14 @@ const EtablissementModal = ({
             onChange={(e) => onChange('type')(e)}
           />
 
-          <FloatInput
-            id="contact"
-            name="contact"
-            label="Contact *"
-            value={formData.contact}
-            onChange={(e) => onChange('contact')(e)}
+          {/* Contact */}
+          <MultiInput
+            label="Contacts (Téléphone)"
+            id="contact_input"
+            placeholder="Ex: 0341234567"
+            values={formData.contact}
+            onAdd={(val) => handleAddCollection('contact', val)}
+            onRemove={(val) => handleRemoveCollection('contact', val)}
           />
 
           {/* Domaines */}
@@ -513,7 +605,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
       <button 
         onClick={onConfirm} 
         disabled={loading}
-        className={`px-4 py-2 rounded-xl text-white text-xs font-semibold ${CONFIRM_COLORS[confirmColor]} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${confirmColor === 'red' ? 'bg-red-600 hover:bg-red-700' : 'bg-gradient-to-r from-blue-600 to-indigo-600'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? (
           <div className="flex items-center gap-2">
@@ -568,9 +660,14 @@ const EtablissementCard = ({ etablissement, onEdit, onDelete }) => (
     </div>
 
     {/* Contact */}
-    <p className="text-xs text-gray-600">
-      <span className="font-medium">Contact:</span> {etablissement.contact}
-    </p>
+    <div className="text-xs text-gray-600 space-y-0.5">
+      <span className="font-medium">Contacts:</span>
+      <div className="flex flex-wrap gap-1 mt-1">
+        {Array.isArray(etablissement.contact) && etablissement.contact.map((c, i) => (
+          <span key={i} className="bg-gray-100 px-2 py-0.5 rounded text-[10px]">{formatPhone(c)}</span>
+        ))}
+      </div>
+    </div>
   </div>
 );
 
@@ -585,12 +682,12 @@ const exportToExcel = (data) => {
         e.province,
         e.region,
         e.type,
-        e.mention,
-        e.parcours,
-        e.metier,
-        e.niveau,
-        e.admission,
-        e.contact
+        Array.isArray(e.mention)   ? e.mention.join(', ')   : e.mention,
+        Array.isArray(e.parcours)  ? e.parcours.join(', ')  : e.parcours,
+        Array.isArray(e.metier)    ? e.metier.join(', ')    : e.metier,
+        Array.isArray(e.niveau)    ? e.niveau.join(', ')    : e.niveau,
+        Array.isArray(e.admission) ? e.admission.join(', ') : e.admission,
+        Array.isArray(e.contact)   ? e.contact.map(formatPhone).join(', ') : formatPhone(e.contact)
       ])
     ];
 
@@ -655,7 +752,7 @@ const exportToPDF = (data) => {
       Array.isArray(e.metier) ? e.metier.join(', ') : e.metier,
       Array.isArray(e.niveau) ? e.niveau.join(', ') : e.niveau,
       Array.isArray(e.admission) ? e.admission.join(', ') : e.admission,
-      e.contact
+      Array.isArray(e.contact) ? e.contact.map(formatPhone).join(', ') : formatPhone(e.contact)
     ]);
 
     autoTable(doc, {
@@ -866,7 +963,7 @@ export default function EtablissementsView() {
     formData.metier.length > 0 &&
     formData.niveau.length > 0 &&
     formData.admission.length > 0 &&
-    formData.contact.trim() !== "";
+    formData.contact.length > 0;
 
   // ── Gestion formulaire ─────────────────────────────────────────────
   const handleInputChange = (field) => (e) => {
@@ -909,7 +1006,7 @@ export default function EtablissementsView() {
         metier: Array.isArray(etab.metier) ? etab.metier : [],
         niveau: Array.isArray(etab.niveau) ? etab.niveau : [],
         admission: Array.isArray(etab.admission) ? etab.admission : [],
-        contact: etab.contact,
+        contact: Array.isArray(etab.contact) ? etab.contact : [],
       });
     } else {
       setEditingId(null);
@@ -1008,6 +1105,7 @@ export default function EtablissementsView() {
     { key: 'mention', label: 'Mentions' },
     { key: 'parcours', label: 'Parcours' },
     { key: 'niveau', label: 'Niveaux' },
+    { key: 'contact', label: 'Contacts' },
   ];
 
   // ── Rendu ──────────────────────────────────────────────────────────
@@ -1168,7 +1266,7 @@ export default function EtablissementsView() {
                       </div>
                     </th>
                   ))}
-                  <th className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 whitespace-nowrap">Actions</th>
+                  <th className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -1198,44 +1296,53 @@ export default function EtablissementsView() {
                     className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer"
                     onClick={(e) => handleRowClick(etab, e)}
                   >
-                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center whitespace-nowrap">{etab.id}</td>
-                    <td className="px-3 py-3 text-sm text-gray-900 text-center whitespace-nowrap">{etab.nom}</td>
-                    <td className="px-3 py-3 text-sm text-gray-700 text-center whitespace-nowrap">{etab.province}</td>
-                    <td className="px-3 py-3 text-sm text-gray-700 text-center whitespace-nowrap">{etab.region}</td>
-                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center">{etab.id}</td>
+                    <td className="px-3 py-3 text-sm text-gray-900 text-center truncate max-w-[200px]" title={etab.nom}>{etab.nom}</td>
+                    <td className="px-3 py-3 text-sm text-gray-700 text-center truncate max-w-[120px]" title={etab.province}>{etab.province}</td>
+                    <td className="px-3 py-3 text-sm text-gray-700 text-center truncate max-w-[120px]" title={etab.region}>{etab.region}</td>
+                    <td className="px-3 py-3 text-center">
                       <Pill tone={etab.type === "Public" ? "green" : "purple"}>
                         {etab.type}
                       </Pill>
                     </td>
-                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                    <td className="px-3 py-3 text-center">
                       <div className="flex flex-wrap gap-1 max-w-[150px] justify-center">
                         {Array.isArray(etab.domaine) && etab.domaine.length > 0 ? etab.domaine.map((d, i) => (
                           <Pill key={i} tone="blue">{d}</Pill>
                         )) : <Pill tone="gray">-</Pill>}
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                    <td className="px-3 py-3 text-center">
                       <div className="flex flex-wrap gap-1 max-w-[150px] justify-center">
                         {Array.isArray(etab.mention) && etab.mention.length > 0 ? etab.mention.map((m, i) => (
                           <Pill key={i} tone="blue">{m}</Pill>
                         )) : <Pill tone="gray">-</Pill>}
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                    <td className="px-3 py-3 text-center">
                       <div className="flex flex-wrap gap-1 max-w-[200px] justify-center">
                         {Array.isArray(etab.parcours) && etab.parcours.length > 0 ? etab.parcours.map((p, i) => (
                           <Pill key={i} tone="blue">{p}</Pill>
                         )) : <Pill tone="gray">-</Pill>}
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                    <td className="px-3 py-3 text-center">
                       <div className="flex flex-wrap gap-1 max-w-[150px] justify-center">
                         {Array.isArray(etab.niveau) && etab.niveau.length > 0 ? etab.niveau.map((n, i) => (
                           <Pill key={i} tone="orange">{n}</Pill>
                         )) : <Pill tone="gray">-</Pill>}
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                    <td className="px-3 py-3 text-center">
+                      <div className="flex flex-wrap gap-1 max-w-[150px] justify-center">
+                        {Array.isArray(etab.contact) && etab.contact.length > 0 ? etab.contact.map((c, i) => (
+                          <span key={i} className="bg-gray-50 text-gray-700 px-2 py-0.5 rounded border border-gray-100 text-[10px] whitespace-nowrap">
+                            {formatPhone(c)}
+                          </span>
+                        )) : <span className="text-gray-400 text-xs">-</span>}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleOpenModal(etab); }}

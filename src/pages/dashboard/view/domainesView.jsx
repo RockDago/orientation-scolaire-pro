@@ -128,14 +128,14 @@ const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
 );
 
 const BtnCancel  = ({ onClick }) => (
-  <button type="button" onClick={onClick} className="px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 text-xs font-semibold">Annuler</button>
+  <button type="button" onClick={onClick} className="px-3 sm:px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 text-xs sm:text-sm font-medium transition">Annuler</button>
 );
 const BtnPrimary = ({ onClick, children, loading, disabled }) => (
   <button 
     type="button" 
     onClick={onClick} 
     disabled={disabled || loading}
-    className={`px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold shadow-md hover:brightness-110 transition-colors ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+    className={`px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
   >
     {loading ? (
       <div className="flex items-center gap-2">
@@ -196,7 +196,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
       <button 
         onClick={onConfirm} 
         disabled={loading}
-        className={`px-4 py-2 rounded-xl text-white text-xs font-semibold ${confirmColor === 'red' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${confirmColor === 'red' ? 'bg-red-600 hover:bg-red-700' : 'bg-gradient-to-r from-blue-600 to-indigo-600'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? (
           <div className="flex items-center gap-2">
@@ -467,10 +467,10 @@ export default function DomainesView() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-100 border-b-2 border-gray-200">
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase text-gray-600 cursor-pointer hover:bg-gray-200 whitespace-nowrap" onClick={() => requestSort('id')}>
+                  <th className="px-4 py-3 text-center text-xs font-bold uppercase text-gray-600 cursor-pointer hover:bg-gray-200" onClick={() => requestSort('id')}>
                     <div className="flex items-center justify-center">ID {getSortIcon('id')}</div>
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase text-gray-600 cursor-pointer hover:bg-gray-200 whitespace-nowrap" onClick={() => requestSort('label')}>
+                  <th className="px-4 py-3 text-center text-xs font-bold uppercase text-gray-600 cursor-pointer hover:bg-gray-200" onClick={() => requestSort('label')}>
                     <div className="flex items-center justify-center">Domaine {getSortIcon('label')}</div>
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-bold uppercase text-gray-600">Description</th>
@@ -482,10 +482,10 @@ export default function DomainesView() {
                   <tr><td colSpan={4} className="py-16 text-center text-gray-500">Chargement...</td></tr>
                 ) : paginatedDomaines.map(d => (
                   <tr key={d.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer" onClick={() => handleOpenModal(d)}>
-                    <td className="px-4 py-3 text-sm text-gray-900 font-medium text-center whitespace-nowrap">{d.id}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-center font-semibold whitespace-nowrap">{d.label}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900 font-medium text-center">{d.id}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900 text-center font-semibold truncate max-w-[200px]" title={d.label}>{d.label}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 text-center max-w-xs truncate">{d.description}</td>
-                    <td className="px-4 py-3 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-center gap-1">
                         <button onClick={() => handleOpenModal(d)} className="p-1.5 rounded hover:bg-blue-100 text-blue-600 transition"><FaEdit size={15}/></button>
                         <button onClick={() => setDeleteItem(d)} className="p-1.5 rounded hover:bg-red-100 text-red-600 transition"><FaTrash size={15}/></button>

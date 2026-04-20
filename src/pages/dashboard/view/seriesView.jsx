@@ -139,14 +139,14 @@ const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
 );
 
 const BtnCancel  = ({ onClick }) => (
-  <button type="button" onClick={onClick} className="px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 text-xs font-semibold">Annuler</button>
+  <button type="button" onClick={onClick} className="px-3 sm:px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 text-xs sm:text-sm font-medium transition">Annuler</button>
 );
 const BtnPrimary = ({ onClick, children, loading, disabled }) => (
   <button 
     type="button" 
     onClick={onClick} 
     disabled={disabled || loading}
-    className={`px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold shadow-md hover:brightness-110 transition-colors ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+    className={`px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
   >
     {loading ? (
       <div className="flex items-center gap-2">
@@ -219,7 +219,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
       <button 
         onClick={onConfirm} 
         disabled={loading}
-        className={`px-4 py-2 rounded-xl text-white text-xs font-semibold ${CONFIRM_COLORS[confirmColor]} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${CONFIRM_COLORS[confirmColor]} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? (
           <div className="flex items-center gap-2">
@@ -794,7 +794,7 @@ export default function SeriesView() {
                       </div>
                     </th>
                   ))}
-                  <th className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 whitespace-nowrap">Actions</th>
+                  <th className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -824,13 +824,13 @@ export default function SeriesView() {
                     className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer"
                     onClick={(e) => handleRowClick(serie, e)}
                   >
-                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center whitespace-nowrap">{serie.id}</td>
-                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center">{serie.id}</td>
+                    <td className="px-3 py-3 text-center">
                       <Pill tone="blue">{serie.code}</Pill>
                     </td>
-                    <td className="px-3 py-3 text-sm text-gray-900 text-center whitespace-nowrap">{serie.label}</td>
+                    <td className="px-3 py-3 text-sm text-gray-900 text-center truncate max-w-[200px]" title={serie.label}>{serie.label}</td>
                     <td className="px-3 py-3 text-sm text-gray-700 text-center max-w-xs truncate">{serie.description}</td>
-                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                    <td className="px-3 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleOpenModal(serie); }}

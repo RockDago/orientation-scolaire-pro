@@ -59,29 +59,63 @@ function FicheModal({ fiche, metier, onClose }) {
   const getAdmission = (type) =>
     type === "Public" ? "Concours d'entrée" : "Sur dossier / entretien";
 
-  // Helper pour convertir un tableau JSON ou une string en texte affichable
-  const toDisplay = (val) => {
-    if (!val) return "";
-    if (Array.isArray(val)) return val.join(", ");
-    return String(val);
+  const formatPhone = (phone) => {
+    if (!phone) return "";
+    // Nettoyer le numéro
+    let cleaned = String(phone).replace(/\s/g, "").replace(/-/g, "");
+    
+    // Si c'est un format malgache standard (0341234567)
+    if (cleaned.length === 10 && cleaned.startsWith("0")) {
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 8)} ${cleaned.slice(8, 10)}`;
+    }
+    // Si c'est un format avec indicatif (261341234567)
+    if (cleaned.length === 12 && cleaned.startsWith("261")) {
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7, 10)} ${cleaned.slice(10, 12)}`;
+    }
+    // Retourner tel quel si format inconnu
+    return phone;
   };
 
-  // Pour getDuree, on prend le premier élément du tableau ou la string directement
-  const niveauStr = Array.isArray(fiche.niveau) ? fiche.niveau.join(", ") : (fiche.niveau || "");
-  const admissionStr = Array.isArray(fiche.admission) ? fiche.admission.join(", ") : (fiche.admission || "");
+  // Helper pour convertir un tableau JSON ou une string en texte affichable
+  const toDisplay = (val, isPhone = false, isList = true) => {
+    if (!val) return "";
+    
+    if (Array.isArray(val)) {
+      if (val.length === 1) return isPhone ? formatPhone(val[0]) : val[0];
+      if (!isList) return val.map(item => isPhone ? formatPhone(item) : item).join(", ");
+      return (
+        <ul className="list-disc list-inside space-y-1">
+          {val.map((item, i) => (
+            <li key={i} className="leading-tight">
+              {isPhone ? formatPhone(item) : item}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    
+    return isPhone ? formatPhone(val) : String(val);
+  };
+
+  // On prépare les données
+  const mentionDisplay = toDisplay(fiche.mention);
+  const parcoursDisplay = toDisplay(fiche.parcours);
+  const niveauDisplay = toDisplay(fiche.niveau);
+  const admissionDisplay = toDisplay(fiche.admission || getAdmission(fiche.type));
+  const contactDisplay = toDisplay(fiche.contact, true);
 
   const fields = [
     { icon: <FiBook size={15} />,  label: "Établissement", value: fiche.nom },
-    { icon: <FiAward size={15} />, label: "Mention",       value: toDisplay(fiche.mention) },
-    { icon: <FiBook size={15} />,  label: "Parcours",      value: toDisplay(fiche.parcours) },
-    { icon: <FiAward size={15} />, label: "Niveau",        value: niveauStr },
+    { icon: <FiAward size={15} />, label: "Mention",       value: mentionDisplay },
+    { icon: <FiBook size={15} />,  label: "Parcours",      value: parcoursDisplay },
+    { icon: <FiAward size={15} />, label: "Niveau",        value: niveauDisplay },
 
     {
       icon:  <FiUsers size={15} />,
       label: "Admission",
-      value: admissionStr || getAdmission(fiche.type),
+      value: admissionDisplay,
     },
-    { icon: <FiPhone size={15} />,  label: "Contact",      value: fiche.contact },
+    { icon: <FiPhone size={15} />,  label: "Contact",      value: contactDisplay },
     {
       icon:  <FiMapPin size={15} />,
       label: "Localisation",
@@ -94,7 +128,7 @@ function FicheModal({ fiche, metier, onClose }) {
       fields.unshift({ icon: <FiAward size={15} />, label: "Métier",          value: metier.label });
     }
     if (metier.serie) {
-      fields.push({    icon: <FiBook size={15} />,  label: "Série",           value: toDisplay(metier.serie) });
+      fields.push({    icon: <FiBook size={15} />,  label: "Série",           value: toDisplay(metier.serie, false, false) });
     }
     if (metier.parcours) {
       fields.push({    icon: <FiBook size={15} />,  label: "Parcours Métier", value: toDisplay(metier.parcours) });
@@ -132,7 +166,7 @@ function FicheModal({ fiche, metier, onClose }) {
           >
             Fiche établissement
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight break-words">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight break-words">
             {fiche.nom}
           </h2>
           <div className="flex items-center gap-2 mt-4 text-white/60">
@@ -184,9 +218,9 @@ function FicheModal({ fiche, metier, onClose }) {
                 </p>
               </div>
               <div className="mt-1">
-                <p className="text-white font-bold text-sm sm:text-base lg:text-lg leading-relaxed break-words">
+                <div className="text-white font-bold text-xs sm:text-sm lg:text-base leading-relaxed break-words">
                   {value || "—"}
-                </p>
+                </div>
               </div>
             </div>
           ))}
@@ -345,7 +379,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
         {/* Contenu scrollable */}
         <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin-white pr-1">
           <div className="mb-6">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight mb-2">
               UNIVERSITÉS<br className="sm:hidden" />&amp; INSTITUTS
             </h1>
             <div className="flex flex-wrap items-center gap-2">
