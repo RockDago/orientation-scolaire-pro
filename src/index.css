@@ -2,71 +2,96 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-html.dark,
-html.dark body,
-html.dark #root {
-  background: #111111;
-  color: #e7e5e4;
+/* Common UI Overrides for Dark Mode */
+html.dark, 
+html.dark body, 
+html.dark #root,
+.dark .dashboard-shell,
+.dark aside, .dark nav, .dark main, .dark header, .dark footer, .dark section, .dark article,
+.dark [class*="s1-container"],
+.dark [class*="s2-root"],
+.dark [class*="bg-white"],
+.dark [class*="bg-neutral-"],
+.dark [class*="bg-gray-"],
+.dark [class*="bg-slate-"],
+.dark [class*="bg-zinc-"],
+.dark [class*="bg-stone-"],
+.dark [class*="bg-blue-50"],
+.dark [class*="bg-blue-100"],
+.dark [class*="bg-white/"],
+.dark [class*="bg-gray-50/"],
+.dark [class*="bg-blue-50/"],
+.dark [class*="bg-gradient-to-br"][class*="from-"],
+.dark [class*="bg-gradient-to-tr"][class*="from-"],
+.dark table,
+.dark thead,
+.dark tbody,
+.dark tr,
+.dark th,
+.dark td,
+.dark div[class*="bg-"],
+.dark span[class*="bg-"],
+.dark button[class*="bg-gray"],
+.dark button[class*="bg-white"],
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #0f172a !important; 
+  background-image: none !important;
+  color: #f1f5f9 !important;
+  backdrop-filter: none !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-.dashboard-shell {
-  color-scheme: light;
+/* Ensure all text classes that are dark in light mode become light in dark mode */
+.dark [class*="text-gray-"],
+.dark [class*="text-slate-"],
+.dark [class*="text-neutral-"],
+.dark [class*="text-stone-"],
+.dark [class*="text-black"],
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
+.dark p, .dark span, .dark label {
+  color: #f8fafc !important;
 }
 
-.dark .dashboard-shell {
-  color-scheme: dark;
-  background: #111111 !important;
-  color: #e7e5e4 !important;
+/* Specific hover and active states for sidebar and table rows */
+.dark [class*="hover:bg-"],
+.dark [class*="active:bg-"] {
+  background-color: rgba(255, 255, 255, 0.03) !important;
 }
 
-.dark .dashboard-shell [class*="bg-white"] {
-  background-color: #181818 !important;
+/* Allow primary buttons and status pills to keep a distinct but solid color */
+.dark button[class*="bg-blue-600"],
+.dark button[class*="bg-gradient-to-r"],
+.dark [class*="bg-red-500"],
+.dark [class*="bg-green-500"] {
+  background-image: none !important;
+  background-color: #2563eb !important; /* Solid blue */
+  color: white !important;
 }
 
-.dark .dashboard-shell [class*="bg-gray-50"],
-.dark .dashboard-shell [class*="bg-gray-100"] {
-  background-color: #242424 !important;
+.dark .s1-card.bg-gradient-to-br {
+  background-color: #1e40af !important;
+}
+.dark .s1-card:nth-child(2) {
+  background-color: #3f6212 !important;
 }
 
-.dark .dashboard-shell [class*="text-gray-900"],
-.dark .dashboard-shell [class*="text-gray-800"],
-.dark .dashboard-shell [class*="text-gray-700"] {
-  color: #e7e5e4 !important;
+/* Status pills in tables */
+.dark [class*="bg-gray-100"][class*="text-gray-600"],
+.dark [class*="bg-blue-50"][class*="text-blue-700"],
+.dark [class*="bg-purple-50"][class*="text-purple-700"] {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
 }
 
-.dark .dashboard-shell [class*="text-gray-600"],
-.dark .dashboard-shell [class*="text-gray-500"],
-.dark .dashboard-shell [class*="text-gray-400"] {
-  color: #d6d3d1 !important;
-}
-
-.dark .dashboard-shell [class*="border-gray-50"],
-.dark .dashboard-shell [class*="border-gray-100"],
-.dark .dashboard-shell [class*="border-gray-200"],
-.dark .dashboard-shell [class*="border-gray-300"] {
-  border-color: #3f3f46 !important;
-}
-
-.dark .dashboard-shell input,
-.dark .dashboard-shell select,
-.dark .dashboard-shell textarea {
-  background-color: #111111 !important;
-  border-color: #3f3f46 !important;
-  color: #e7e5e4 !important;
-}
-
-.dark .dashboard-shell input::placeholder,
-.dark .dashboard-shell textarea::placeholder {
-  color: #a8a29e !important;
-}
-
-.dark .dashboard-shell table thead tr,
-.dark .dashboard-shell [class*="bg-blue-50"] {
-  background-color: #262626 !important;
-}
-
-.dark .dashboard-shell [class*="shadow"] {
-  box-shadow: 0 18px 45px -28px rgba(0, 0, 0, 0.9) !important;
+/* Sidebar Active State Restore */
+.dark [class*="bg-blue-50"].text-blue-600,
+.dark [class*="bg-neutral-800/50"].text-blue-400,
+.dark [class*="bg-blue-50/50"].text-blue-400 {
+  background-color: rgba(37, 99, 235, 0.2) !important; /* Semi-transparent blue for active state */
+  color: #60a5fa !important;
+  border-left: 3px solid #3b82f6 !important;
 }
 
 @keyframes fadeInUp {
@@ -75,4 +100,25 @@ html.dark #root {
 }
 .animate-fade-in-up {
   animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* Table Grid Lines - Force visible borders on all rows and columns */
+table {
+  border-collapse: collapse !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+th, td {
+  border: 1px solid #e5e7eb !important;
+}
+
+.dark table, 
+.dark th, 
+.dark td {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Ensure header has a slightly distinct background in dark mode */
+.dark thead tr {
+  background-color: rgba(255, 255, 255, 0.05) !important;
 }

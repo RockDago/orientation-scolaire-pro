@@ -53,7 +53,7 @@ const Navbar = ({ collapsed, user, onMobileMenuClick }) => {
 
   return (
     <header
-      className="fixed top-0 right-0 h-16 md:h-20 bg-white dark:bg-zinc-900 shadow-sm z-30 flex items-center justify-between px-4 md:px-8 border-b border-gray-200 dark:border-zinc-700 transition-all duration-300 text-gray-900 dark:text-zinc-100"
+      className="fixed top-0 right-0 h-16 md:h-20 bg-white dark:bg-neutral-900 shadow-sm z-30 flex items-center justify-between px-4 md:px-8 border-b border-gray-200 dark:border-neutral-800 transition-all duration-300 text-gray-900 dark:text-neutral-100"
       style={{ left: window.innerWidth >= 1024 ? (collapsed ? "5rem" : "18rem") : "0" }}
     >
       <div className="absolute inset-0 pointer-events-none lg:hidden" />
@@ -62,7 +62,7 @@ const Navbar = ({ collapsed, user, onMobileMenuClick }) => {
         <button
           type="button"
           onClick={onMobileMenuClick}
-          className="p-2 text-gray-600 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg lg:hidden"
+          className="p-2 text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg lg:hidden"
           aria-label="Ouvrir le menu"
         >
           <FaBars className="text-xl" />
@@ -75,7 +75,7 @@ const Navbar = ({ collapsed, user, onMobileMenuClick }) => {
         <button
           type="button"
           onClick={() => setIsDarkMode((prev) => !prev)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50 hover:text-blue-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50 hover:text-blue-600 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
           aria-label={isDarkMode ? "Activer le mode clair" : "Activer le mode sombre"}
           title={isDarkMode ? "Mode clair" : "Mode sombre"}
         >
@@ -86,7 +86,7 @@ const Navbar = ({ collapsed, user, onMobileMenuClick }) => {
           <button
             type="button"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center space-x-2 md:space-x-3 p-1.5 pr-2 rounded-full hover:bg-gray-50 dark:hover:bg-zinc-800 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-all"
+            className="flex items-center space-x-2 md:space-x-3 p-1.5 pr-2 rounded-full hover:bg-gray-50 dark:hover:bg-neutral-800 border border-transparent hover:border-gray-200 dark:hover:border-neutral-800 transition-all"
           >
             <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-sm overflow-hidden">
               <span className="font-bold text-xs">
@@ -94,27 +94,27 @@ const Navbar = ({ collapsed, user, onMobileMenuClick }) => {
               </span>
             </div>
             <div className="text-left hidden md:block">
-              <div className="text-sm font-semibold text-gray-700 dark:text-zinc-100">
+              <div className="text-sm font-semibold text-gray-700 dark:text-neutral-100">
                 {userData.prenom || userData.nom || "Admin"}
               </div>
-              <div className="text-[10px] text-gray-500 dark:text-zinc-400">
+              <div className="text-[10px] text-gray-500 dark:text-neutral-400">
                 {formatRole(userData.role)}
               </div>
             </div>
             <FaChevronDown
-              className={`text-gray-400 dark:text-zinc-400 text-xs hidden md:block transition-transform duration-200 ${
+              className={`text-gray-400 dark:text-neutral-400 text-xs hidden md:block transition-transform duration-200 ${
                 showProfileMenu ? "rotate-180" : ""
               }`}
             />
           </button>
 
           {showProfileMenu && (
-            <div className="absolute right-0 top-12 w-64 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-gray-100 dark:border-zinc-700 z-50 overflow-hidden py-2">
-              <div className="px-4 py-3 border-b border-gray-100 dark:border-zinc-700">
-                <p className="font-semibold text-sm text-gray-800 dark:text-zinc-100">
+            <div className="absolute right-0 top-12 w-64 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-gray-100 dark:border-neutral-800 z-50 overflow-hidden py-2">
+              <div className="px-4 py-3 border-b border-gray-100 dark:border-neutral-800">
+                <p className="font-semibold text-sm text-gray-800 dark:text-neutral-100">
                   {userData.prenom || ""} {userData.nom || ""}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-zinc-400 truncate mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-neutral-400 truncate mt-0.5">
                   {userData.email || ""}
                 </p>
                 <p className="text-[10px] text-blue-500 dark:text-blue-400 font-semibold mt-1">
@@ -125,7 +125,7 @@ const Navbar = ({ collapsed, user, onMobileMenuClick }) => {
               <Link
                 to={`/dashboard/admin/profile/${uuid}`}
                 onClick={() => setShowProfileMenu(false)}
-                className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-600 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-zinc-800/40 hover:text-blue-600 transition-colors border-b border-gray-100 dark:border-zinc-700"
+                className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-600 dark:text-neutral-300 hover:bg-blue-50 dark:hover:bg-neutral-800/40 hover:text-blue-600 transition-colors border-b border-gray-100 dark:border-neutral-800"
               >
                 <FaUser className="text-sm" />
                 <span>Mon Profil</span>
@@ -134,12 +134,12 @@ const Navbar = ({ collapsed, user, onMobileMenuClick }) => {
               <button
                 type="button"
                 onClick={() => setIsDarkMode((prev) => !prev)}
-                className="flex w-full items-center space-x-3 px-4 py-3 text-sm text-gray-600 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
+                className="flex w-full items-center space-x-3 px-4 py-3 text-sm text-gray-600 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
               >
                 {isDarkMode ? (
                   <FaSun className="text-sm text-yellow-500" />
                 ) : (
-                  <FaMoon className="text-sm text-zinc-500" />
+                  <FaMoon className="text-sm text-neutral-500" />
                 )}
                 <span>{isDarkMode ? "Passer en mode clair" : "Passer en mode sombre"}</span>
               </button>

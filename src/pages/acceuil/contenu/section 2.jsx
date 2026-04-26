@@ -164,6 +164,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
     return domainesList.filter((d) => d.label.toLowerCase().includes(q));
   }, [comboSearch, domainesList]);
 
+  const isAnyComboOpen = isMetierComboOpen || isComboOpen;
   const hasMetierSearchText = searchQuery.trim().length > 0;
   const focusMetierSearch = isMetierComboOpen && hasMetierSearchText;
   const metierFocusLayout = mode === "metier" || focusMetierSearch;
@@ -279,10 +280,10 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
       </div>
 
       {/* Layout */}
-      <div className={`s2-layout ${metierFocusLayout ? "metier-focus" : ""}`}>
+      <div className={`s2-layout ${metierFocusLayout ? "metier-focus" : ""} ${metierFocusLayout && isMetierComboOpen ? "combo-open" : ""}`}>
 
         {/* ══ Colonne gauche ══ */}
-        <div className={`s2-left transition-transform duration-500 ease-in-out ${metierFocusLayout ? "translate-y-0" : ((isMetierComboOpen || isComboOpen) ? "lg:-translate-y-20 -translate-y-12" : "translate-y-0")}`}>
+        <div className={`s2-left transition-transform duration-500 ease-in-out ${metierFocusLayout ? "translate-y-0" : (isAnyComboOpen ? "lg:-translate-y-20 -translate-y-12" : "translate-y-0")}`}>
           <div className="s2-scroll">
             <div className="flex items-center justify-between mb-2">
               {onRetour && (
@@ -295,7 +296,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
 
             {/* Titre et description centrés sur mobile */}
             <div 
-              className={`s2-header-mob transition-all duration-500 ease-in-out ${(isMetierComboOpen || isComboOpen) ? "opacity-30 scale-95" : "opacity-100 scale-100"}`}
+              className={`s2-header-mob transition-all duration-500 ease-in-out ${isAnyComboOpen ? "opacity-30 scale-95" : "opacity-100 scale-100"}`}
               style={{ animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.15s both" }}
             >
               <h1 className="s2-h1">
@@ -505,12 +506,12 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
 
       {/* Lancer la recherche Button - ONLY for manual career search (mode === "metier") */}
       {mode === "metier" && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[250] w-full max-w-sm px-6 pointer-events-none flex justify-center">
+        <div className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-sm px-6 pointer-events-none flex justify-center transition-all duration-300 ${isMetierComboOpen ? "opacity-0 translate-y-3" : "opacity-100 translate-y-0"}`}>
           <button
             onClick={() => handleLancerRecherche()}
-            disabled={!localSelected || isLoading}
-            className={`w-full py-4 rounded-full font-black text-sm lg:text-base transition-all shadow-lg active:scale-95 pointer-events-auto ${
-              localSelected && !isLoading
+            disabled={!localSelected || isLoading || isMetierComboOpen}
+            className={`w-full py-4 rounded-full font-black text-[clamp(0.8rem,1vw,1rem)] transition-all shadow-lg active:scale-95 pointer-events-auto ${
+              localSelected && !isLoading && !isMetierComboOpen
                 ? "bg-[#1250c8] text-white hover:bg-[#1a3ea8] hover:-translate-y-0.5"
                 : "bg-white/20 text-white/40 cursor-not-allowed"
             }`}
@@ -521,7 +522,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
       )}
 
       {/* Home Fixed - Centered */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[200] pointer-events-none">
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
         <button
           onClick={onHome}
           className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
@@ -540,18 +541,25 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-root {
           position: relative;
           width: 100%;
-          min-height: 100vh;
+          min-height: 100dvh;
+          height: 100dvh;
           display: flex;
           flex-direction: column;
           background: linear-gradient(135deg,#1250c8 0%,#1a6dcc 25%,#28b090 55%,#a0d820 80%,#c2e832 100%);
+          overflow: hidden;
         }
         /* Décos */
         .s2-deco-tr { position:absolute;top:0;right:0;pointer-events:none;z-index:0;opacity:.75; }
         .s2-deco-bld { position:fixed;bottom:0;left:0;right:0;pointer-events:none;z-index:0;opacity:.80; }
 
         /* Layout principal */
-        .s2-layout { position:relative;z-index:10;display:flex;flex:1; width: 100%; min-height: 100vh; }
-        .s2-layout.metier-focus { justify-content: center; }
+        .s2-layout { position:relative;z-index:10;display:flex;flex:1; width: 100%; min-height: 100dvh; height: 100dvh; }
+        .s2-layout.metier-focus {
+          justify-content: center;
+          height: 100vh;
+          overflow: hidden;
+        }
+        .s2-layout.metier-focus.combo-open { z-index: 220; }
 
         /* Colonne gauche */
         .s2-left { display:flex;flex-direction:column;width:100%;min-height:100%; }
@@ -563,7 +571,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-scroll {
           position: relative;
           flex:1;min-height:0;overflow:visible;
-          padding: 1rem 1rem 2rem; /* px-4 pt-4 approx */
+          padding: 1rem 1rem 7rem; /* reserve space for fixed footer actions */
         }
         @media(min-width: 640px) {
           .s2-scroll { padding: 1.5rem 2.5rem 2rem; } /* px-10 pt-6 approx */
@@ -578,7 +586,9 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           justify-content: center;
           padding-top: 1.5rem;
           padding-bottom: 2rem;
+          transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
         }
+        .s2-layout.metier-focus.combo-open .s2-scroll { transform: translateY(-180px); }
         .s2-layout.metier-focus .s2-scroll > .flex {
           position: fixed;
           top: 1.5rem;
@@ -591,6 +601,21 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             padding-top: 1.5rem;
             padding-bottom: 2rem;
           }
+          .s2-layout.metier-focus.combo-open .s2-scroll { transform: translateY(-160px); }
+        }
+        @media(min-width: 1024px) {
+          .s2-layout.metier-focus.combo-open .s2-scroll { transform: translateY(-145px); }
+        }
+        @media(max-height: 860px) {
+          .s2-layout.metier-focus.combo-open .s2-scroll { transform: translateY(-205px); }
+          .s2-drop-new { max-height: min(19rem, calc(100dvh - 11rem)); }
+        }
+        @media(max-height: 760px) {
+          .s2-layout.metier-focus.combo-open .s2-scroll { transform: translateY(-230px); }
+          .s2-drop-new { max-height: min(16.5rem, calc(100dvh - 9rem)); }
+          .s2-trigger { min-height: 52px; }
+          .s2-drop-input-new { min-height: 40px; }
+          .s2-drop-item-new { min-height: 40px; }
         }
 
         /* Retour */
@@ -604,24 +629,24 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
 
         /* Titre */
         .s2-h1 {
-          font-size: 1.875rem; /* text-3xl */
+          font-size: clamp(1.95rem, 4.8vw, 3.6rem);
           font-weight: 900;
           color: white; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 0.75rem;
         }
         @media(min-width: 640px) {
-          .s2-h1 { font-size: 2.25rem; } /* text-4xl */
+          .s2-h1 { font-size: clamp(1.95rem, 4.8vw, 3.6rem); }
         }
         @media(min-width: 1024px) {
-          .s2-h1 { font-size: 3rem; } /* text-5xl */
+          .s2-h1 { font-size: clamp(1.95rem, 4.8vw, 3.6rem); }
         }
         .s2-h1-sub { color: rgba(255, 255, 255, 0.65); }
         .s2-desc {
-          font-size: 0.75rem; /* text-xs */
+          font-size: clamp(0.8rem, 1vw, 0.95rem);
           color: rgba(255, 255, 255, 0.72);
           line-height: 1.6; max-width: 30ch; margin: 0 0 1.5rem;
         }
         @media(min-width: 640px) {
-          .s2-desc { font-size: 0.875rem; } /* text-sm */
+          .s2-desc { font-size: clamp(0.8rem, 1vw, 0.95rem); }
         }
         @media(max-width: 1023px) {
           .s2-header-mob { display: flex; flex-direction: column; align-items: center; text-align: center; }
@@ -655,7 +680,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-cbwrap { 
           position:relative; 
           width:100%; 
-          max-width: 450px; 
+          max-width: 25rem; 
           z-index: 100;
           margin-bottom: 1.25rem; 
         }
@@ -672,11 +697,12 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         /* Original Rounded Trigger */
         .s2-trigger {
           width: 100%;
+          min-height: clamp(3.1rem, 4.4vw, 3.5rem);
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(12px);
           border: 1px solid rgba(255, 255, 255, 0.3);
           border-radius: 1rem;
-          padding: 0.875rem 1.25rem;
+          padding: 0.75rem 1rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -694,7 +720,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-trigger:active { transform: translateY(0); }
 
         .s2-ph {
-          font-size: 0.875rem;
+          font-size: clamp(0.78rem, 0.95vw, 0.9rem);
           font-weight: 500;
           color: #94a3b8;
           flex: 1;
@@ -705,7 +731,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         
         .s2-val-new {
           display: block;
-          font-size: 0.875rem;
+          font-size: clamp(0.78rem, 0.95vw, 0.9rem);
           color: #1e40af;
           font-weight: 700;
           flex: 1;
@@ -725,38 +751,45 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           left: 0;
           right: 0;
           top: calc(100% + 8px);
+          display: flex;
+          flex-direction: column;
           background: white;
           border-radius: 1.25rem;
           box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.2);
           border: 1px solid rgba(0,0,0,0.05);
           z-index: 1000;
           overflow: hidden;
+          max-height: min(22rem, calc(100dvh - 13rem));
         }
 
         .s2-drop-search-new {
-          padding: 0.75rem 1rem;
+          padding: 0.65rem 0.85rem;
           background: #f8fafc;
           border-bottom: 1px solid #f1f5f9;
+          flex-shrink: 0;
         }
         .s2-drop-input-new {
           width: 100%;
+          min-height: 44px;
           background: white;
           border: 1px solid #e2e8f0;
           border-radius: 0.75rem;
-          padding: 0.5rem 0.5rem 0.5rem 2.25rem;
-          font-size: 13px;
+          padding: 0.45rem 0.7rem 0.45rem 2.1rem;
+          font-size: clamp(0.78rem, 0.95vw, 0.88rem);
           outline: none;
           color: #1e293b;
         }
         .s2-drop-input-new:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
 
         .s2-drop-list-new {
-          max-height: 15rem;
+          flex: 1;
+          min-height: 0;
           overflow-y: auto;
-          padding: 0.5rem;
+          padding: 0.45rem;
         }
         .s2-drop-item-new {
-          padding: 0.75rem 1rem;
+          min-height: 44px;
+          padding: 0.65rem 0.85rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -767,8 +800,8 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-drop-item-new:hover { background: #eff6ff; }
         .s2-drop-item-new.active { background: #eff6ff; color: #2563eb; }
         
-        .s2-item-name { font-size: 13px; font-weight: 600; color: #1e293b; }
-        .s2-item-badge { font-size: 11px; color: #64748b; font-weight: 500; }
+        .s2-item-name { font-size: clamp(0.72rem, 0.9vw, 0.82rem); font-weight: 600; color: #1e293b; }
+        .s2-item-badge { font-size: clamp(0.62rem, 0.75vw, 0.72rem); color: #64748b; font-weight: 500; }
 
         /* Séparateur */
         .s2-sep { 

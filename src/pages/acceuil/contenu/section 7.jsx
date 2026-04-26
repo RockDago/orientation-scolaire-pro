@@ -37,7 +37,7 @@ export default function Section7({ onSuivant, onRetour, onHome }) {
   };
 
   return (
-    <div className="relative w-full min-h-screen font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
+    <div className="relative w-full min-h-[100dvh] overflow-hidden font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
       <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
       <GradBg />
 
@@ -46,7 +46,7 @@ export default function Section7({ onSuivant, onRetour, onHome }) {
         <BuildingSVG />
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4 overflow-hidden">
+      <div className="relative z-10 flex-1 min-h-0 overflow-y-auto flex flex-col w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-32 sm:pb-36">
         {/* Back button */}
         <button 
           onClick={onRetour} 
@@ -58,17 +58,17 @@ export default function Section7({ onSuivant, onRetour, onHome }) {
         </button>
 
         {/* Zone de contenu - centrée verticalement et horizontalement */}
-        <div className="flex-1 flex flex-col justify-center items-center py-4">
-          <div className="flex flex-col items-center text-center w-full max-w-lg">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-4 uppercase">
+        <div className="flex-1 min-h-full flex flex-col justify-center items-center py-4 sm:py-6">
+          <div className="s7-panel flex flex-col items-center text-center w-full max-w-lg">
+            <h1 className="s7-title text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-4 uppercase">
               Tu es actuellement :
             </h1>
             
-            <p className="text-xs sm:text-sm text-white/85 leading-relaxed max-w-xs sm:max-w-md mb-6">
+            <p className="s7-desc text-xs sm:text-sm text-white/85 leading-relaxed max-w-xs sm:max-w-md mb-6">
               Indique ta situation pour adapter les recommandations.
             </p>
 
-            <div className="flex flex-wrap justify-center gap-3 w-full max-w-md mb-6">
+            <div className="s7-choices flex flex-wrap justify-center gap-3 w-full max-w-md mb-6">
               {STATUTS.map((s) => (
                 <button
                   key={s}
@@ -93,7 +93,7 @@ export default function Section7({ onSuivant, onRetour, onHome }) {
         <button
           onClick={handleSuivant}
           disabled={!statut}
-          className={`w-full py-3 sm:py-4 rounded-full font-black text-sm lg:text-base transition-all shadow-lg active:scale-95 pointer-events-auto ${
+          className={`w-full py-3 sm:py-4 rounded-full font-black text-[clamp(0.8rem,1vw,1rem)] transition-all shadow-lg active:scale-95 pointer-events-auto ${
             statut
               ? "bg-[#1250c8] hover:bg-[#1a3ea8] text-white hover:shadow-xl hover:-translate-y-0.5"
               : "bg-white/20 text-white/40 cursor-not-allowed"
@@ -116,6 +116,42 @@ export default function Section7({ onSuivant, onRetour, onHome }) {
       </div>
 
       <style>{`
+        .s7-title {
+          font-size: clamp(2rem, 5vw, 4.1rem);
+        }
+        .s7-desc {
+          font-size: clamp(0.82rem, 1vw, 0.98rem);
+        }
+        @media (max-height: 820px) {
+          .s7-title {
+            font-size: clamp(1.7rem, 4vw, 3.1rem);
+            margin-bottom: 0.75rem;
+          }
+          .s7-desc {
+            font-size: 0.78rem;
+            margin-bottom: 1rem;
+          }
+          .s7-choices {
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+          }
+          .s7-choices > button {
+            font-size: 0.82rem;
+            padding: 0.55rem 0.95rem;
+          }
+        }
+        @media (max-height: 720px) {
+          .s7-title {
+            font-size: clamp(1.55rem, 3.5vw, 2.5rem);
+          }
+          .s7-desc {
+            font-size: 0.74rem;
+          }
+          .s7-choices > button {
+            font-size: 0.76rem;
+            padding: 0.5rem 0.85rem;
+          }
+        }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>

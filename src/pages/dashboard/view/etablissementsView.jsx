@@ -229,7 +229,7 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
       </div>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] flex flex-col max-h-60 overflow-hidden">
+        <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] flex flex-col max-h-[min(16rem,40dvh)] overflow-hidden">
           {!hideSearch && (
             <div className="p-1.5 border-b border-gray-100 bg-white">
               <div className="relative">
@@ -315,7 +315,7 @@ const SimpleSelect = ({ id, label, value, options, onChange, error, disabled, cl
 };
 
 // ── MultiSelect Component ──────────────────────────────────────────────
-const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, placeholder = "Ajouter...", className = "md:col-span-1", withButton = false }) => {
+const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, placeholder = "Ajouter...", className = "md:col-span-1", withButton = false, hideSearch = false }) => {
   const [selectedValue, setSelectedValue] = useState("");
 
   const handleAdd = () => {
@@ -336,6 +336,7 @@ const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, pl
           <SearchableSelect
             id={id}
             label={placeholder}
+            hideSearch={hideSearch}
             value={withButton ? selectedValue : ""}
             options={(options || [])
               .filter((opt) => !(values || []).includes(opt.label || opt))
@@ -389,11 +390,36 @@ const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, pl
 const MultiInput = ({ label, values = [], onAdd, onRemove, id, placeholder = "Ajouter...", className = "md:col-span-1", withButton = false }) => {
   const [inputValue, setInputValue] = useState("");
 
+  const formatAsPhone = (val) => {
+    const cleaned = val.replace(/\D/g, "").slice(0, 10);
+    let formatted = cleaned;
+    if (cleaned.length > 3) formatted = cleaned.slice(0, 3) + " " + cleaned.slice(3);
+    if (cleaned.length > 5) formatted = formatted.slice(0, 6) + " " + formatted.slice(6);
+    if (cleaned.length > 8) formatted = formatted.slice(0, 10) + " " + formatted.slice(10);
+    return formatted.trim();
+  };
+
   const handleAdd = () => {
-    if (inputValue.trim()) {
-      onAdd(inputValue.trim());
+    let val = inputValue.trim();
+    if (id.toLowerCase().includes("contact")) {
+      val = val.replace(/\s/g, ""); // Store cleaned version
+      if (val.length !== 10) {
+        toast.error("Le numéro de téléphone doit comporter 10 chiffres");
+        return;
+      }
+    }
+    if (val) {
+      onAdd(val);
       setInputValue("");
     }
+  };
+
+  const handleInputChange = (e) => {
+    let val = e.target.value;
+    if (id.toLowerCase().includes("contact")) {
+      val = formatAsPhone(val);
+    }
+    setInputValue(val);
   };
 
   const handleKeyDown = (e) => {
@@ -416,8 +442,9 @@ const MultiInput = ({ label, values = [], onAdd, onRemove, id, placeholder = "Aj
             name={id}
             label={withButton ? placeholder : `${placeholder} (Appuyez sur Entrée)`}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            maxLength={id.toLowerCase().includes("contact") ? 13 : undefined}
           />
         </div>
         {withButton && (
@@ -461,9 +488,9 @@ const MultiInput = ({ label, values = [], onAdd, onRemove, id, placeholder = "Aj
 
 // ── ModalShell — fond blanc pur ───────────────────────────────────────────────
 const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-    <div className="relative w-full sm:max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="relative w-full max-w-[calc(100vw-1.5rem)] sm:max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col">
       <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex-shrink-0 bg-white">
         <div className="flex items-center gap-2 sm:gap-3">
           {Icon && (
@@ -592,15 +619,10 @@ const EtablissementModal = ({
               value={formData.province}
               options={provinceOptions}
               onChange={(e) => onProvinceChange(e.target.value)}
+              hideSearch={true}
             />
             <SearchableSelect
-              id="region"
-              label="Région *"
-              value={formData.region}
-              options={formData.province ? provinceRegions[formData.province] : []}
-              onChange={(e) => onChange('region')(e)}
-              disabled={!formData.province}
-            />
+              id="region" label="Région *" value={formData.region} options={formData.province ? provinceRegions[formData.province] : []} onChange={(e) => onChange('region')(e)} disabled={!formData.province} hideSearch={true} />
           </div>
         </div>
 
@@ -624,6 +646,7 @@ const EtablissementModal = ({
               label="Admissions"
               id="admission_select"
               placeholder="Sélectionner un mode d'admission"
+              hideSearch={true}
               values={formData.admission}
               options={admissionOptions}
               onAdd={(val) => handleAddCollection('admission', val)}
@@ -661,6 +684,7 @@ const EtablissementModal = ({
               label="Niveaux"
               id="niveau_select"
               placeholder="Sélectionner un niveau"
+              hideSearch={true}
               values={formData.niveau}
               options={niveauOptions}
               onAdd={(val) => handleAddCollection('niveau', val)}
@@ -1201,10 +1225,8 @@ export default function EtablissementsView() {
   // Colonnes du tableau (simplifiées pour l'affichage)
   const COLS = [
     { key: 'id', label: 'ID' },
-    { key: 'nom', label: 'Établissement' },
-    { key: 'province', label: 'Province' },
-    { key: 'region', label: 'Région' },
-    { key: 'type', label: 'Type' },
+    { key: 'nom', label: 'Établissement & Type' },
+    { key: 'province', label: 'Localisation' },
     { key: 'domaine', label: 'Domaines' },
     { key: 'mention', label: 'Mentions' },
     { key: 'parcours', label: 'Parcours' },
@@ -1214,7 +1236,7 @@ export default function EtablissementsView() {
 
   // ── Rendu ──────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-white p-0">
+    <div className="min-h-[100dvh] bg-white p-0">
       <ToastContainer />
 
       {/* Modales */}
@@ -1250,12 +1272,12 @@ export default function EtablissementsView() {
         />
       )}
 
-      <div className="max-w-screen-2xl mx-auto space-y-4">
+      <div className="max-w-screen-2xl mx-auto space-y-4 px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
 
         {/* En-tête */}
-        <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-black tracking-tight text-gray-900">
+            <h1 className="text-[clamp(1.125rem,2vw,1.5rem)] font-black tracking-tight text-gray-900">
               Gestion des établissements
             </h1>
             <p className="text-xs sm:text-sm mt-0.5 text-gray-500">
@@ -1264,7 +1286,7 @@ export default function EtablissementsView() {
           </div>
           <button 
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition"
+            className="flex w-full sm:w-auto items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition"
           >
             <FaPlus size={15} className="text-white" />
             <span className="hidden sm:inline">Ajouter un établissement</span>
@@ -1298,8 +1320,8 @@ export default function EtablissementsView() {
 
           {/* Barre d'actions (Afficher X entrées + Export) */}
           <div className="px-4 py-3 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-gray-500">Afficher</span>
                 <select 
                   value={perPage} 
@@ -1353,114 +1375,102 @@ export default function EtablissementsView() {
             ))}
           </div>
 
-          {/* VUE TABLEAU — tablette et desktop */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full border-collapse">
+          <div className="hidden md:block overflow-hidden">
+            <table className="w-full border-collapse table-fixed">
               <thead>
                 <tr className="bg-gray-100 border-b-2 border-gray-200">
-                  {COLS.map(({ key, label }) => (
-                    <th 
-                      key={key}
-                      className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:bg-gray-200 whitespace-nowrap"
-                      onClick={() => requestSort(key)}
-                    >
-                      <div className="flex items-center justify-center">
-                        {label}
-                        {getSortIcon(key)}
-                      </div>
-                    </th>
-                  ))}
-                  <th className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600">Actions</th>
+                  <th className="w-[40px] px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">ID</th>
+                  <th className="w-[180px] px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Établissement & Type</th>
+                  <th className="w-[120px] px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Localisation</th>
+                  <th className="px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Offre Académique (Domaines | Mentions | Niveaux | Parcours)</th>
+                  <th className="w-[100px] px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-100 text-[10px]">
                 {loading ? (
-                  <tr>
-                    <td colSpan={8} className="py-16 text-center text-gray-500">
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm">Chargement...</span>
-                      </div>
+                   <tr>
+                    <td colSpan={5} className="py-16 text-center text-gray-500">
+                       <div className="flex flex-col items-center gap-3">
+                         <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                         <span className="text-sm">Chargement...</span>
+                       </div>
                     </td>
                   </tr>
                 ) : paginatedEtablissements.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-gray-500">
-                      <div className="flex flex-col items-center gap-2 opacity-50">
-                        <FaSearch size={24}/>
-                        <span className="text-sm">
-                          {searchTerm ? "Aucun résultat trouvé" : "Aucun établissement disponible"}
-                        </span>
-                      </div>
+                    <td colSpan={5} className="py-12 text-center text-gray-500">
+                       <div className="flex flex-col items-center gap-2 opacity-50">
+                         <FaSearch size={24}/>
+                         <span className="text-sm">
+                           {searchTerm ? "Aucun résultat trouvé" : "Aucun établissement disponible"}
+                         </span>
+                       </div>
                     </td>
                   </tr>
                 ) : paginatedEtablissements.map((etab) => (
                   <tr 
                     key={etab.id}
-                    className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer"
+                    className="hover:bg-blue-50/30 transition-colors cursor-pointer border-b border-gray-50"
                     onClick={(e) => handleRowClick(etab, e)}
                   >
-                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center">{etab.id}</td>
-                    <td className="px-3 py-3 text-sm text-gray-900 text-center truncate max-w-[200px]" title={etab.nom}>{etab.nom}</td>
-                    <td className="px-3 py-3 text-sm text-gray-700 text-center truncate max-w-[120px]" title={etab.province}>{etab.province}</td>
-                    <td className="px-3 py-3 text-sm text-gray-700 text-center truncate max-w-[120px]" title={etab.region}>{etab.region}</td>
-                    <td className="px-3 py-3 text-center">
-                      <Pill tone={etab.type === "Public" ? "green" : "purple"}>
-                        {etab.type}
-                      </Pill>
-                    </td>
-                    <td className="px-3 py-3 text-center">
-                      <div className="flex flex-wrap gap-1 max-w-[150px] justify-center">
-                        {Array.isArray(etab.domaine) && etab.domaine.length > 0 ? etab.domaine.map((d, i) => (
-                          <Pill key={i} tone="blue">{d}</Pill>
-                        )) : <Pill tone="gray">-</Pill>}
+                    <td className="px-1 py-4 text-center text-gray-400 font-medium">{etab.id}</td>
+                    <td className="px-2 py-4 text-center">
+                      <div className="flex flex-col items-center gap-1 text-center">
+                        <span className="font-bold leading-tight line-clamp-2" title={etab.nom}>{etab.nom}</span>
+                        <Pill tone={etab.type === "Public" ? "green" : "purple"}>
+                          {etab.type}
+                        </Pill>
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center">
-                      <div className="flex flex-wrap gap-1 max-w-[150px] justify-center">
-                        {Array.isArray(etab.mention) && etab.mention.length > 0 ? etab.mention.map((m, i) => (
-                          <Pill key={i} tone="blue">{m}</Pill>
-                        )) : <Pill tone="gray">-</Pill>}
+                    <td className="px-2 py-4 text-center">
+                      <div className="flex flex-col items-center">
+                        <span className="font-bold text-gray-800">{etab.province}</span>
+                        <span className="text-[9px] text-gray-500 leading-tight">{etab.region}</span>
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center">
-                      <div className="flex flex-wrap gap-1 max-w-[200px] justify-center">
-                        {Array.isArray(etab.parcours) && etab.parcours.length > 0 ? etab.parcours.map((p, i) => (
-                          <Pill key={i} tone="blue">{p}</Pill>
-                        )) : <Pill tone="gray">-</Pill>}
+                    <td className="px-3 py-4">
+                      <div className="grid grid-cols-4 gap-3 h-full">
+                        <div className="border-r border-gray-100 pr-2">
+                          <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Domaines</span>
+                          <div className="flex flex-wrap gap-0.5">
+                            {(etab.domaine || []).map((d, i) => <Pill key={i} tone="blue">{d}</Pill>)}
+                          </div>
+                        </div>
+                        <div className="border-r border-gray-100 pr-2">
+                          <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Mentions</span>
+                          <div className="flex flex-wrap gap-0.5">
+                            {(etab.mention || []).map((m, i) => <Pill key={i} tone="gray">{m}</Pill>)}
+                          </div>
+                        </div>
+                        <div className="border-r border-gray-100 pr-2">
+                          <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Niveaux</span>
+                          <div className="flex flex-wrap gap-0.5">
+                            {(etab.niveau || []).map((n, i) => <Pill key={i} tone="orange">{n}</Pill>)}
+                          </div>
+                        </div>
+                        <div className="pl-1">
+                          <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Parcours</span>
+                          <div className="flex flex-wrap gap-0.5">
+                            {(etab.parcours || []).map((p, i) => <Pill key={i} tone="blue">{p}</Pill>)}
+                          </div>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center">
-                      <div className="flex flex-wrap gap-1 max-w-[150px] justify-center">
-                        {Array.isArray(etab.niveau) && etab.niveau.length > 0 ? etab.niveau.map((n, i) => (
-                          <Pill key={i} tone="orange">{n}</Pill>
-                        )) : <Pill tone="gray">-</Pill>}
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 text-center">
-                      <div className="flex flex-wrap gap-1 max-w-[150px] justify-center">
-                        {Array.isArray(etab.contact) && etab.contact.length > 0 ? etab.contact.map((c, i) => (
-                          <span key={i} className="bg-gray-50 text-gray-700 px-2 py-0.5 rounded border border-gray-100 text-[10px] whitespace-nowrap">
-                            {formatPhone(c)}
-                          </span>
-                        )) : <span className="text-gray-400 text-xs">-</span>}
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-4 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleOpenModal(etab); }}
-                          className="p-1.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" 
+                          className="p-1 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" 
                           title="Modifier"
                         >
-                          <FaEdit size={15} className="text-blue-600" />
+                          <FaEdit size={14} className="text-blue-600" />
                         </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleDeleteClick(etab); }}
-                          className="p-1.5 rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition" 
+                          className="p-1 rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition" 
                           title="Supprimer"
                         >
-                          <FaTrash size={15} className="text-red-600" />
+                          <FaTrash size={14} className="text-red-600" />
                         </button>
                       </div>
                     </td>

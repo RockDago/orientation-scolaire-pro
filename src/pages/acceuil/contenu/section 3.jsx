@@ -149,15 +149,15 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
   /* ── VUE MULTIPLE RÉSULTATS ── */
   if (isMultipleResults) {
     return (
-      <div className="relative w-full h-screen font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832] overflow-hidden">
+      <div className="relative w-full h-[100dvh] min-h-[100dvh] font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832] overflow-hidden">
         <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
         <DecoSVG />
         <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-0 opacity-[0.8]"><BuildingSVG /></div>
 
-        <div className="relative z-10 flex flex-col lg:flex-row flex-1 overflow-hidden h-screen">
+        <div className="relative z-10 flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden h-full">
 
           {/* ── Gauche ── */}
-          <div className="flex flex-col w-full lg:w-1/2 xl:w-[52%] px-4 sm:px-10 lg:px-14 pt-4 sm:pt-6 h-full overflow-hidden">
+          <div className="flex flex-col w-full lg:w-1/2 xl:w-[52%] px-4 sm:px-10 lg:px-14 pt-4 sm:pt-6 h-full min-h-0 overflow-hidden">
 
             {/* Bouton retour — icône réduite sur mobile */}
             <button
@@ -170,10 +170,10 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
             </button>
 
             <div className="shrink-0 mb-3 sm:mb-4">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight">
+              <h1 className="text-[clamp(1.85rem,4.8vw,3.7rem)] font-black text-white leading-tight tracking-tight">
                 {metier.label}
               </h1>
-              <p className="text-white/80 text-[11px] sm:text-sm font-semibold mt-1.5 sm:mt-2 uppercase tracking-widest">
+              <p className="text-white/80 text-[clamp(0.72rem,0.95vw,0.95rem)] font-semibold mt-1.5 sm:mt-2 uppercase tracking-widest">
                 {metier.results.length} métier{metier.results.length > 1 ? "s" : ""} trouvé{metier.results.length > 1 ? "s" : ""}
               </p>
             </div>
@@ -189,12 +189,12 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
                     className={`rounded-2xl p-3 sm:p-4 border cursor-pointer transition-all ${active ? "bg-white/20 border-white/50 shadow-lg" : "bg-white/10 border-white/20 hover:bg-white/15"}`}
                   >
                     <div className="flex justify-between items-start mb-1.5 sm:mb-2">
-                      <h3 className="font-bold text-white text-sm sm:text-base leading-snug">{item.label}</h3>
+                      <h3 className="font-bold text-white text-[clamp(0.88rem,1.15vw,1.05rem)] leading-snug">{item.label}</h3>
                       <span className="text-[9px] sm:text-[10px] bg-white/25 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full shrink-0 ml-2 font-bold">
                         {Array.isArray(item.niveau) ? item.niveau.join(", ") : item.niveau}
                       </span>
                     </div>
-                    <p className="text-white/75 text-[11px] sm:text-xs leading-relaxed line-clamp-2">{item.description}</p>
+                    <p className="text-white/75 text-[clamp(0.72rem,0.9vw,0.82rem)] leading-relaxed line-clamp-2">{item.description}</p>
                     <p className="text-white/50 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider mt-1.5 sm:mt-2">{Array.isArray(item.mention) ? item.mention.join(", ") : item.mention}</p>
                   </div>
                 );
@@ -237,15 +237,15 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
 
   /* ── VUE SIMPLE ── */
   return (
-    <div className="relative w-full h-screen font-['Sora'] flex flex-col bg-gradient-to-br from-[#1550cc] via-[#1e72d8] via-[#30b8a4] via-[#7dc922] to-[#9ed418] overflow-hidden">
+      <div className="relative w-full h-[100dvh] min-h-[100dvh] font-['Sora'] flex flex-col bg-gradient-to-br from-[#1550cc] via-[#1e72d8] via-[#30b8a4] via-[#7dc922] to-[#9ed418] overflow-hidden">
       <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       <DecoSVG />
       <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-0 opacity-[0.8]"><BuildingSVG /></div>
 
-      <div className="relative z-10 flex flex-col lg:flex-row flex-1 h-screen overflow-hidden">
+      <div className="relative z-10 flex flex-col lg:flex-row flex-1 min-h-0 h-full overflow-hidden">
 
         {/* ── Gauche ── */}
-        <div className="flex flex-col w-full lg:w-1/2 xl:w-[52%] px-4 sm:px-10 lg:px-14 pt-4 sm:pt-6 h-full overflow-hidden">
+        <div className="flex flex-col w-full lg:w-1/2 xl:w-[52%] px-4 sm:px-10 lg:px-14 pt-4 sm:pt-6 h-full min-h-0 overflow-hidden">
 
           {/* Bouton retour */}
           <button
@@ -260,7 +260,7 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
 
             {/* Titre */}
             <div className="shrink-0 mb-2.5 sm:mb-3">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mt-0.5 mb-1 uppercase">
+              <h1 className="text-[clamp(1.85rem,4.8vw,3.7rem)] font-black text-white leading-tight tracking-tight mt-0.5 mb-1 uppercase">
                 {m?.label || "Métier"}
               </h1>
               <div className="inline-block bg-white/20 backdrop-blur-md rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-white mb-1.5 sm:mb-2 border border-white/20">
@@ -269,10 +269,10 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
             </div>
 
           {/* Zone scrollable */}
-          <div className="flex-1 overflow-y-auto scrollbar-thin-white min-h-0 pr-2 pb-3 sm:pb-4">
+          <div className="flex-1 overflow-y-auto scrollbar-thin-white min-h-0 pr-2 pb-24 sm:pb-28">
             {m?.parcoursFormation && m.parcoursFormation.length > 0 && (
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-5 border border-white/15">
-                <h2 className="text-white font-black text-sm sm:text-base uppercase tracking-wide mb-2.5 sm:mb-3">
+                <h2 className="text-white font-black text-[clamp(0.85rem,1vw,1rem)] uppercase tracking-wide mb-2.5 sm:mb-3">
                   Parcours de formation
                 </h2>
                 <div className="space-y-3 sm:space-y-4">
@@ -287,7 +287,7 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
                         )}
                       </div>
                       <div className="pb-2">
-                        <p className="text-white/95 text-xs sm:text-sm leading-relaxed pt-1">{etape}</p>
+                        <p className="text-white/95 text-[clamp(0.78rem,0.95vw,0.94rem)] leading-relaxed pt-1">{etape}</p>
                       </div>
                     </div>
                   ))}
@@ -305,9 +305,9 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
           <div className="shrink-0 flex flex-col items-center gap-1.5 sm:gap-2 py-3 sm:py-4 z-10">
             <button
               onClick={() => onVoirCarte(m)}
-              className="w-full max-w-sm bg-[#1250c8] hover:bg-[#1a3ea8] text-white font-black py-3 sm:py-4 lg:py-3 px-4 sm:px-6 rounded-full flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+              className="w-full max-w-sm bg-[#1250c8] hover:bg-[#1a3ea8] text-white font-black py-3 sm:py-4 lg:py-3 px-4 sm:px-6 rounded-full flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 text-[clamp(0.78rem,1vw,0.98rem)]"
             >
-              <span className="text-xs sm:text-sm">Établissements proposant ce parcours</span>
+              <span className="text-[clamp(0.78rem,1vw,0.98rem)]">Établissements proposant ce parcours</span>
               <HiOutlineArrowRight size={16} className="sm:hidden" />
               <HiOutlineArrowRight size={18} className="hidden sm:block" />
             </button>

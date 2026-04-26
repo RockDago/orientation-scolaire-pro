@@ -180,7 +180,7 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
   );
 
   return (
-    <div className="relative w-full min-h-screen font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
+    <div className="relative w-full min-h-[100dvh] overflow-hidden font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
       <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet"
@@ -193,7 +193,7 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
       </div>
 
 
-      <div className="relative z-10 flex flex-col w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4">
+      <div className="relative z-10 flex flex-col flex-1 min-h-0 w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4 overflow-hidden">
         
         {/* Header */}
         <div className="flex items-center justify-between mb-0">
@@ -209,10 +209,10 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
 
         {/* Titre giant */}
         <div className="mb-4 lg:mb-3">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
+          <h1 className="text-[clamp(1.9rem,4.8vw,3.7rem)] font-black text-white leading-tight tracking-tight mb-2 uppercase">
             Choisir une<br />Région
           </h1>
-          <p className="text-xs sm:text-sm text-white/60 font-bold tracking-widest uppercase">
+          <p className="text-[clamp(0.72rem,0.95vw,0.95rem)] text-white/60 font-bold tracking-widest uppercase">
             {activeRegions.length} région{activeRegions.length > 1 ? "s" : ""} disponible{activeRegions.length > 1 ? "s" : ""}
           </p>
         </div>
@@ -221,19 +221,19 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
         <div className="mb-4 lg:mb-3">
           <p className="text-xs text-white/70 font-semibold mb-1">Métier sélectionné :</p>
           <div className="inline-block bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
-            <p className="text-white font-bold text-sm leading-tight">{metierLabel}</p>
+            <p className="text-white font-bold text-[clamp(0.82rem,1vw,0.96rem)] leading-tight">{metierLabel}</p>
           </div>
         </div>
 
         {/* Zone scrollable des régions */}
-        <div className="flex-1 min-h-0 overflow-y-auto py-2 scrollbar-hide">
+        <div className="flex-1 min-h-0 overflow-y-auto py-2 pb-24 sm:pb-28 scrollbar-hide">
           {loading ? (
              <div className="flex flex-col items-center justify-center h-full gap-4">
                 <div className="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin" />
                 <p className="text-white font-bold text-sm">Chargement des régions…</p>
              </div>
           ) : sortedRegionIds.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-6xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 max-w-6xl">
               {sortedRegionIds.map((id) => {
                 const count = etablissementsParRegion[id] || 0;
                 const label = REGION_LABELS[id];
@@ -243,22 +243,22 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
                   <button
                     key={id}
                     onClick={() => handleSelectRegion(id)}
-                    className="group relative overflow-hidden rounded-2xl p-4 transition-all duration-300 flex flex-col gap-2 bg-white/15 hover:bg-white/25 border-white/40 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+                    className="group relative overflow-hidden rounded-2xl p-3 sm:p-4 transition-all duration-300 flex flex-col gap-2 bg-white/15 hover:bg-white/25 border-white/40 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
                     style={{ border: "1px solid" }}
                   >
                     <div className="flex items-center justify-between gap-2">
                        <div className="flex items-center gap-2">
                           <FiMapPin size={16} className="text-white" />
                           <div className="text-left">
-                            <span className="font-bold text-sm text-white block leading-tight">{label}</span>
-                            <span className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">{province}</span>
+                            <span className="font-bold text-[clamp(0.82rem,1vw,0.96rem)] text-white block leading-tight">{label}</span>
+                            <span className="text-[clamp(0.6rem,0.8vw,0.72rem)] text-white/60 font-semibold uppercase tracking-wider">{province}</span>
                           </div>
                        </div>
                        <FiChevronRight size={14} className="text-white/50 group-hover:text-white transition-colors" />
                     </div>
                     
                     <div className="mt-1">
-                        <p className="text-[11px] font-bold text-white/80">
+                        <p className="text-[clamp(0.68rem,0.9vw,0.8rem)] font-bold text-white/80">
                           {count} établissement{count > 1 ? "s" : ""}
                         </p>
                     </div>

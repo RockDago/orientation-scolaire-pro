@@ -101,9 +101,9 @@ const FloatInput = ({ id, name, label, value, onChange, type = "text", error, di
 
 // ── ModalShell ───────────────────────────────────────────────────────────────
 const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-    <div className="relative w-full sm:max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="relative w-full max-w-[calc(100vw-1.5rem)] sm:max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col">
       <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex-shrink-0 bg-white">
         <div className="flex items-center gap-2 sm:gap-3">
           {Icon && (
@@ -291,30 +291,22 @@ export default function DomainesView() {
     toast[type](message, { position: "top-right", autoClose: 3000, theme: "colored" });
   };
 
-  const fetchDomaines = async () => {
-    setLoading(true);
-    try {
-      const data = await getAllDomaines(searchTerm);
-      setDomaines(data);
-    } catch (error) {
-      showToast("Erreur lors du chargement des domaines", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchDomaines(); }, []);
-
   useEffect(() => {
-    if (loading) return;
-    const delaySearch = setTimeout(async () => {
+    const delay = searchTerm === "" ? 0 : 400;
+    const timer = setTimeout(async () => {
+      setLoading(true);
       try {
         const data = await getAllDomaines(searchTerm);
         setDomaines(data);
-        setCurrentPage(1);
-      } catch { showToast("Erreur lors de la recherche", "error"); }
-    }, 400);
-    return () => clearTimeout(delaySearch);
+        if (searchTerm !== "") setCurrentPage(1);
+      } catch {
+        showToast("Erreur lors du chargement des domaines", "error");
+      } finally {
+        setLoading(false);
+      }
+    }, delay);
+
+    return () => clearTimeout(timer);
   }, [searchTerm]);
 
   const sortedDomaines = useMemo(() => {
@@ -336,7 +328,7 @@ export default function DomainesView() {
   const totalPages = Math.ceil(totalItems / perPage);
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * perPage + 1;
   const endItem = Math.min(currentPage * perPage, totalItems);
-  const hasFilter = !!searchTerm;
+
 
   const handleInputChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
 
@@ -379,7 +371,7 @@ export default function DomainesView() {
       setDomaines(domaines.filter(d => d.id !== deleteItem.id));
       showToast("Domaine supprimé avec succès");
       setDeleteItem(null);
-    } catch (error) { showToast("Erreur lors de la suppression", "error"); }
+    } catch { showToast("Erreur lors de la suppression", "error"); }
     finally { setLoadingDelete(false); }
   };
 
@@ -400,7 +392,7 @@ export default function DomainesView() {
   };
 
   return (
-    <div className="min-h-screen bg-white p-0">
+    <div className="min-h-[100dvh] bg-white p-0">
       <ToastContainer />
       {showModal && (
         <DomaineModal 
@@ -420,13 +412,13 @@ export default function DomainesView() {
         />
       )}
 
-      <div className="max-w-screen-2xl mx-auto space-y-4">
-        <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
+      <div className="max-w-screen-2xl mx-auto space-y-4 px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-gray-900">Gestion des domaines</h1>
+            <h1 className="text-[clamp(1.125rem,2vw,1.5rem)] font-black text-gray-900">Gestion des domaines</h1>
             <p className="text-xs sm:text-sm text-gray-500">{totalItems} domaine{totalItems > 1 ? 's' : ''}</p>
           </div>
-          <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition">
+          <button onClick={() => handleOpenModal()} className="flex w-full sm:w-auto items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition">
             <FaPlus /> 
             <span className="hidden sm:inline">Ajouter un domaine</span>
             <span className="sm:hidden">Ajouter</span>
@@ -453,8 +445,8 @@ export default function DomainesView() {
           </div>
 
           <div className="px-4 py-3 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-gray-500">Afficher</span>
                 <select 
                   value={perPage} 
@@ -470,8 +462,8 @@ export default function DomainesView() {
           </div>
 
           {/* Table View */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full border-collapse">
+          <div className="hidden md:block overflow-x-auto overscroll-x-contain">
+            <table className="w-full min-w-[640px] border-collapse">
               <thead>
                 <tr className="bg-gray-100 border-b-2 border-gray-200">
                   <th className="px-4 py-3 text-center text-xs font-bold uppercase text-gray-600 cursor-pointer hover:bg-gray-200" onClick={() => requestSort('id')}>

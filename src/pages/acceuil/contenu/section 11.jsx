@@ -86,7 +86,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
 
   if (loading) {
     return (
-      <div className="relative w-full h-screen font-['Sora'] overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
+      <div className="relative w-full h-[100dvh] min-h-[100dvh] font-['Sora'] overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
         <GradBg />
         <div className="relative z-10 flex flex-col items-center gap-4 text-center px-8">
           <div className="relative w-16 h-16">
@@ -101,7 +101,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
   }
 
   return (
-    <div className="relative w-full min-h-screen font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
+    <div className="relative w-full min-h-[100dvh] overflow-hidden font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
       <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet"
@@ -113,7 +113,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
         <BuildingSVG />
       </div>
 
-      <div className="relative z-10 flex flex-col h-full w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4 overflow-hidden">
+      <div className="s11-shell relative z-10 flex flex-col h-full w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4 overflow-hidden">
         {/* Retour */}
         <button
           onClick={onRetour}
@@ -125,7 +125,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
         </button>
 
         {/* Zone scrollable */}
-        <div className="flex-1 min-h-0 overflow-y-auto py-2 pb-32 scrollbar-hide">
+        <div className="s11-scroll flex-1 min-h-0 overflow-y-auto py-2 pb-36 sm:pb-40 scrollbar-hide">
           <span
             className="inline-block text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full mb-2"
             style={{ background: "rgba(255,255,255,0.18)", color: "white" }}
@@ -133,9 +133,9 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
             Parcours de formation
           </span>
 
-          <div className="mb-8">
+          <div className="s11-title-wrap mb-8">
             <p className="text-[11px] sm:text-sm text-white/70 font-semibold mb-2 uppercase tracking-wider">Formation sélectionnée :</p>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight break-words">
+            <h1 className="s11-title text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight break-words">
               {m?.label || "—"}
             </h1>
           </div>
@@ -152,7 +152,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
           </div>
 
           <div className="flex flex-col items-center w-full">
-            <div className="w-full max-w-2xl flex flex-col gap-0 mb-4">
+            <div className="s11-steps w-full max-w-2xl flex flex-col gap-0 mb-4">
               {parcours.map((etape, i) => (
                 <div key={i} className="flex items-stretch gap-4">
                   <div className="flex flex-col items-center flex-shrink-0">
@@ -208,7 +208,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-md px-6 pointer-events-none flex justify-center">
         <button
           onClick={handleVoirFormations}
-          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white border-none rounded-full px-6 py-3.5 sm:py-4 flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-xl transition-all font-black text-xs sm:text-sm active:scale-95 pointer-events-auto"
+          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white border-none rounded-full px-6 py-3.5 sm:py-4 flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-xl transition-all font-black text-[clamp(0.78rem,1vw,0.95rem)] active:scale-95 pointer-events-auto"
         >
           <span>Établissements proposant ce parcours</span>
           <FiArrowRight size={18} />
@@ -228,6 +228,48 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
       </div>
 
       <style>{`
+        .s11-shell {
+          flex: 1;
+          min-height: 0;
+        }
+        .s11-title {
+          font-size: clamp(2rem, 4.7vw, 4.2rem);
+        }
+        @media (max-height: 840px) {
+          .s11-title-wrap {
+            margin-bottom: 1.25rem;
+          }
+          .s11-title {
+            font-size: clamp(1.7rem, 3.8vw, 3rem);
+          }
+          .s11-steps {
+            max-width: 44rem;
+          }
+          .s11-steps > div {
+            gap: 0.75rem;
+          }
+          .s11-steps > div > div:last-child {
+            padding: 0.65rem 0.85rem;
+          }
+          .s11-steps p {
+            font-size: 0.8rem;
+          }
+        }
+        @media (max-height: 720px) {
+          .s11-title {
+            font-size: clamp(1.45rem, 3.3vw, 2.4rem);
+          }
+          .s11-scroll {
+            padding-bottom: 8.5rem;
+          }
+          .s11-steps > div > div:last-child {
+            padding: 0.6rem 0.75rem;
+          }
+          .s11-steps p {
+            font-size: 0.74rem;
+            line-height: 1.35;
+          }
+        }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>

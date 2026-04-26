@@ -195,7 +195,7 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
       </div>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] flex flex-col max-h-60 overflow-hidden">
+        <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] flex flex-col max-h-[min(16rem,40dvh)] overflow-hidden">
           {!hideSearch && (
             <div className="p-1.5 border-b border-gray-100 bg-white">
               <div className="relative">
@@ -286,9 +286,9 @@ const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, pl
 
 // ── ModalShell — fond blanc pur ───────────────────────────────────────────────
 const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-    <div className="relative w-full sm:max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="relative w-full max-w-[calc(100vw-1.5rem)] sm:max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col">
       <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex-shrink-0 bg-white">
         <div className="flex items-center gap-2 sm:gap-3">
           {Icon && (
@@ -1079,7 +1079,7 @@ const handleSave = async () => {
 
   // ── Rendu ──────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-white p-0">
+    <div className="min-h-[100dvh] bg-white p-0">
       <ToastContainer />
 
       {/* Modales */}
@@ -1118,12 +1118,12 @@ const handleSave = async () => {
         />
       )}
 
-      <div className="max-w-screen-2xl mx-auto space-y-4">
+      <div className="max-w-screen-2xl mx-auto space-y-4 px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
 
         {/* En-tête */}
-        <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-black tracking-tight text-gray-900">
+            <h1 className="text-[clamp(1.125rem,2vw,1.5rem)] font-black tracking-tight text-gray-900">
               Gestion des métiers
             </h1>
             <p className="text-xs sm:text-sm mt-0.5 text-gray-500">
@@ -1132,7 +1132,7 @@ const handleSave = async () => {
           </div>
           <button 
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition"
+            className="flex w-full sm:w-auto items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition"
           >
             <FaPlus size={15} className="text-white" />
             <span className="hidden sm:inline">Ajouter un métier</span>
@@ -1166,8 +1166,8 @@ const handleSave = async () => {
 
           {/* Barre d'actions (Afficher X entrées + Export) */}
           <div className="px-4 py-3 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-gray-500">Afficher</span>
                 <select 
                   value={perPage} 
@@ -1222,8 +1222,8 @@ const handleSave = async () => {
           </div>
 
           {/* VUE TABLEAU — tablette et desktop */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full border-collapse">
+          <div className="hidden md:block overflow-x-auto overscroll-x-contain">
+            <table className="w-full min-w-[980px] border-collapse">
               <thead>
                 <tr className="bg-gray-100 border-b-2 border-gray-200">
                   {COLS.map(({ key, label }) => (

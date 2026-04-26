@@ -188,7 +188,7 @@ const DateRangePicker = ({ value, onChange }) => {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium cursor-pointer transition-all bg-white border border-gray-200 text-gray-700 hover:border-gray-300"
+        className="flex w-full items-center justify-between gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium cursor-pointer transition-all bg-white border border-gray-200 text-gray-700 hover:border-gray-300 sm:w-auto"
       >
         <HiOutlineCalendar className="w-3.5 h-3.5 text-blue-500" />
         {value.label || "Période"}
@@ -210,7 +210,7 @@ const DateRangePicker = ({ value, onChange }) => {
 
       {open && (
         <div
-          className="absolute top-full right-0 z-[9999] min-w-[220px] p-1.5 rounded-xl shadow-xl animate-in fade-in duration-150 bg-white border border-gray-200"
+          className="absolute top-full left-0 sm:left-auto sm:right-0 z-[9999] w-[min(92vw,20rem)] min-w-0 p-1.5 rounded-xl shadow-xl animate-in fade-in duration-150 bg-white border border-gray-200"
         >
           {presets.map((p) => (
             <button
@@ -291,15 +291,15 @@ function StatCardModerne({
   })();
 
   return (
-    <div className="relative w-full p-6 overflow-hidden transition-all duration-300 bg-white border shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] rounded-2xl border-gray-100 hover:shadow-[0_8px_25px_-5px_rgba(0,0,0,0.08)] group">
+    <div className="relative w-full overflow-hidden rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 lg:p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_8px_25px_-5px_rgba(0,0,0,0.08)] group">
       <div
         className="absolute top-0 right-0 w-32 h-32 opacity-5 blur-2xl rounded-bl-full transition-opacity group-hover:opacity-10"
         style={{ backgroundColor: accentColor }}
       />
 
-      <div className="relative flex items-start justify-between">
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
               {label}
             </span>
@@ -316,14 +316,14 @@ function StatCardModerne({
             </span>
           </div>
 
-          <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-extrabold text-gray-900 tracking-tight">
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-[clamp(1.9rem,5vw,2.25rem)] font-extrabold text-gray-900 tracking-tight">
               {displayValue}
             </span>
             <span className="text-sm font-medium text-gray-400">{suffix}</span>
           </div>
 
-          <div className="flex items-center gap-2 pt-2">
+          <div className="flex items-center gap-2 pt-1 sm:pt-2">
             <div
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${
                 isNeutral
@@ -353,14 +353,14 @@ function StatCardModerne({
               >
                 {isNeutral ? "0%" : Math.abs(trend) + "%"}
               </span>
-              <span className="text-xs text-gray-500">{trendLabel}</span>
+              <span className="text-[11px] text-gray-500">{trendLabel}</span>
             </div>
           </div>
         </div>
 
-        <div className="relative p-0.5 rounded-xl bg-gray-50 shadow-inner">
-          <div className="flex items-center justify-center w-14 h-14 rounded-lg bg-white border border-gray-100">
-            <Icon className="w-6 h-6" style={{ color: accentColor }} />
+        <div className="relative self-start rounded-xl bg-gray-50 p-0.5 shadow-inner">
+          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-white border border-gray-100 sm:w-14 sm:h-14">
+            <Icon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: accentColor }} />
           </div>
         </div>
       </div>
@@ -805,7 +805,7 @@ function DonutChartSVG({ data }) {
         <div className="relative flex-shrink-0 mx-auto md:mx-0">
           <svg
             viewBox="0 0 240 240"
-            className="w-[200px] h-[200px] overflow-visible"
+            className="h-[clamp(170px,42vw,220px)] w-[clamp(170px,42vw,220px)] overflow-visible"
           >
             {slices.map((s, i) => (
               <path
@@ -987,12 +987,12 @@ const DashboardAdminView = () => {
   ];
 
   return (
-    <div className="min-h-screen p-0 bg-white font-sans text-gray-900 transition-colors duration-300">
-      <div className="mx-auto max-w-screen-2xl space-y-6">
+    <div className="min-h-[100dvh] p-0 bg-white font-sans text-gray-900 transition-colors duration-300">
+      <div className="mx-auto max-w-screen-2xl space-y-5 px-3 py-3 sm:space-y-6 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+            <h1 className="text-[clamp(1.25rem,2.4vw,1.875rem)] font-bold tracking-tight text-gray-900">
               Vue d'ensemble
             </h1>
             <p className="mt-1 text-sm text-gray-500">
@@ -1006,11 +1006,11 @@ const DashboardAdminView = () => {
           </div>
 
           {/* Filtres */}
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
             <button
               onClick={fetchDash}
               disabled={loadingDash}
-              className="px-3 sm:px-4 py-2 text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-600 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               title="Actualiser les données"
             >
               <FaSync
@@ -1033,9 +1033,9 @@ const DashboardAdminView = () => {
 
         {/* Graphiques */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b border-gray-100">
+          <div className="flex flex-col gap-4 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50/50 text-blue-600">
+              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-50/50 text-blue-600 sm:w-10 sm:h-10">
                 <PiChartLineUp className="w-5 h-5" />
               </div>
               <div>
@@ -1048,12 +1048,12 @@ const DashboardAdminView = () => {
               </div>
             </div>
 
-            <div className="flex p-1 bg-white border border-gray-100 shadow-sm rounded-xl">
+            <div className="flex flex-wrap gap-1 rounded-xl border border-gray-100 bg-white p-1 shadow-sm">
               {CHART_TABS.map(({ key, icon: Icon, label }) => (
                 <button
                   key={key}
                   onClick={() => setChart(key)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 ${
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-300 sm:px-4 ${
                     chart === key
                       ? "bg-blue-50/50 text-blue-600 shadow-sm border border-blue-100/50"
                       : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
@@ -1068,8 +1068,8 @@ const DashboardAdminView = () => {
             </div>
           </div>
 
-          <div className="p-4 bg-white">
-            <div className="mx-auto max-w-4xl">
+          <div className="bg-white p-4 sm:p-5">
+            <div className="mx-auto max-w-5xl">
               {loadingDash && (
                 <div className="flex justify-center py-12">
                   <div className="flex flex-col items-center gap-3">

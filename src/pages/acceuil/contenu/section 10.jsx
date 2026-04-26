@@ -178,7 +178,7 @@ export default function Section10({
 
   return (
     <div
-      className="relative w-full h-screen lg:h-auto lg:min-h-screen font-['Sora'] overflow-hidden lg:overflow-y-auto flex flex-col"
+      className="relative w-full h-[100dvh] min-h-[100dvh] font-['Sora'] overflow-hidden flex flex-col"
       style={{
         background:
           "linear-gradient(135deg,#1250c8 0%,#1a6dcc 20%,#28b090 55%,#a0d820 80%,#c2e832 100%)",
@@ -253,7 +253,7 @@ export default function Section10({
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col h-full w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-3">
+      <div className="s10-shell relative z-10 flex flex-col h-full w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-3">
         {/* Header simple */}
         <div className="flex items-center justify-between shrink-0 mb-0">
           <button
@@ -267,12 +267,12 @@ export default function Section10({
         </div>
 
         {/* Titre giant */}
-        <div className="mb-6 lg:mb-4">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
+        <div className="s10-title mb-6 lg:mb-4">
+          <h1 className="s10-page-title text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
             Métiers<br />Suggérés
           </h1>
           {!loading && (
-            <p className="text-xs sm:text-sm text-white/60 font-black tracking-widest uppercase">
+            <p className="s10-result-count text-xs sm:text-sm text-white/60 font-black tracking-widest uppercase">
               {total} résultat{total > 1 ? "s" : ""}
             </p>
           )}
@@ -280,7 +280,7 @@ export default function Section10({
 
         {/* Zone de la carte */}
         <div
-          className="flex-1 flex flex-col w-full max-w-2xl lg:max-w-4xl mx-auto min-h-0 lg:h-auto"
+          className="s10-card-area flex-1 flex flex-col w-full max-w-2xl lg:max-w-4xl mx-auto min-h-0"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -305,7 +305,7 @@ export default function Section10({
           {/* Carte métier */}
           {!loading && total > 0 && metier && (
             <div
-              className="flex-1 lg:flex-none flex flex-col rounded-3xl p-6 sm:p-8 slide-in overflow-hidden lg:overflow-visible mb-4"
+              className="s10-card flex-1 flex flex-col rounded-3xl p-6 sm:p-8 slide-in overflow-hidden mb-4"
               key={metier.id || index}
               style={{
                 background: "rgba(255,255,255,0.14)",
@@ -313,9 +313,9 @@ export default function Section10({
                 backdropFilter: "blur(12px)",
               }}
             >
-              <div className="flex-1 overflow-y-auto lg:overflow-visible pr-1 scrollbar-hide">
+              <div className="s10-card-body flex-1 overflow-y-auto pr-1 scrollbar-hide">
                 {metier.mention && (Array.isArray(metier.mention) ? metier.mention.length > 0 : metier.mention !== "—") && (
-                  <div className="mb-4">
+                  <div className="s10-card-badge mb-4">
                     <span
                       className="inline-block text-[11px] font-black tracking-widest uppercase px-3 py-1.5 rounded-full"
                       style={{
@@ -328,24 +328,24 @@ export default function Section10({
                   </div>
                 )}
 
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight mb-6 pr-4 uppercase">
+                <h2 className="s10-card-title text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight mb-6 pr-4 uppercase">
                   {metier.label}
                 </h2>
 
                 {metier.description && (
-                  <div className="space-y-2 mb-6">
-                    <p className="text-xs font-black text-white/50 uppercase tracking-widest">Description</p>
-                    <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-medium">
+                  <div className="s10-description space-y-2 mb-6">
+                    <p className="s10-section-label text-xs font-black text-white/50 uppercase tracking-widest">Description</p>
+                    <p className="s10-description-text text-xs sm:text-sm text-white/90 leading-relaxed font-medium">
                       {metier.description}
                     </p>
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div className="s10-meta-grid grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   {metier.niveau && (Array.isArray(metier.niveau) ? metier.niveau.length > 0 : true) && (
-                    <div className="bg-white/10 rounded-2xl p-3 border border-white/10">
-                      <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Niveau Requis</p>
-                      <p className="text-white font-bold text-sm">{Array.isArray(metier.niveau) ? metier.niveau.join(", ") : metier.niveau}</p>
+                    <div className="s10-meta-box bg-white/10 rounded-2xl p-3 border border-white/10">
+                      <p className="s10-meta-label text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Niveau Requis</p>
+                      <p className="s10-meta-value text-white font-bold text-sm">{Array.isArray(metier.niveau) ? metier.niveau.join(", ") : metier.niveau}</p>
                     </div>
                   )}
                   {metier.serie && (Array.isArray(metier.serie) ? metier.serie.length > 0 : true) && (
@@ -357,10 +357,10 @@ export default function Section10({
                 </div>
               </div>
 
-              <div className="shrink-0 pt-6 flex justify-end">
+              <div className="s10-cta-row shrink-0 pt-6 flex justify-end">
                 <button
                   onClick={handleVoirParcours}
-                  className="group inline-flex items-center gap-2 text-white hover:text-[#c2e832] font-black text-sm sm:text-base transition-all uppercase tracking-wide"
+                  className="group inline-flex items-center gap-2 text-white hover:text-[#c2e832] font-black text-[clamp(0.8rem,1vw,1rem)] transition-all uppercase tracking-wide"
                 >
                   Découvrir le parcours
                   <FiArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -372,7 +372,7 @@ export default function Section10({
 
         {/* Pagination & Home */}
         {!loading && total > 0 && (
-          <div className="shrink-0 pt-2 pb-12">
+          <div className="s10-pagination shrink-0 pt-2 pb-12">
             <div className="flex items-center justify-between max-w-2xl lg:max-w-4xl mx-auto w-full px-2 mb-4">
               <button
                 onClick={handlePrev}
@@ -431,8 +431,143 @@ export default function Section10({
       </div>
 
       <style>{`
+        .s10-shell {
+          flex: 1;
+          min-height: 0;
+        }
+        .s10-title {
+          margin-bottom: clamp(0.9rem, 2vh, 1.5rem);
+        }
+        .s10-page-title {
+          font-size: clamp(2.35rem, 5vw, 4.6rem);
+        }
+        .s10-result-count {
+          font-size: clamp(0.72rem, 0.95vw, 0.9rem);
+        }
+        .s10-card-area {
+          width: min(100%, 68rem);
+        }
+        .s10-card {
+          width: min(100%, 62rem);
+          margin-inline: auto;
+          max-height: min(31rem, calc(100dvh - 18rem));
+          padding: clamp(1.1rem, 2vw, 2rem);
+        }
+        .s10-card-body {
+          min-height: 0;
+        }
+        .s10-card-title {
+          font-size: clamp(2rem, 3.2vw, 3.6rem);
+        }
+        .s10-description-text {
+          font-size: clamp(0.85rem, 1vw, 1rem);
+        }
+        .s10-meta-grid > div {
+          padding: 0.9rem 1rem;
+          border-radius: 1rem;
+        }
+        .s10-meta-grid > div > p:first-child {
+          font-size: 0.62rem;
+        }
+        .s10-meta-grid > div > p:last-child,
+        .s10-meta-value {
+          font-size: clamp(0.84rem, 1vw, 1rem);
+          line-height: 1.35;
+        }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        @media (max-height: 900px) {
+          .s10-card {
+            max-height: min(28rem, calc(100dvh - 16rem));
+          }
+        }
+        @media (max-height: 820px) {
+          .s10-shell {
+            padding-top: 1rem;
+            padding-bottom: 0.5rem;
+          }
+          .s10-page-title {
+            font-size: clamp(2rem, 4.1vw, 3.6rem);
+            line-height: 0.94;
+          }
+          .s10-result-count {
+            font-size: 0.72rem;
+          }
+          .s10-card {
+            width: min(100%, 56rem);
+            max-height: min(24.5rem, calc(100dvh - 14rem));
+            border-radius: 1.75rem;
+            padding: 1.1rem 1.25rem;
+          }
+          .s10-card-badge {
+            margin-bottom: 0.75rem;
+          }
+          .s10-card-title {
+            font-size: clamp(1.7rem, 2.5vw, 2.5rem);
+            margin-bottom: 1rem;
+            padding-right: 0;
+          }
+          .s10-description {
+            margin-bottom: 1rem;
+            gap: 0.35rem;
+          }
+          .s10-section-label,
+          .s10-meta-grid > div > p:first-child,
+          .s10-meta-label {
+            font-size: 0.58rem;
+          }
+          .s10-description-text,
+          .s10-meta-grid > div > p:last-child,
+          .s10-meta-value {
+            font-size: 0.8rem;
+            line-height: 1.42;
+          }
+          .s10-meta-grid {
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+          }
+          .s10-meta-grid > div {
+            padding: 0.78rem 0.9rem;
+          }
+          .s10-cta-row {
+            padding-top: 0.85rem;
+          }
+          .s10-pagination {
+            padding-bottom: 3rem;
+          }
+        }
+        @media (max-height: 720px) {
+          .s10-page-title {
+            font-size: clamp(1.8rem, 3.5vw, 3rem);
+          }
+          .s10-card {
+            width: min(100%, 52rem);
+            max-height: min(21.5rem, calc(100dvh - 12.5rem));
+            padding: 0.95rem 1rem;
+          }
+          .s10-card-title {
+            font-size: clamp(1.45rem, 2.1vw, 2rem);
+            margin-bottom: 0.75rem;
+          }
+          .s10-description-text,
+          .s10-meta-grid > div > p:last-child,
+          .s10-meta-value {
+            font-size: 0.75rem;
+            line-height: 1.35;
+          }
+          .s10-meta-grid {
+            gap: 0.6rem;
+          }
+          .s10-meta-grid > div {
+            padding: 0.7rem 0.8rem;
+          }
+          .s10-cta-row button {
+            font-size: 0.82rem;
+          }
+          .s10-pagination {
+            padding-bottom: 2.75rem;
+          }
+        }
         @keyframes slideIn {
           from { opacity: 0; transform: translateX(20px); }
           to   { opacity: 1; transform: translateX(0); }

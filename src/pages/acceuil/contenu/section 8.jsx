@@ -96,7 +96,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
 
   if (loading) {
     return (
-      <div className="relative w-full h-screen font-['Sora'] overflow-hidden flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832] items-center justify-center">
+      <div className="relative w-full h-[100dvh] min-h-[100dvh] font-['Sora'] overflow-hidden flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832] items-center justify-center">
         <div className="text-white text-center">
           <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4" />
           <p className="text-lg font-semibold">Chargement des domaines...</p>
@@ -114,7 +114,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         <BuildingSVG />
       </div>
 
-      <div className={`relative ${open ? "z-[220]" : "z-10"} flex-1 flex flex-col w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4 overflow-hidden`}>
+      <div className={`relative ${open ? "z-[220]" : "z-10"} flex-1 flex flex-col w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-32 sm:pb-36 overflow-hidden`}>
         <button
           onClick={onRetour}
           className="self-start shrink-0 text-white/80 hover:text-white transition-colors flex items-center justify-center p-0 mb-4"
@@ -221,7 +221,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         <button
           onClick={handleSuivantClick}
           disabled={!selected || open}
-          className={`w-full py-3 sm:py-4 rounded-full font-black text-base transition-all flex items-center justify-center gap-3 shadow-lg active:scale-95 pointer-events-auto ${
+          className={`w-full py-3 sm:py-4 rounded-full font-black text-[clamp(0.84rem,1.05vw,1rem)] transition-all flex items-center justify-center gap-3 shadow-lg active:scale-95 pointer-events-auto ${
             selected && !open
               ? "bg-[#1250c8] text-white hover:bg-[#1a3ea8] hover:-translate-y-0.5"
               : "bg-white/20 text-white/40 cursor-not-allowed"
@@ -246,10 +246,12 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         .s8-root {
           position: relative;
           width: 100%;
-          min-height: 100vh;
+          min-height: 100dvh;
+          height: 100dvh;
           display: flex;
           flex-direction: column;
           background: linear-gradient(135deg,#1250c8 0%,#1a6dcc 25%,#28b090 55%,#a0d820 80%,#c2e832 100%);
+          overflow: hidden;
         }
         .s8-root *, .s8-root *::before, .s8-root *::after {
           box-sizing: border-box;
@@ -257,7 +259,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         }
         .s8-panel {
           width: 100%;
-          max-width: 32rem;
+          max-width: 30rem;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -282,7 +284,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         }
         .s8-h1 {
           margin: 0 0 1rem;
-          font-size: 1.875rem;
+          font-size: clamp(1.95rem, 4.6vw, 3.6rem);
           line-height: 1.1;
           letter-spacing: -0.02em;
           font-weight: 900;
@@ -292,14 +294,14 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         .s8-desc {
           margin: 0 0 1.5rem;
           max-width: 30ch;
-          font-size: 0.75rem;
+          font-size: clamp(0.8rem, 1vw, 0.95rem);
           line-height: 1.6;
           color: rgba(255, 255, 255, 0.72);
         }
         .s8-cbwrap {
           position: relative;
           width: 100%;
-          max-width: 450px;
+          max-width: 25rem;
           z-index: 120;
         }
         .s8-cbwrap:focus-within {
@@ -316,12 +318,12 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         }
         .s8-trigger {
           width: 100%;
-          min-height: 64px;
+          min-height: 56px;
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(12px);
           border: 1px solid rgba(255, 255, 255, 0.3);
           border-radius: 1rem;
-          padding: 0.875rem 1.25rem;
+          padding: clamp(0.65rem, 1vw, 0.8rem) clamp(0.85rem, 1vw, 1rem);
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -341,7 +343,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          font-size: 0.875rem;
+          font-size: clamp(0.78rem, 0.95vw, 0.9rem);
           font-weight: 500;
           color: #94a3b8;
         }
@@ -350,7 +352,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          font-size: 0.875rem;
+          font-size: clamp(0.78rem, 0.95vw, 0.9rem);
           font-weight: 700;
           color: #166534;
         }
@@ -368,26 +370,30 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
           top: calc(100% + 12px);
           left: 0;
           right: 0;
+          display: flex;
+          flex-direction: column;
           background: white;
           border-radius: 1.25rem;
           box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.2);
           border: 1px solid rgba(0, 0, 0, 0.05);
           z-index: 1000;
           overflow: hidden;
+          max-height: min(22rem, calc(100dvh - 13rem));
         }
         .s8-drop-search {
-          padding: 0.75rem 1rem;
+          padding: 0.65rem 0.85rem;
           background: #f8fafc;
           border-bottom: 1px solid #f1f5f9;
+          flex-shrink: 0;
         }
         .s8-drop-input {
           width: 100%;
-          min-height: 52px;
+          min-height: 44px;
           background: white;
           border: 1px solid #e2e8f0;
           border-radius: 0.75rem;
-          padding: 0.5rem 0.75rem 0.5rem 2.25rem;
-          font-size: 0.95rem;
+          padding: 0.45rem 0.7rem 0.45rem 2.1rem;
+          font-size: clamp(0.78rem, 0.95vw, 0.88rem);
           font-weight: 500;
           outline: none;
           color: #1e293b;
@@ -397,14 +403,15 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
           box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         .s8-drop-list {
-          max-height: 13rem;
+          flex: 1;
+          min-height: 0;
           overflow-y: auto;
-          padding: 0.5rem;
+          padding: 0.45rem;
         }
         .s8-drop-item {
           width: 100%;
-          min-height: 52px;
-          padding: 0.75rem 1rem;
+          min-height: 44px;
+          padding: 0.65rem 0.85rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -424,7 +431,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
           color: #2563eb;
         }
         .s8-item-name {
-          font-size: 13px;
+          font-size: clamp(0.72rem, 0.9vw, 0.82rem);
           font-weight: 600;
           color: #1e293b;
         }
@@ -448,13 +455,23 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         }
         .animate-fadeIn { animation: fadeIn 0.25s cubic-bezier(0.16,1,0.3,1) both; }
         @media (min-width: 640px) {
-          .s8-h1 { font-size: 2.25rem; }
-          .s8-desc { font-size: 0.875rem; }
           .s8-panel.open { transform: translateY(-160px); }
         }
         @media (min-width: 1024px) {
-          .s8-h1 { font-size: 3rem; }
           .s8-panel.open { transform: translateY(-145px); }
+        }
+        @media (max-height: 860px) {
+          .s8-h1 { font-size: clamp(1.7rem, 3.8vw, 3rem); }
+          .s8-desc { font-size: 0.78rem; }
+          .s8-panel.open { transform: translateY(-205px); }
+          .s8-drop { max-height: min(19rem, calc(100dvh - 11rem)); }
+        }
+        @media (max-height: 760px) {
+          .s8-panel.open { transform: translateY(-230px); }
+          .s8-drop { max-height: min(16.5rem, calc(100dvh - 9rem)); }
+          .s8-trigger { min-height: 52px; }
+          .s8-drop-input { min-height: 40px; }
+          .s8-drop-item { min-height: 40px; }
         }
       `}</style>
     </div>

@@ -77,44 +77,87 @@ const ExportMenu = ({ onExport, filteredSeries }) => {
 };
 
 // ── FloatInput (version animée) avec astérisque rouge ─────────────────────────
-const FloatInput = ({ id, name, label, value, onChange, type = "text", error, disabled, className = "", min, maxLength }) => (
-  <div className="relative">
-    <input
-      type={type}
-      id={id}
-      name={name}
-      value={value}
-      onChange={onChange}
-      disabled={disabled}
-      min={min}
-      maxLength={maxLength}
-      className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer
-        ${error ? "border-red-500" : "border-gray-300 focus:border-blue-600"}
-        ${disabled ? "bg-gray-50 cursor-not-allowed" : ""} ${className}`}
-      placeholder=" "
-    />
-    <label
-      htmlFor={id}
-      className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5
-        peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4
-        ${error ? "text-red-500" : "text-gray-500 peer-focus:text-blue-600"}`}
-    >
-      {label.includes('*') ? (
-        <>
-          {label.replace('*', '')}
-          <span className="text-red-500 ml-0.5">*</span>
-        </>
-      ) : label}
-    </label>
-    {error && <p className="text-[10px] text-red-500 absolute -bottom-5 left-0">{error}</p>}
-  </div>
-);
+const FloatInput = ({ id, name, label, value, onChange, type = "text", error, disabled, className = "", min, maxLength, rows, options = [] }) => {
+  if (type === "select") {
+    return (
+      <div className="relative">
+        <select
+          id={id}
+          name={name}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer
+            ${error ? "border-red-500" : "border-gray-300 focus:border-blue-600"}
+            ${disabled ? "bg-gray-50 cursor-not-allowed" : ""} ${className}`}
+        >
+          <option value="">Sélectionner</option>
+          {options.map(opt => (
+            <option key={opt.value || opt} value={opt.value || opt}>
+              {opt.label || opt}
+            </option>
+          ))}
+        </select>
+        <label
+          htmlFor={id}
+          className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5
+            peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4
+            ${error ? "text-red-500" : "text-gray-500 peer-focus:text-blue-600"}`}
+        >
+          {label.includes('*') ? (
+            <>
+              {label.replace('*', '')}
+              <span className="text-red-500 ml-0.5">*</span>
+            </>
+          ) : label}
+        </label>
+        {error && <p className="text-[10px] text-red-500 absolute -bottom-5 left-0">{error}</p>}
+      </div>
+    );
+  }
+
+  const InputComponent = type === "textarea" ? "textarea" : "input";
+  
+  return (
+    <div className="relative">
+      <InputComponent
+        type={type !== "textarea" ? type : undefined}
+        id={id}
+        name={name}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        min={min}
+        maxLength={maxLength}
+        rows={rows}
+        className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer
+          ${error ? "border-red-500" : "border-gray-300 focus:border-blue-600"}
+          ${disabled ? "bg-gray-50 cursor-not-allowed" : ""} ${className}`}
+        placeholder=" "
+      />
+      <label
+        htmlFor={id}
+        className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5
+          peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4
+          ${error ? "text-red-500" : "text-gray-500 peer-focus:text-blue-600"}`}
+      >
+        {label.includes('*') ? (
+          <>
+            {label.replace('*', '')}
+            <span className="text-red-500 ml-0.5">*</span>
+          </>
+        ) : label}
+      </label>
+      {error && <p className="text-[10px] text-red-500 absolute -bottom-5 left-0">{error}</p>}
+    </div>
+  );
+};
 
 // ── ModalShell — fond blanc pur ───────────────────────────────────────────────
 const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-    <div className="relative w-full sm:max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="relative w-full max-w-[calc(100vw-1.5rem)] sm:max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col">
       <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex-shrink-0 bg-white">
         <div className="flex items-center gap-2 sm:gap-3">
           {Icon && (
@@ -197,6 +240,8 @@ const SerieModal = ({ isEditing, formData, onClose, onSubmit, onChange, loadingS
           label="Description *"
           value={formData.description}
           onChange={(e) => onChange('description')(e)}
+          type="textarea"
+          rows={4}
           maxLength={220}
         />
         <p className={`text-[10px] mt-1 ${formData.description.length < 50 || formData.description.length > 220 ? 'text-red-500' : 'text-gray-400'}`}>
@@ -649,7 +694,7 @@ export default function SeriesView() {
 
   // ── Rendu ──────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-white p-0">
+    <div className="min-h-[100dvh] bg-white p-0">
       <ToastContainer />
 
       {/* Modales */}
@@ -678,12 +723,12 @@ export default function SeriesView() {
         />
       )}
 
-      <div className="max-w-screen-2xl mx-auto space-y-4">
+      <div className="max-w-screen-2xl mx-auto space-y-4 px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
 
         {/* En-tête */}
-        <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-black tracking-tight text-gray-900">
+            <h1 className="text-[clamp(1.125rem,2vw,1.5rem)] font-black tracking-tight text-gray-900">
               Gestion des séries
             </h1>
             <p className="text-xs sm:text-sm mt-0.5 text-gray-500">
@@ -692,7 +737,7 @@ export default function SeriesView() {
           </div>
           <button 
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition"
+            className="flex w-full sm:w-auto items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition"
           >
             <FaPlus size={15} className="text-white" />
             <span className="hidden sm:inline">Ajouter une série</span>
@@ -727,8 +772,8 @@ export default function SeriesView() {
 
           {/* Barre d'actions (Afficher X entrées + Export) */}
           <div className="px-4 py-3 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-gray-500">Afficher</span>
                 <select 
                   value={perPage} 
@@ -783,8 +828,8 @@ export default function SeriesView() {
           </div>
 
           {/* VUE TABLEAU — tablette et desktop */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full border-collapse">
+          <div className="hidden md:block overflow-x-auto overscroll-x-contain">
+            <table className="w-full min-w-[720px] border-collapse">
               <thead>
                 <tr className="bg-gray-100 border-b-2 border-gray-200">
                   {COLS.map(({ key, label }) => (

@@ -24,7 +24,7 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
   const navigate = useNavigate();
 
   return (
-    <div className="relative w-full min-h-screen font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
+    <div className="relative w-full min-h-[100dvh] overflow-hidden font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
       <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
       <GradBg />
 
@@ -33,7 +33,7 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
         <BuildingSVG />
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-20 lg:pb-4">
+      <div className="relative z-10 flex-1 min-h-0 overflow-y-auto flex flex-col w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-32 sm:pb-36">
 
         {/* Back button aligné à gauche */}
         <button 
@@ -46,16 +46,16 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
         </button>
 
         {/* Zone de contenu - centrée verticalement et horizontalement */}
-        <div className="flex-1 flex flex-col justify-center items-center py-8">
+        <div className="flex-1 min-h-full flex flex-col justify-center items-center py-6 sm:py-8">
           {/* Contenu centré */}
-          <div className="flex flex-col items-center text-center w-full max-w-2xl">
+          <div className="s6-panel flex flex-col items-center text-center w-full max-w-2xl">
             {/* Titre aligné à gauche - taille comme section 7 */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-4">
+            <h1 className="s6-title text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-4">
               TROUVER<br />MON ORIENTATION
             </h1>
             
             {/* Sous-texte centré */}
-            <p className="text-xs sm:text-sm text-white/85 leading-relaxed max-w-xs sm:max-w-sm mb-6 lg:mb-4">
+            <p className="s6-desc text-xs sm:text-sm text-white/85 leading-relaxed max-w-xs sm:max-w-sm mb-6 lg:mb-4">
               Réponds à quelques questions. Cela prendra moins de 2 minutes.
             </p>
 
@@ -68,7 +68,7 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-sm px-6 pointer-events-none flex justify-center">
         <button
           onClick={() => onCommencer?.()}
-          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white border-none rounded-full px-8 py-3 sm:py-4 flex items-center justify-center cursor-pointer shadow-lg hover:shadow-xl transition-all font-black text-sm lg:text-base active:scale-95 pointer-events-auto"
+          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white border-none rounded-full px-8 py-3 sm:py-4 flex items-center justify-center cursor-pointer shadow-lg hover:shadow-xl transition-all font-black text-[clamp(0.8rem,1vw,1rem)] active:scale-95 pointer-events-auto"
         >
           <span>Commencer</span>
         </button>
@@ -83,6 +83,33 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
       </div>
 
       <style>{`
+        .s6-title {
+          font-size: clamp(2.1rem, 5vw, 4.2rem);
+        }
+        .s6-desc {
+          font-size: clamp(0.82rem, 1vw, 0.98rem);
+        }
+        @media (max-height: 820px) {
+          .s6-panel {
+            max-width: 34rem;
+          }
+          .s6-title {
+            font-size: clamp(1.85rem, 4vw, 3.2rem);
+            margin-bottom: 0.75rem;
+          }
+          .s6-desc {
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+          }
+        }
+        @media (max-height: 720px) {
+          .s6-title {
+            font-size: clamp(1.65rem, 3.4vw, 2.7rem);
+          }
+          .s6-desc {
+            font-size: 0.74rem;
+          }
+        }
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }

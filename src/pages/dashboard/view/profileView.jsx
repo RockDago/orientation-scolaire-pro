@@ -210,7 +210,7 @@ const ProfileView = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
           <span className="text-sm text-gray-500">Chargement du profil...</span>
@@ -221,28 +221,28 @@ const ProfileView = () => {
 
   if (!userData && !authError) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-white flex items-center justify-center">
         <span className="text-sm text-gray-500">Profil introuvable.</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white p-0">
+    <div className="min-h-[100dvh] bg-white p-0">
       <ToastContainer />
 
-       <div className="max-w-screen-2xl mx-auto space-y-4">
+       <div className="max-w-screen-2xl mx-auto space-y-4 px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
 
         {/* En-tête du profil */}
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
-          <div className="flex items-center gap-5 flex-wrap">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
+          <div className="flex items-start gap-4 flex-wrap sm:items-center sm:gap-5">
             {/* Avatar avec upload */}
             <div
               className="cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
               <div className="relative inline-block">
-                <div className="w-[72px] h-[72px] rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center relative">
+                <div className="w-[clamp(64px,9vw,82px)] h-[clamp(64px,9vw,82px)] rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center relative">
                   {previewImage ? (
                     <img
                       src={previewImage}
@@ -250,13 +250,13 @@ const ProfileView = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-2xl font-semibold text-white">
+                    <span className="text-[clamp(1.25rem,3vw,1.75rem)] font-semibold text-white">
                       {userData.prenom?.[0]}
                       {userData.nom?.[0]}
                     </span>
                   )}
                   <div className="absolute inset-0 rounded-full bg-black/0 hover:bg-black/40 transition-colors duration-200 flex items-center justify-center">
-                    <FaCamera className="w-[18px] h-[18px] text-white opacity-0 hover:opacity-100 transition-opacity duration-200" />
+                    <FaCamera className="w-4 h-4 text-white opacity-0 hover:opacity-100 transition-opacity duration-200 sm:w-[18px] sm:h-[18px]" />
                   </div>
                 </div>
                 <div className="absolute inset-[-3px] rounded-full border-2 border-blue-500/40" />
@@ -273,7 +273,7 @@ const ProfileView = () => {
             {/* Informations utilisateur */}
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <h1 className="text-xl font-bold text-gray-900 m-0">
+                <h1 className="text-[clamp(1.125rem,2vw,1.5rem)] font-bold text-gray-900 m-0">
                   {userData.prenom} {userData.nom}
                 </h1>
                 <Pill tone="blue">{userData.role}</Pill>
@@ -314,11 +314,11 @@ const ProfileView = () => {
         {/* Carte principale avec onglets */}
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
           {/* Navigation par onglets */}
-          <div className="flex border-b border-gray-200 px-5 bg-white">
+          <div className="flex overflow-x-auto border-b border-gray-200 bg-white px-3 sm:px-5">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
-                className={`py-3.5 px-5 text-sm font-medium transition-all duration-200 border-b-2 ${
+                className={`whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-all duration-200 sm:px-5 sm:py-3.5 ${
                   activeTab === tab.key
                     ? "text-blue-600 border-blue-600"
                     : "text-gray-500 border-transparent hover:text-gray-700"
@@ -331,7 +331,7 @@ const ProfileView = () => {
           </div>
 
           {/* Contenu de l'onglet */}
-          <div className="p-6">
+          <div className="p-4 sm:p-5 lg:p-6">
             {activeTab === "personal" && (
               <PersonalInfoForm
                 userData={userData}
@@ -433,8 +433,8 @@ const PersonalInfoForm = ({ userData, setUserData, showToast }) => {
     <div className="space-y-6">
       {/* Section Informations personnelles */}
       <form onSubmit={handleSubmitInfo}>
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="flex justify-between items-center mb-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-base font-semibold text-gray-900 m-0">
               Informations personnelles
             </h3>
@@ -583,8 +583,8 @@ const PersonalInfoForm = ({ userData, setUserData, showToast }) => {
 
       {/* Section Contacts */}
       <form onSubmit={handleSubmitContact}>
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="flex justify-between items-center mb-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-base font-semibold text-gray-900 m-0">
               Contacts
             </h3>
@@ -863,7 +863,7 @@ const SecurityForm = ({ showToast }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Mot de passe */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5">
         <h3 className="text-base font-semibold text-gray-900 mb-4">
           Changer le mot de passe
         </h3>
@@ -938,9 +938,9 @@ const SecurityForm = ({ showToast }) => {
       </div>
 
       {/* 2FA */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-3 sm:items-center">
             <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
               <FaShieldAlt className="w-4 h-4 text-blue-600" />
             </div>
@@ -954,7 +954,7 @@ const SecurityForm = ({ showToast }) => {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Pill tone={twoFactorEnabled ? "green" : "gray"}>
               {twoFactorEnabled ? "Activé" : "Désactivé"}
             </Pill>
@@ -971,9 +971,9 @@ const SecurityForm = ({ showToast }) => {
         </div>
 
         {showQRCode && (
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-[160px_1fr] gap-6 p-5 bg-gray-50 border border-gray-200 rounded-xl">
+          <div className="mt-5 grid grid-cols-1 gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4 sm:gap-6 sm:p-5 md:grid-cols-[160px_1fr]">
             <div className="flex flex-col items-center gap-2">
-              <div className="w-[140px] h-[140px] bg-white rounded-lg flex items-center justify-center border border-gray-200">
+              <div className="w-[120px] h-[120px] bg-white rounded-lg flex items-center justify-center border border-gray-200 sm:w-[140px] sm:h-[140px]">
                 {qrCodeUrl ? (
                   <img
                     src={qrCodeUrl}
@@ -1000,7 +1000,7 @@ const SecurityForm = ({ showToast }) => {
                     setVerificationCode(e.target.value.replace(/\D/g, ""))
                   }
                   maxLength={6}
-                  className="w-full p-3 bg-white border border-gray-200 rounded-lg text-center tracking-[4px] text-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-gray-200 bg-white p-3 text-center text-base font-mono tracking-[0.22em] focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-lg sm:tracking-[4px]"
                   placeholder="••••••"
                 />
               </div>

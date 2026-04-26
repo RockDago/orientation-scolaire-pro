@@ -60,7 +60,7 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
       )}
 
       <section
-        className="s1-container relative w-full min-h-screen bg-white flex flex-col pt-10 md:pt-12 pb-6"
+        className="s1-container relative w-full min-h-[100dvh] bg-white flex flex-col pt-10 md:pt-12 pb-6"
         style={{ animation: "sectionEntrance 0.6s cubic-bezier(0.16,1,0.3,1) both" }}
       >
         {/* Noise texture */}
@@ -299,6 +299,31 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
 
 
           /* ─── Animations ─── */
+          @media (max-height: 860px) {
+            .s1-logo { height: clamp(5.5rem, 12vw, 7rem); }
+            .s1-header-text { margin-top: 0.75rem !important; margin-bottom: 1rem !important; }
+            .s1-title-main { font-size: clamp(1.6rem, 4vw, 2.2rem); }
+            .s1-description { font-size: 0.82rem; }
+            .s1-cards-container { gap: 1rem; margin-top: 0.75rem; }
+            .s1-card { padding-top: 0.65rem; padding-bottom: 0.65rem; }
+            .s1-card-title { font-size: 1.2rem; }
+            .s1-card-desc { font-size: 0.74rem; }
+            .s1-footer { padding-top: 1rem; }
+          }
+
+          @media (max-height: 720px) {
+            .s1-container { padding-top: 0.35rem !important; }
+            .s1-logo { height: clamp(4.75rem, 10vw, 6rem); }
+            .s1-badge { font-size: 0.64rem; padding: 0.3rem 0.65rem; }
+            .s1-title-main { font-size: clamp(1.35rem, 3vw, 1.9rem); }
+            .s1-description { font-size: 0.74rem; margin-top: 0.5rem; }
+            .s1-cards-container { gap: 0.8rem; }
+            .s1-card { padding: 0.55rem 0.9rem; }
+            .s1-card-title { font-size: 1.05rem; }
+            .s1-card-desc { font-size: 0.68rem; margin-top: 0.3rem; }
+            .s1-footer { font-size: 0.68rem; padding-top: 0.75rem; }
+          }
+
           @keyframes sectionEntrance {
             from { opacity: 0; }
             to   { opacity: 1; }

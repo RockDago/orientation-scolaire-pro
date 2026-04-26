@@ -110,7 +110,7 @@ function FicheModal({ fiche, metier, onClose }) {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm hidden sm:block" onClick={onClose} />
       
       <div 
-        className="relative w-full h-full sm:h-auto sm:max-w-2xl bg-white sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:max-h-[90vh] animate-in fade-in zoom-in duration-300"
+        className="relative w-full h-full sm:h-auto sm:max-w-2xl bg-white sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:max-h-[90dvh] animate-in fade-in zoom-in duration-300"
         style={{
           background: "linear-gradient(160deg,#0f1e50 0%,#0e3a6e 30%,#0a6655 65%,#2a7a10 100%)"
         }}
@@ -127,10 +127,10 @@ function FicheModal({ fiche, metier, onClose }) {
             <span className="inline-block text-[9px] font-black tracking-widest uppercase text-white/90 bg-white/10 px-2.5 py-1 rounded-full mb-2 border border-white/10">
               Fiche Établissement
             </span>
-            <h2 className="text-lg sm:text-xl font-black text-white leading-tight">
+            <h2 className="text-[clamp(1rem,1.5vw,1.35rem)] font-black text-white leading-tight">
               {fiche.nom}
             </h2>
-            <p className="mt-1.5 text-xs text-white/60 flex items-center gap-1.5 font-medium">
+            <p className="mt-1.5 text-[clamp(0.72rem,0.95vw,0.85rem)] text-white/60 flex items-center gap-1.5 font-medium">
               <FiMapPin size={12} className="text-white/40" />
               {fiche.ville || fiche.region || fiche.province}
             </p>
@@ -149,7 +149,7 @@ function FicheModal({ fiche, metier, onClose }) {
           {fiche.description && (
             <div className="space-y-2">
               <h4 className="text-[10px] font-black text-white/30 uppercase tracking-widest">À propos</h4>
-              <p className="text-sm text-white/80 leading-relaxed italic border-l-4 border-blue-500/50 pl-4 bg-white/5 py-3 rounded-r-xl">
+              <p className="text-[clamp(0.82rem,1vw,0.95rem)] text-white/80 leading-relaxed italic border-l-4 border-blue-500/50 pl-4 bg-white/5 py-3 rounded-r-xl">
                 "{fiche.description}"
               </p>
             </div>
@@ -164,7 +164,7 @@ function FicheModal({ fiche, metier, onClose }) {
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">{label}</p>
-                  <div className="text-[13px] font-bold text-white/90 leading-relaxed">
+                  <div className="text-[clamp(0.78rem,0.95vw,0.9rem)] font-bold text-white/90 leading-relaxed">
                     {value || "—"}
                   </div>
                 </div>
@@ -298,7 +298,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
 
   return (
     <div
-      className="relative w-full min-h-screen font-['Sora'] flex flex-col"
+      className="relative w-full min-h-[100dvh] overflow-hidden font-['Sora'] flex flex-col"
       style={{
         background:
           "linear-gradient(135deg,#1250c8 0%,#1a6dcc 20%,#28b090 55%,#a0d820 80%,#c2e832 100%)",
@@ -315,7 +315,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
 
       {/* Conteneur principal avec flex column et min-height */}
 
-      <div className="relative z-10 flex flex-col h-full w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4">
+      <div className="relative z-10 flex flex-col flex-1 min-h-0 h-full w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4 overflow-hidden">
         {/* Bouton retour */}
         <button
           onClick={onRetour}
@@ -327,12 +327,12 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
         </button>
 
         {/* Contenu scrollable */}
-        <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin-white pr-1">
+        <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin-white pr-1 pb-24 sm:pb-28">
           <div className="mb-6">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight tracking-tight mb-1">
+            <h1 className="text-[clamp(1.35rem,3vw,2.2rem)] font-black text-white leading-tight tracking-tight mb-1">
               UNIVERSITÉS<br className="sm:hidden" /> & INSTITUTS
             </h1>
-            <p className="text-[11px] sm:text-xs text-white/70 font-medium mb-3 max-w-2xl leading-relaxed">
+            <p className="text-[clamp(0.72rem,0.95vw,0.85rem)] text-white/70 font-medium mb-3 max-w-2xl leading-relaxed">
               Découvrez les établissements d'enseignement supérieur proposant des formations adaptées à votre profil et vos ambitions professionnelles.
             </p>
             <div className="flex flex-wrap items-center gap-2">
