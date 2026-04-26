@@ -23,7 +23,7 @@ const DashboardAdmin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="dashboard-shell min-h-screen bg-white text-gray-900 dark:bg-neutral-950 dark:text-stone-100">
       {/* SIDEBAR */}
       <Sidebar
         collapsed={collapsed}
@@ -51,7 +51,7 @@ const DashboardAdmin = () => {
         </div>
 
         {/* ZONE DE CONTENU */}
-        <main className="flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-10 md:pb-12 bg-white text-gray-900">
+        <main className="flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-10 md:pb-12 bg-white text-gray-900 dark:bg-neutral-950 dark:text-stone-100">
           <div className="mx-auto w-full max-w-7xl">
             <Outlet context={{ user }} />
           </div>

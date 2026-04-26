@@ -102,18 +102,20 @@ export const recordEtablissementSelection = async (
 
 export const createEtablissement = async (data) => {
   const response = await API.post("/etablissements", {
-    nom:       data.nom,
-    province:  data.province,
-    region:    data.region,
-    type:      data.type,
-    mention:   data.mention,
-    domaine:   data.domaine,
-    parcours:  data.parcours,
-    metier:    data.metier,
-    niveau:    data.niveau,
-    duree:     data.duree,
-    admission: data.admission,
-    contact:   data.contact,
+    nom:         data.nom,
+    province:    data.province,
+    region:      data.region,
+    type:        data.type,
+    description: data.description,
+    email:       data.email,
+    mention:     data.mention,
+    domaine:     data.domaine,
+    parcours:    data.parcours,
+    metier:      data.metier,
+    niveau:      data.niveau,
+    duree:       data.duree,
+    admission:   data.admission,
+    contact:     data.contact,
   });
   invalidateEtablissementsCache();
   return response.data.etablissement;
@@ -121,18 +123,20 @@ export const createEtablissement = async (data) => {
 
 export const updateEtablissement = async (id, data) => {
   const response = await API.put(`/etablissements/${id}`, {
-    nom:       data.nom,
-    province:  data.province,
-    region:    data.region,
-    type:      data.type,
-    mention:   data.mention,
-    domaine:   data.domaine,
-    parcours:  data.parcours,
-    metier:    data.metier,
-    niveau:    data.niveau,
-    duree:     data.duree,
-    admission: data.admission,
-    contact:   data.contact,
+    nom:         data.nom,
+    province:    data.province,
+    region:      data.region,
+    type:        data.type,
+    description: data.description,
+    email:       data.email,
+    mention:     data.mention,
+    domaine:     data.domaine,
+    parcours:    data.parcours,
+    metier:      data.metier,
+    niveau:      data.niveau,
+    duree:       data.duree,
+    admission:   data.admission,
+    contact:     data.contact,
   });
   invalidateEtablissementsCache();
   return response.data.etablissement;

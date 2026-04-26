@@ -1,5 +1,6 @@
 // src/pages/dashboard/view/metiersView.jsx
 import { useState, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   FaPlus,
   FaEdit,
@@ -35,12 +36,12 @@ const niveauOptions = ["Bac+2", "Bac+3", "Bac+4", "Bac+5", "Bac+8"];
 const emptyForm = {
   label: "",
   description: "",
-  parcours: [], // Parcours d'études possibles (multiple)
+  niveau: [],
+  serie: [],
+  parcours: [],
   mention: [],
   domaine: [],
-  serie: [], // Série recommandée (multiple)
-  niveau: [],
-  parcoursFormation: [], // Parcours de formation (multiple)
+  parcoursFormation: [],
 };
 
 // ── Configuration ─────────────────────────────────────────────────────────────
@@ -99,7 +100,7 @@ const ExportMenu = ({ onExport, filteredMetiers }) => {
 };
 
 // ── FloatInput (version animée) avec astérisque rouge ─────────────────────────
-const FloatInput = ({ id, name, label, value, onChange, type = "text", error, disabled, className = "", min, maxLength, rows }) => {
+const FloatInput = ({ id, name, label, value, onChange, onKeyDown, type = "text", error, disabled, className = "", min, maxLength, rows }) => {
   const isLabelArray = Array.isArray(label);
   const displayLabel = isLabelArray ? label[0] : label;
   const InputComponent = type === "textarea" ? "textarea" : "input";
@@ -112,6 +113,7 @@ const FloatInput = ({ id, name, label, value, onChange, type = "text", error, di
         name={name}
         value={value}
         onChange={onChange}
+        onKeyDown={onKeyDown}
         disabled={disabled}
         min={min}
         maxLength={maxLength}
@@ -140,16 +142,10 @@ const FloatInput = ({ id, name, label, value, onChange, type = "text", error, di
 };
 
 // ── SearchableSelect Component ──────────────────────────────────────────────
-const SearchableSelect = ({ label, value, options, onChange, disabled, error, id }) => {
+const SearchableSelect = ({ label, value, options, onChange, disabled, error, id, hideSearch = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const containerRef = useRef(null);
-
-  const filteredOptions = useMemo(() => {
-    return (options || []).filter(opt => 
-      (opt.label || opt).toLowerCase().includes(search.toLowerCase())
-    );
-  }, [options, search]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -161,13 +157,19 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const filteredOptions = useMemo(() => {
+    return (options || []).filter(opt => 
+      (opt.label || opt).toLowerCase().includes(search.toLowerCase())
+    );
+  }, [options, search]);
+
   const selectedOption = (options || []).find(opt => (opt.value || opt) === value);
 
   return (
     <div className="relative" ref={containerRef}>
       <div 
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 cursor-pointer transition-colors
+        className={`relative block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-[13px] text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 cursor-pointer transition-colors
           ${error ? "border-red-500" : isOpen ? "border-blue-600" : "border-gray-300"}
           ${disabled ? "bg-gray-50 cursor-not-allowed text-gray-400" : ""}`}
       >
@@ -175,11 +177,11 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
           {selectedOption ? (selectedOption.label || selectedOption) : "Sélectionner..."}
         </span>
         <ChevronDown 
-          size={14} 
+          size={13} 
           className={`absolute right-3 top-1/2 -translate-y-1/2 transition-transform duration-200 text-gray-400 ${isOpen ? 'rotate-180' : ''}`} 
         />
         <label
-          className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 pointer-events-none
+          className={`absolute text-[12px] duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 pointer-events-none
             ${selectedOption || isOpen ? "scale-75 -translate-y-4" : ""}
             ${error ? "text-red-500" : isOpen ? "text-blue-600" : "text-gray-500"}`}
         >
@@ -193,26 +195,29 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
       </div>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] overflow-hidden max-h-60 flex flex-col">
-          <div className="p-2 border-b border-gray-100 sticky top-0 bg-white">
-            <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
-              <input
-                type="text"
-                className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-100 rounded-md focus:outline-none focus:border-blue-500"
-                placeholder="Rechercher..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                autoFocus
-              />
+        <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] flex flex-col max-h-60 overflow-hidden">
+          {!hideSearch && (
+            <div className="p-1.5 border-b border-gray-100 bg-white">
+              <div className="relative">
+                <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={10} />
+                <input
+                  type="text"
+                  className="w-full pl-7 pr-2 py-1 text-[12px] border border-gray-100 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Rechercher..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
             </div>
-          </div>
+          )}
           <div className="overflow-y-auto">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt, i) => (
                 <div
                   key={opt.id || opt.value || opt || i}
-                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 transition-colors
+                  className={`px-3 py-1.5 text-[12px] cursor-pointer hover:bg-blue-50 transition-colors
                     ${(opt.value || opt) === value ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"}`}
                   onClick={() => {
                     onChange({ target: { name: id, value: (opt.value || opt) } });
@@ -224,7 +229,7 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
                 </div>
               ))
             ) : (
-              <div className="px-4 py-3 text-sm text-gray-400 text-center italic">Aucun résultat</div>
+              <div className="px-3 py-2 text-[11px] text-gray-400 text-center italic">Aucun résultat</div>
             )}
           </div>
         </div>
@@ -235,20 +240,23 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
 
 // ── MultiSelect Component ──────────────────────────────────────────────
 const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, placeholder = "Ajouter..." }) => {
-  const [selectedValue, setSelectedValue] = useState("");
-
-  const handleAdd = () => {
-    if (selectedValue) {
-      onAdd(selectedValue);
-      setSelectedValue("");
-    }
-  };
-
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-bold text-gray-900 border-b-2 border-blue-500 pb-1.5 w-fit">
+      <h3 className="text-sm font-semibold text-gray-800 border-b pb-2">
         {label} <span className="text-red-500">*</span>
       </h3>
+
+      <div className="flex-1">
+        <SearchableSelect
+          id={id}
+          label={placeholder}
+          value=""
+          options={(options || [])
+            .filter((opt) => !(values || []).includes(opt.label || opt))
+            .map((opt) => ({ value: opt.label || opt, label: opt.label || opt }))}
+          onChange={(e) => onAdd(e.target.value)}
+        />
+      </div>
 
       <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-lg border border-gray-200">
         {(values || []).map((val, index) => (
@@ -272,29 +280,6 @@ const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, pl
           </span>
         )}
       </div>
-
-      <div className="flex gap-3 items-end">
-        <div className="flex-1">
-          <SearchableSelect
-            id={id}
-            label={placeholder}
-            value={selectedValue}
-            options={(options || [])
-              .filter((opt) => !(values || []).includes(opt.label || opt))
-              .map((opt) => ({ value: opt.label || opt, label: opt.label || opt }))}
-            onChange={(e) => setSelectedValue(e.target.value)}
-          />
-        </div>
-        <button
-          onClick={handleAdd}
-          className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap"
-          type="button"
-          disabled={!selectedValue}
-        >
-          <FaPlusCircle size={14} />
-          Ajouter
-        </button>
-      </div>
     </div>
   );
 };
@@ -317,12 +302,14 @@ const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
           <X size={17} className="text-gray-500" />
         </button>
       </div>
-      <div className="p-4 sm:p-5 overflow-y-auto flex-1 text-gray-900 bg-white">{children}</div>
-      {footer && (
-        <div className="px-4 sm:px-5 py-3 sm:py-4 border-t border-gray-100 bg-white flex justify-end gap-2 flex-shrink-0">
-          {footer}
-        </div>
-      )}
+      <div className="p-4 sm:p-5 overflow-y-auto overflow-x-hidden flex-1 text-gray-900 bg-white min-h-[400px]">
+        {children}
+        {footer && (
+          <div className="mt-8 pt-4 border-t border-gray-100 flex justify-end gap-2">
+            {footer}
+          </div>
+        )}
+      </div>
     </div>
   </div>
 );
@@ -367,145 +354,155 @@ const MetierModal = ({
         </BtnPrimary>
       </>}
     >
-      <form onSubmit={handleSubmit} className="space-y-10">
-        {/* Informations générales */}
-        <div className="space-y-6">
-          <h3 className="text-lg font-bold text-gray-900 border-b-2 border-blue-500 pb-2 w-fit">
-            Informations générales
-          </h3>
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* SECTION 1 : INFORMATIONS GÉNÉRALES */}
+        <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
+          <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
+            <div className="w-1 h-3 bg-blue-600 rounded-full" />
+            Informations Générales
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <FloatInput 
+                id="label"
+                name="label"
+                label="Métier *"
+                value={formData.label}
+                onChange={(e) => onChange('label')(e)}
+              />
+            </div>
 
-          <div className="space-y-6">
-            <FloatInput 
-              id="label"
-              name="label"
-              label="Métier *"
-              value={formData.label}
-              onChange={(e) => onChange('label')(e)}
+            <div className="md:col-span-2">
+              <FloatInput 
+                id="description"
+                name="description"
+                label="Description *"
+                value={formData.description}
+                onChange={(e) => onChange('description')(e)}
+                type="textarea"
+                rows={3}
+                maxLength={220}
+              />
+              <p className={`text-[10px] mt-1 ${formData.description.length < 50 || formData.description.length > 220 ? 'text-red-500' : 'text-gray-400'}`}>
+                {formData.description.length} / 220 caractères (min 50)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 2 : PRÉREQUIS ET NIVEAUX */}
+        <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
+          <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
+            <div className="w-1 h-3 bg-blue-600 rounded-full" />
+            Prérequis et Niveaux
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MultiSelect 
+              label="Niveaux"
+              id="niveau_select"
+              placeholder="Sélectionner un niveau"
+              values={formData.niveau}
+              options={niveauOptions}
+              onAdd={(val) => handleAddCollection('niveau', val)}
+              onRemove={(val) => handleRemoveCollection('niveau', val)}
             />
-
-            <FloatInput 
-              id="description"
-              name="description"
-              label="Description *"
-              value={formData.description}
-              onChange={(e) => onChange('description')(e)}
-              type="textarea"
-              rows={3}
+            <MultiSelect 
+              label="Séries Recommandées"
+              id="serie_select"
+              placeholder="Sélectionner une série"
+              values={formData.serie}
+              options={serieOptions.map(s => ({ value: s.code, label: s.code }))}
+              onAdd={(val) => handleAddCollection('serie', val)}
+              onRemove={(val) => handleRemoveCollection('serie', val)}
             />
           </div>
         </div>
 
-        {/* Sections multi-valeurs */}
-        <div className="space-y-10">
-          {/* Domaines */}
-          <MultiSelect 
-            label="Domaines"
-            id="domaine_select"
-            placeholder="Sélectionner un domaine"
-            values={formData.domaine}
-            options={domaineOptions}
-            onAdd={(val) => handleAddCollection('domaine', val)}
-            onRemove={(val) => handleRemoveCollection('domaine', val)}
-          />
+        {/* SECTION 3 : DOMAINES ET MENTIONS */}
+        <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
+          <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
+            <div className="w-1 h-3 bg-blue-600 rounded-full" />
+            Domaines et Mentions
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MultiSelect 
+              label="Domaines"
+              id="domaine_select"
+              placeholder="Sélectionner un domaine"
+              values={formData.domaine}
+              options={domaineOptions}
+              onAdd={(val) => handleAddCollection('domaine', val)}
+              onRemove={(val) => handleRemoveCollection('domaine', val)}
+            />
+            <MultiSelect 
+              label="Mentions"
+              id="mention_select"
+              placeholder="Sélectionner une mention"
+              values={formData.mention}
+              options={mentionOptions}
+              onAdd={(val) => handleAddCollection('mention', val)}
+              onRemove={(val) => handleRemoveCollection('mention', val)}
+            />
+          </div>
+        </div>
 
-          {/* Mentions */}
-          <MultiSelect 
-            label="Mentions"
-            id="mention_select"
-            placeholder="Sélectionner une mention"
-            values={formData.mention}
-            options={mentionOptions}
-            onAdd={(val) => handleAddCollection('mention', val)}
-            onRemove={(val) => handleRemoveCollection('mention', val)}
-          />
-
-          {/* Niveaux */}
-          <MultiSelect 
-            label="Niveaux"
-            id="niveau_select"
-            placeholder="Sélectionner un niveau"
-            values={formData.niveau}
-            options={niveauOptions}
-            onAdd={(val) => handleAddCollection('niveau', val)}
-            onRemove={(val) => handleRemoveCollection('niveau', val)}
-          />
-
-          {/* Parcours d'études possibles */}
-          <MultiSelect 
-            label="Parcours d'études possibles"
-            id="parcours_select"
-            placeholder="Sélectionner un parcours"
-            values={formData.parcours}
-            options={parcoursOptions}
-            onAdd={(val) => handleAddCollection('parcours', val)}
-            onRemove={(val) => handleRemoveCollection('parcours', val)}
-          />
-
-          {/* Séries recommandées */}
-          <MultiSelect 
-            label="Séries recommandées"
-            id="serie_select"
-            placeholder="Sélectionner une série"
-            values={formData.serie}
-            options={serieOptions.map(s => s.code)}
-            onAdd={(val) => handleAddCollection('serie', val)}
-            onRemove={(val) => handleRemoveCollection('serie', val)}
-          />
-
-          {/* Parcours de formation */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-gray-900 border-b-2 border-blue-500 pb-2 w-fit">
-              Parcours de formation <span className="text-red-500">*</span>
-              <span className="text-xs text-gray-500 ml-2 font-normal">(Vous pouvez ajouter plusieurs parcours)</span>
-            </h3>
-
-            {/* Liste des parcours ajoutés */}
-            <div className="flex flex-wrap gap-2 min-h-[80px] p-4 bg-gray-50 rounded-lg border border-gray-200">
-              {formData.parcoursFormation.map((parcours) => (
-                <div
-                  key={parcours}
-                  className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <span className="text-sm text-gray-700 font-medium">{parcours}</span>
-                  <button
-                    onClick={() => handleRemoveParcoursFormation(parcours)}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
-                    type="button"
+        {/* SECTION 4 : PARCOURS */}
+        <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
+          <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
+            <div className="w-1 h-3 bg-blue-600 rounded-full" />
+            Parcours d'études et de formation
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MultiSelect 
+              label="Parcours d'études possibles"
+              id="parcours_select"
+              placeholder="Sélectionner un parcours"
+              values={formData.parcours}
+              options={parcoursOptions}
+              onAdd={(val) => handleAddCollection('parcours', val)}
+              onRemove={(val) => handleRemoveCollection('parcours', val)}
+            />
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-800 border-b pb-2">
+                Parcours de formation <span className="text-red-500">*</span>
+              </h3>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="Nouveau parcours... (Appuyez sur Entrée)"
+                  value={newParcoursFormation}
+                  onChange={(e) => setNewParcoursFormation(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddParcoursFormation();
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-lg border border-gray-200">
+                {formData.parcoursFormation.map((parcours) => (
+                  <div
+                    key={parcours}
+                    className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm transition-shadow"
                   >
-                    <FaTimes size={14} />
-                  </button>
-                </div>
-              ))}
-              {formData.parcoursFormation.length === 0 && (
-                <span className="text-gray-400 text-sm w-full text-center py-4">
-                  Aucun parcours de formation ajouté
-                </span>
-              )}
-            </div>
-
-            {/* Ajout d'un nouveau parcours */}
-            <div className="flex gap-3">
-              <input
-                type="text"
-                placeholder="Saisir un parcours de formation"
-                value={newParcoursFormation}
-                onChange={(e) => setNewParcoursFormation(e.target.value)}
-                className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddParcoursFormation();
-                  }
-                }}
-              />
-              <button
-                onClick={handleAddParcoursFormation}
-                className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap"
-                type="button"
-              >
-                <FaPlusCircle size={16} />
-                Ajouter
-              </button>
+                    <span className="text-xs text-gray-700 font-medium">{parcours}</span>
+                    <button
+                      onClick={() => handleRemoveParcoursFormation(parcours)}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                      type="button"
+                    >
+                      <FaTimes size={12} />
+                    </button>
+                  </div>
+                ))}
+                {formData.parcoursFormation.length === 0 && (
+                  <span className="text-gray-400 text-[10px] w-full text-center py-2 italic">
+                    Aucun élément ajouté sur le parcours de formations
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -886,14 +883,15 @@ export default function MetiersView() {
   };
 
   // ── Validation ─────────────────────────────────────────────────────
-  const isFormValid = () =>
+  const isFormValid = () => 
     (formData.label || "").trim() !== "" &&
-    (formData.description || "").trim() !== "" &&
+    (formData.description || "").trim().length >= 50 &&
+    (formData.description || "").trim().length <= 220 &&
+    (formData.domaine || []).length > 0 &&
+    (formData.niveau || []).length > 0 &&
+    (formData.serie || []).length > 0 &&
     (formData.parcours || []).length > 0 &&
     (formData.mention || []).length > 0 &&
-    (formData.domaine || []).length > 0 &&
-    (formData.serie || []).length > 0 &&
-    (formData.niveau || []).length > 0 &&
     (formData.parcoursFormation || []).length > 0;
 
   // ── Gestion formulaire ─────────────────────────────────────────────

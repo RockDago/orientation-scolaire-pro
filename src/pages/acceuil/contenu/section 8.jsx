@@ -1,12 +1,9 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
-import { HiOutlineHome, HiChevronDown, HiCheck } from "react-icons/hi";
-import { HiOutlineSearch } from "react-icons/hi";
+import { HiOutlineHome, HiChevronDown, HiCheck, HiX, HiOutlineSearch } from "react-icons/hi";
 import BuildingSVG from "./BuildingSVG";
 import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
-import { useNavigate } from "react-router-dom";
 import { getAllDomaines } from "../../../services/domaine.services";
-
 
 function GradBg() {
   return (
@@ -23,62 +20,39 @@ function GradBg() {
   );
 }
 
-
 export default function Section8({ onSuivant, onRetour, onHome }) {
-  const navigate       = useNavigate();
   const [allDomaines, setAllDomaines] = useState([]);
-  const [loading,     setLoading]     = useState(true);
-  const [open,        setOpen]        = useState(false);
-  const [search,      setSearch]      = useState("");
-  const [selected,    setSelected]    = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState(null);
 
-  const triggerRef  = useRef(null);
+  const triggerRef = useRef(null);
   const dropdownRef = useRef(null);
-  const [triggerRect, setTriggerRect] = useState(null);
 
-  // ── Lit la position RÉELLE du trigger après que la transition CSS soit finie ──
-  // On attend 520ms (durée de la transition 500ms + marge) avant de lire le rect.
-  const readRect = useCallback(() => {
-    if (triggerRef.current) {
-      setTriggerRect(triggerRef.current.getBoundingClientRect());
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!open) { setTriggerRect(null); return; }
-    // Lecture immédiate pour afficher le dropdown rapidement, puis correction
-    // après la fin de la transition translateY (500ms).
-    readRect();
-    const timer = setTimeout(readRect, 520);
-    window.addEventListener("resize", readRect);
-    window.addEventListener("scroll", readRect, true);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("resize", readRect);
-      window.removeEventListener("scroll", readRect, true);
-    };
-  }, [open, readRect]);
-
-  // Fermer le dropdown si clic en dehors
   useEffect(() => {
     if (!open) return;
+
     const handleClickOutside = (e) => {
       if (
-        triggerRef.current  && !triggerRef.current.contains(e.target) &&
-        dropdownRef.current && !dropdownRef.current.contains(e.target)
+        triggerRef.current &&
+        !triggerRef.current.contains(e.target) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target)
       ) {
         setOpen(false);
         setSearch("");
       }
     };
-    document.addEventListener("mousedown",  handleClickOutside);
+
+    document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
+
     return () => {
-      document.removeEventListener("mousedown",  handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [open]);
-
 
   useEffect(() => {
     const loadDomaines = async () => {
@@ -92,21 +66,19 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         setLoading(false);
       }
     };
+
     loadDomaines();
   }, []);
-
 
   const domaineOptions = useMemo(() => {
     return allDomaines.map((d) => ({ value: d.id || d.label, label: d.label }));
   }, [allDomaines]);
-
 
   const filteredOptions = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return domaineOptions;
     return domaineOptions.filter((o) => o.label.toLowerCase().includes(q));
   }, [search, domaineOptions]);
-
 
   const handleSelect = (option) => {
     setSelected(option);
@@ -122,45 +94,19 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
     if (selected) onSuivant?.(selected.label);
   };
 
-
-  // ── Calcul de la position et hauteur max du dropdown ───────────────────────
-  // triggerRect est lu APRÈS la transition CSS (voir useEffect avec setTimeout 520ms),
-  // donc les coordonnées sont toujours exactes, peu importe le translateY du parent.
-  const BOTTOM_SAFE = 110; // dégager bouton Suivant (bottom-20 ≈ 80px) + Home (bottom-4 ≈ 16px) + marge
-
-  const dropdownStyle = useMemo(() => {
-    if (!triggerRect) return { visibility: "hidden" };
-    const spaceBelow = window.innerHeight - triggerRect.bottom - BOTTOM_SAFE;
-    const maxH       = Math.max(120, Math.min(spaceBelow, 260));
-    return {
-      position:  "fixed",
-      top:       triggerRect.bottom + 8,
-      left:      triggerRect.left,
-      width:     triggerRect.width,
-      maxHeight: maxH,
-      zIndex:    9999,
-    };
-  }, [triggerRect]);
-
-  const listMaxHeight = triggerRect
-    ? Math.max(60, (dropdownStyle.maxHeight ?? 200) - 56)
-    : 144;
-
-
   if (loading) {
     return (
       <div className="relative w-full h-screen font-['Sora'] overflow-hidden flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832] items-center justify-center">
         <div className="text-white text-center">
           <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-lg font-semibold">Chargement des domaines…</p>
+          <p className="text-lg font-semibold">Chargement des domaines...</p>
         </div>
       </div>
     );
   }
 
-
   return (
-    <div className="relative w-full min-h-screen font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
+    <div className="s8-root">
       <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       <GradBg />
 
@@ -168,8 +114,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         <BuildingSVG />
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4 overflow-hidden">
-        {/* Retour */}
+      <div className={`relative ${open ? "z-[220]" : "z-10"} flex-1 flex flex-col w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4 overflow-hidden`}>
         <button
           onClick={onRetour}
           className="self-start shrink-0 text-white/80 hover:text-white transition-colors flex items-center justify-center p-0 mb-4"
@@ -179,49 +124,92 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
           <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
         </button>
 
-        {/* Zone centrale — le texte ET le trigger montent ensemble quand open=true */}
-        <div className="flex-1 flex flex-col justify-center items-center py-4">
-          <div
-            className="flex flex-col items-center text-center w-full max-w-2xl transition-transform duration-500 ease-in-out"
-            style={{ transform: open ? "translateY(-60px)" : "translateY(0)" }}
-          >
-            {/* Titre + description — s'estompent quand ouvert */}
-            <div
-              className="transition-all duration-500 ease-in-out"
-              style={{
-                opacity:   open ? 0.3 : 1,
-                transform: open ? "translateY(-12px)" : "translateY(0)",
-              }}
-            >
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-4 uppercase">
+        <div className="flex-1 flex flex-col justify-center items-center py-4 relative z-[100]">
+          <div className={`s8-panel ${open ? "open" : ""}`}>
+            <div className={`s8-header ${open ? "open" : ""}`}>
+              <h1 className="s8-h1">
                 Explorer par<br />domaine
               </h1>
-              <p className="text-xs sm:text-sm text-white/85 leading-relaxed max-w-xs sm:max-w-md mb-6">
-                Sélectionne le domaine qui t'intéresse pour découvrir
+              <p className="s8-desc">
+                Sélectionne le domaine qui t&apos;intéresse pour découvrir
                 immédiatement les métiers disponibles.
               </p>
             </div>
 
-            {/* ── Trigger du combobox ────────────────────────────────────── */}
-            <div className="w-full max-w-sm">
+            <div className="s8-cbwrap">
+              <p className="s8-lbl">Explorer par domaine</p>
+
               <button
                 ref={triggerRef}
                 type="button"
                 onClick={handleToggle}
-                className="w-full bg-white/95 rounded-2xl px-4 py-3 flex items-center justify-between gap-2 shadow-lg hover:shadow-xl transition-all"
+                className="s8-trigger"
               >
-                <span className={`text-sm font-semibold truncate ${selected ? "text-[#1250c8]" : "text-gray-400"}`}>
-                  {selected ? selected.label : "Choisir un domaine…"}
+                <span className={selected ? "s8-val" : "s8-ph"}>
+                  {selected ? selected.label : "Sélectionner un domaine..."}
                 </span>
-                <HiChevronDown
-                  className={`text-gray-500 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-                  size={18}
-                />
+                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  {selected && (
+                    <HiX
+                      size={16}
+                      className="text-gray-400 hover:text-red-500 cursor-pointer transition-colors"
+                      onClick={() => setSelected(null)}
+                    />
+                  )}
+                  <HiChevronDown className={`s8-icon ${open ? "rot180" : ""}`} />
+                </div>
               </button>
+
+              {open && (
+                <div ref={dropdownRef} className="s8-drop s8-fadein">
+                  <div className="s8-drop-search">
+                    <div className="relative">
+                      <HiOutlineSearch size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input
+                        autoFocus
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Rechercher..."
+                        className="s8-drop-input pr-8"
+                      />
+                      {search && (
+                        <button
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSearch("");
+                          }}
+                        >
+                          <HiX size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="s8-drop-list">
+                    {filteredOptions.length > 0 ? (
+                      filteredOptions.map((o) => (
+                        <button
+                          key={o.value}
+                          type="button"
+                          onClick={() => handleSelect(o)}
+                          className={`s8-drop-item ${selected?.value === o.value ? "active" : ""}`}
+                        >
+                          <span className="s8-item-name">{o.label}</span>
+                          {selected?.value === o.value && <HiCheck className="text-blue-600" size={14} />}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="py-4 text-center text-xs text-gray-400 italic">Aucun résultat</div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {selected && !open && (
-              <p className="mt-4 text-white/70 text-sm font-medium animate-fadeIn">
+              <p className="mt-4 text-white/70 text-sm font-medium animate-fadeIn text-center">
                 ✓ «{selected.label}» sélectionné
               </p>
             )}
@@ -229,72 +217,12 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         </div>
       </div>
 
-
-      {/* ── Dropdown en position FIXED — toujours devant tout ─────────────────── */}
-      {open && (
-        <div
-          ref={dropdownRef}
-          className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fadeIn flex flex-col"
-          style={{
-            ...dropdownStyle,
-            // Masque le flash pendant les 520ms d'attente de la transition
-            opacity: triggerRect ? 1 : 0,
-            pointerEvents: triggerRect ? "auto" : "none",
-            transition: "opacity 0.15s ease",
-          }}
-        >
-          {/* Search */}
-          <div className="p-2 border-b border-gray-100 flex-shrink-0">
-            <div className="relative">
-              <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-              <input
-                autoFocus
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Rechercher un domaine…"
-                className="w-full bg-gray-50 rounded-xl pl-9 pr-3 py-2 text-sm text-gray-700 focus:outline-none"
-              />
-            </div>
-          </div>
-
-          {/* Liste scrollable */}
-          <ul
-            className="overflow-y-auto p-1.5 scrollbar-gray flex-1"
-            style={{ maxHeight: listMaxHeight }}
-          >
-            {filteredOptions.length > 0 ? (
-              filteredOptions.map((o) => (
-                <li key={o.value}>
-                  <button
-                    type="button"
-                    onClick={() => handleSelect(o)}
-                    className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-between gap-2 ${
-                      selected?.value === o.value
-                        ? "bg-[#1250c8] text-white"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {o.label}
-                    {selected?.value === o.value && <HiCheck size={14} />}
-                  </button>
-                </li>
-              ))
-            ) : (
-              <li className="px-3 py-3 text-sm text-gray-400 text-center">Aucun résultat</li>
-            )}
-          </ul>
-        </div>
-      )}
-
-
-      {/* Bouton Suivant */}
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-sm px-6 pointer-events-none flex justify-center">
         <button
           onClick={handleSuivantClick}
-          disabled={!selected}
+          disabled={!selected || open}
           className={`w-full py-3 sm:py-4 rounded-full font-black text-base transition-all flex items-center justify-center gap-3 shadow-lg active:scale-95 pointer-events-auto ${
-            selected
+            selected && !open
               ? "bg-[#1250c8] text-white hover:bg-[#1a3ea8] hover:-translate-y-0.5"
               : "bg-white/20 text-white/40 cursor-not-allowed"
           }`}
@@ -303,7 +231,6 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         </button>
       </div>
 
-      {/* Bouton Home */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
         <button
           onClick={onHome}
@@ -316,15 +243,219 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
       </div>
 
       <style>{`
+        .s8-root {
+          position: relative;
+          width: 100%;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          background: linear-gradient(135deg,#1250c8 0%,#1a6dcc 25%,#28b090 55%,#a0d820 80%,#c2e832 100%);
+        }
+        .s8-root *, .s8-root *::before, .s8-root *::after {
+          box-sizing: border-box;
+          font-family: "Sora", sans-serif;
+        }
+        .s8-panel {
+          width: 100%;
+          max-width: 32rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+          transform: translateY(0);
+        }
+        .s8-panel.open {
+          transform: translateY(-180px);
+        }
+        .s8-header {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1);
+        }
+        .s8-header.open {
+          opacity: 0.3;
+          transform: translateY(-12px);
+        }
+        .s8-h1 {
+          margin: 0 0 1rem;
+          font-size: 1.875rem;
+          line-height: 1.1;
+          letter-spacing: -0.02em;
+          font-weight: 900;
+          text-transform: uppercase;
+          color: white;
+        }
+        .s8-desc {
+          margin: 0 0 1.5rem;
+          max-width: 30ch;
+          font-size: 0.75rem;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.72);
+        }
+        .s8-cbwrap {
+          position: relative;
+          width: 100%;
+          max-width: 450px;
+          z-index: 120;
+        }
+        .s8-cbwrap:focus-within {
+          z-index: 200;
+        }
+        .s8-lbl {
+          margin: 0 0 0.5rem 0.25rem;
+          text-align: left;
+          font-size: 0.65rem;
+          font-weight: 800;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.85);
+        }
+        .s8-trigger {
+          width: 100%;
+          min-height: 64px;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 1rem;
+          padding: 0.875rem 1.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          text-align: left;
+          cursor: pointer;
+          box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .s8-trigger:hover {
+          background: white;
+          box-shadow: 0 12px 40px -4px rgba(0, 0, 0, 0.15);
+          transform: translateY(-2px);
+        }
+        .s8-ph {
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #94a3b8;
+        }
+        .s8-val {
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 0.875rem;
+          font-weight: 700;
+          color: #166534;
+        }
+        .s8-icon {
+          font-size: 1.125rem;
+          color: #22c55e;
+          flex-shrink: 0;
+          transition: transform 0.3s;
+        }
+        .rot180 {
+          transform: rotate(180deg);
+        }
+        .s8-drop {
+          position: absolute;
+          top: calc(100% + 12px);
+          left: 0;
+          right: 0;
+          background: white;
+          border-radius: 1.25rem;
+          box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.2);
+          border: 1px solid rgba(0, 0, 0, 0.05);
+          z-index: 1000;
+          overflow: hidden;
+        }
+        .s8-drop-search {
+          padding: 0.75rem 1rem;
+          background: #f8fafc;
+          border-bottom: 1px solid #f1f5f9;
+        }
+        .s8-drop-input {
+          width: 100%;
+          min-height: 52px;
+          background: white;
+          border: 1px solid #e2e8f0;
+          border-radius: 0.75rem;
+          padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+          font-size: 0.95rem;
+          font-weight: 500;
+          outline: none;
+          color: #1e293b;
+        }
+        .s8-drop-input:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .s8-drop-list {
+          max-height: 13rem;
+          overflow-y: auto;
+          padding: 0.5rem;
+        }
+        .s8-drop-item {
+          width: 100%;
+          min-height: 52px;
+          padding: 0.75rem 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          border: none;
+          background: transparent;
+          border-radius: 0.75rem;
+          cursor: pointer;
+          transition: all 0.2s;
+          text-align: left;
+        }
+        .s8-drop-item:hover {
+          background: #eff6ff;
+        }
+        .s8-drop-item.active {
+          background: #eff6ff;
+          color: #2563eb;
+        }
+        .s8-item-name {
+          font-size: 13px;
+          font-weight: 600;
+          color: #1e293b;
+        }
+        .s8-drop-item.active .s8-item-name {
+          color: #2563eb;
+        }
+        .s8-fadein {
+          animation: s8FadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
         .scrollbar-gray::-webkit-scrollbar { width: 6px; }
         .scrollbar-gray::-webkit-scrollbar-track { background: rgba(15,23,42,0.04); border-radius: 999px; }
         .scrollbar-gray::-webkit-scrollbar-thumb { background: rgba(15,23,42,0.20); border-radius: 999px; }
         .scrollbar-gray::-webkit-scrollbar-thumb:hover { background: rgba(15,23,42,0.30); }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-6px); }
-          to   { opacity: 1; transform: translateY(0); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes s8FadeIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
         }
         .animate-fadeIn { animation: fadeIn 0.25s cubic-bezier(0.16,1,0.3,1) both; }
+        @media (min-width: 640px) {
+          .s8-h1 { font-size: 2.25rem; }
+          .s8-desc { font-size: 0.875rem; }
+          .s8-panel.open { transform: translateY(-160px); }
+        }
+        @media (min-width: 1024px) {
+          .s8-h1 { font-size: 3rem; }
+          .s8-panel.open { transform: translateY(-145px); }
+        }
       `}</style>
     </div>
   );

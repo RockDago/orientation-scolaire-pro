@@ -179,7 +179,11 @@ const DomaineModal = ({ isEditing, formData, onClose, onSubmit, onChange, loadin
           onChange={(e) => onChange('description')(e)}
           type="textarea"
           rows={3}
+          maxLength={220}
         />
+        <p className={`text-[10px] mt-1 ${formData.description.length < 50 || formData.description.length > 220 ? 'text-red-500' : 'text-gray-400'}`}>
+          {formData.description.length} / 220 caractères (min 50)
+        </p>
       </form>
     </ModalShell>
   );
@@ -336,7 +340,10 @@ export default function DomainesView() {
 
   const handleInputChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
 
-  const isFormValid = () => formData.label.trim() !== "" && formData.description.trim() !== "";
+  const isFormValid = () => 
+    formData.label.trim() !== "" && 
+    formData.description.trim().length >= 50 && 
+    formData.description.trim().length <= 220;
 
   const handleOpenModal = (d = null) => {
     if (d) { setEditingId(d.id); setFormData({ label: d.label, description: d.description }); }

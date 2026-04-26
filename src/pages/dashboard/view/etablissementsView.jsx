@@ -1,5 +1,6 @@
 // src/pages/dashboard/view/etablissementsView.jsx
 import { useState, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   FaPlus, FaEdit, FaTrash, FaSearch,
   FaTimes, FaExclamationTriangle, FaPlusCircle
@@ -64,17 +65,19 @@ const admissionOptions = ["Concours", "Dossier", "Entretien", "Test", "Concours 
 // (niveauDureeMap supprimé)
 
 const emptyForm = {
-  nom:       "",
-  province:  "",
-  region:    "",
-  type:      "Public",
-  mention:   [],
-  domaine:   [],
-  parcours:  [],
-  metier:    [],
-  niveau:    [],
+  nom: "",
+  province: "",
+  region: "",
+  type: "",
+  description: "",
+  email: "",
+  mention: [],
+  domaine: [],
+  parcours: [],
+  metier: [],
+  niveau: [],
   admission: [],
-  contact:   [],
+  contact: [],
 };
 
 // ── Configuration ─────────────────────────────────────────────────────────────
@@ -133,7 +136,7 @@ const ExportMenu = ({ onExport, filteredEtablissements }) => {
 };
 
 // ── FloatInput (version animée) avec astérisque rouge ─────────────────────────
-const FloatInput = ({ id, name, label, value, onChange, type = "text", error, disabled, className = "", min, maxLength, rows }) => {
+const FloatInput = ({ id, name, label, value, onChange, type = "text", error, disabled, className = "", min, maxLength, rows, onKeyDown }) => {
   const InputComponent = type === "textarea" ? "textarea" : "input";
 
   return (
@@ -144,6 +147,7 @@ const FloatInput = ({ id, name, label, value, onChange, type = "text", error, di
         name={name}
         value={value}
         onChange={onChange}
+        onKeyDown={onKeyDown}
         disabled={disabled}
         min={min}
         maxLength={maxLength}
@@ -171,8 +175,7 @@ const FloatInput = ({ id, name, label, value, onChange, type = "text", error, di
   );
 };
 
-// ── SearchableSelect Component ──────────────────────────────────────────────
-const SearchableSelect = ({ label, value, options, onChange, disabled, error, id }) => {
+const SearchableSelect = ({ label, value, options, onChange, disabled, error, id, hideSearch = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const containerRef = useRef(null);
@@ -199,7 +202,7 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
     <div className="relative" ref={containerRef}>
       <div
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 cursor-pointer transition-colors
+        className={`relative block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-[13px] text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 cursor-pointer transition-colors
           ${error ? "border-red-500" : isOpen ? "border-blue-600" : "border-gray-300"}
           ${disabled ? "bg-gray-50 cursor-not-allowed text-gray-400" : ""}`}
       >
@@ -207,12 +210,12 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
           {selectedOption ? (selectedOption.label || selectedOption) : "Sélectionner..."}
         </span>
         <ChevronDown
-          size={14}
+          size={13}
           className={`absolute right-3 top-1/2 -translate-y-1/2 transition-transform duration-200 text-gray-400 ${isOpen ? 'rotate-180' : ''}`}
         />
         <label
           htmlFor={id}
-          className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 pointer-events-none
+          className={`absolute text-[12px] duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 pointer-events-none
             ${selectedOption || isOpen ? "scale-75 -translate-y-4" : ""}
             ${error ? "text-red-500" : isOpen ? "text-blue-600" : "text-gray-500"}`}
         >
@@ -226,26 +229,29 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
       </div>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] overflow-hidden max-h-60 flex flex-col">
-          <div className="p-2 border-b border-gray-100 sticky top-0 bg-white">
-            <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
-              <input
-                type="text"
-                className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-100 rounded-md focus:outline-none focus:border-blue-500"
-                placeholder="Rechercher..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                autoFocus
-              />
+        <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] flex flex-col max-h-60 overflow-hidden">
+          {!hideSearch && (
+            <div className="p-1.5 border-b border-gray-100 bg-white">
+              <div className="relative">
+                <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={10} />
+                <input
+                  type="text"
+                  className="w-full pl-7 pr-2 py-1 text-[12px] border border-gray-100 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Rechercher..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
             </div>
-          </div>
+          )}
           <div className="overflow-y-auto">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt, i) => (
                 <div
                   key={i}
-                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 transition-colors
+                  className={`px-3 py-1.5 text-[12px] cursor-pointer hover:bg-blue-50 transition-colors
                     ${(opt.value || opt) === value ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"}`}
                   onClick={() => {
                     onChange({ target: { name: id, value: (opt.value || opt) } });
@@ -257,7 +263,7 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
                 </div>
               ))
             ) : (
-              <div className="px-4 py-3 text-sm text-gray-400 text-center italic">Aucun résultat</div>
+              <div className="px-3 py-2 text-[11px] text-gray-400 text-center italic">Aucun résultat</div>
             )}
           </div>
         </div>
@@ -266,8 +272,50 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
   );
 };
 
+const SimpleSelect = ({ id, label, value, options, onChange, error, disabled, className = "" }) => {
+  return (
+    <div className="relative">
+      <select
+        id={id}
+        name={id}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer
+          ${error ? "border-red-500" : "border-gray-300 focus:border-blue-600"}
+          ${disabled ? "bg-gray-50 cursor-not-allowed" : ""} ${className}`}
+      >
+        <option value="" disabled>Sélectionner...</option>
+        {(options || []).map((opt, i) => (
+          <option key={i} value={opt.value || opt}>
+            {opt.label || opt}
+          </option>
+        ))}
+      </select>
+      <label
+        htmlFor={id}
+        className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 pointer-events-none
+          peer-focus:scale-75 peer-focus:-translate-y-4
+          ${value ? "scale-75 -translate-y-4" : "scale-100 translate-y-0"}
+          ${error ? "text-red-500" : "text-gray-500 peer-focus:text-blue-600"}`}
+      >
+        {label.includes('*') ? (
+          <>
+            {label.replace('*', '')}
+            <span className="text-red-500 ml-0.5">*</span>
+          </>
+        ) : label}
+      </label>
+      <ChevronDown
+        size={14}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+      />
+    </div>
+  );
+};
+
 // ── MultiSelect Component ──────────────────────────────────────────────
-const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, placeholder = "Ajouter..." }) => {
+const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, placeholder = "Ajouter...", className = "md:col-span-1", withButton = false }) => {
   const [selectedValue, setSelectedValue] = useState("");
 
   const handleAdd = () => {
@@ -278,10 +326,38 @@ const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, pl
   };
 
   return (
-    <div className="md:col-span-2 space-y-4">
+    <div className={`${className} space-y-4`}>
       <h3 className="text-sm font-semibold text-gray-800 border-b pb-2">
         {label} <span className="text-red-500">*</span>
       </h3>
+
+      <div className={withButton ? "flex gap-3 items-end" : "flex-1"}>
+        <div className="flex-1">
+          <SearchableSelect
+            id={id}
+            label={placeholder}
+            value={withButton ? selectedValue : ""}
+            options={(options || [])
+              .filter((opt) => !(values || []).includes(opt.label || opt))
+              .map((opt) => ({ value: opt.label || opt, label: opt.label || opt }))}
+            onChange={(e) => {
+              if (withButton) setSelectedValue(e.target.value);
+              else onAdd(e.target.value);
+            }}
+          />
+        </div>
+        {withButton && (
+          <button
+            onClick={handleAdd}
+            className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap"
+            type="button"
+            disabled={!selectedValue}
+          >
+            <FaPlusCircle size={14} />
+            Ajouter
+          </button>
+        )}
+      </div>
 
       <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-lg border border-gray-200">
         {(values || []).map((val, index) => (
@@ -305,35 +381,12 @@ const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, pl
           </span>
         )}
       </div>
-
-      <div className="flex gap-3 items-end">
-        <div className="flex-1">
-          <SearchableSelect
-            id={id}
-            label={placeholder}
-            value={selectedValue}
-            options={(options || [])
-              .filter((opt) => !(values || []).includes(opt.label || opt))
-              .map((opt) => ({ value: opt.label || opt, label: opt.label || opt }))}
-            onChange={(e) => setSelectedValue(e.target.value)}
-          />
-        </div>
-        <button
-          onClick={handleAdd}
-          className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap"
-          type="button"
-          disabled={!selectedValue}
-        >
-          <FaPlusCircle size={14} />
-          Ajouter
-        </button>
-      </div>
     </div>
   );
 };
 
-// ── MultiInput Component (for phone numbers) ───────────────────────────
-const MultiInput = ({ label, values = [], onAdd, onRemove, id, placeholder = "Ajouter un numéro..." }) => {
+// ── MultiInput Component ───────────────────────────────────────────────
+const MultiInput = ({ label, values = [], onAdd, onRemove, id, placeholder = "Ajouter...", className = "md:col-span-1", withButton = false }) => {
   const [inputValue, setInputValue] = useState("");
 
   const handleAdd = () => {
@@ -351,10 +404,34 @@ const MultiInput = ({ label, values = [], onAdd, onRemove, id, placeholder = "Aj
   };
 
   return (
-    <div className="md:col-span-2 space-y-4">
+    <div className={`${className} space-y-4`}>
       <h3 className="text-sm font-semibold text-gray-800 border-b pb-2">
         {label} <span className="text-red-500">*</span>
       </h3>
+
+      <div className={withButton ? "flex gap-3 items-end" : "flex-1"}>
+        <div className="flex-1">
+          <FloatInput
+            id={id}
+            name={id}
+            label={withButton ? placeholder : `${placeholder} (Appuyez sur Entrée)`}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+        {withButton && (
+          <button
+            onClick={handleAdd}
+            className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap"
+            type="button"
+            disabled={!inputValue.trim()}
+          >
+            <FaPlusCircle size={14} />
+            Ajouter
+          </button>
+        )}
+      </div>
 
       <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-lg border border-gray-200">
         {(values || []).map((val, index) => (
@@ -374,31 +451,9 @@ const MultiInput = ({ label, values = [], onAdd, onRemove, id, placeholder = "Aj
         ))}
         {(values || []).length === 0 && (
           <span className="text-gray-400 text-xs w-full text-center py-2 italic">
-            Aucun numéro ajouté
+            Aucun élément ajouté
           </span>
         )}
-      </div>
-
-      <div className="flex gap-3 items-end">
-        <div className="flex-1">
-          <FloatInput
-            id={id}
-            name={id}
-            label={placeholder}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-        </div>
-        <button
-          onClick={handleAdd}
-          className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap"
-          type="button"
-          disabled={!inputValue.trim()}
-        >
-          <FaPlusCircle size={14} />
-          Ajouter
-        </button>
       </div>
     </div>
   );
@@ -408,7 +463,7 @@ const MultiInput = ({ label, values = [], onAdd, onRemove, id, placeholder = "Aj
 const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-    <div className="relative w-full sm:max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="relative w-full sm:max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
       <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex-shrink-0 bg-white">
         <div className="flex items-center gap-2 sm:gap-3">
           {Icon && (
@@ -422,12 +477,14 @@ const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
           <X size={17} className="text-gray-500" />
         </button>
       </div>
-      <div className="p-4 sm:p-5 overflow-y-auto flex-1 text-gray-900 bg-white">{children}</div>
-      {footer && (
-        <div className="px-4 sm:px-5 py-3 sm:py-4 border-t border-gray-100 bg-white flex justify-end gap-2 flex-shrink-0">
-          {footer}
-        </div>
-      )}
+      <div className="p-4 sm:p-5 overflow-y-auto overflow-x-hidden flex-1 text-gray-900 bg-white min-h-[400px]">
+        {children}
+        {footer && (
+          <div className="mt-8 pt-4 border-t border-gray-100 flex justify-end gap-2">
+            {footer}
+          </div>
+        )}
+      </div>
     </div>
   </div>
 );
@@ -471,118 +528,165 @@ const EtablissementModal = ({
         </BtnPrimary>
       </>}
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="md:col-span-2">
-            <FloatInput
-              id="nom"
-              name="nom"
-              label="Nom de l'établissement *"
-              value={formData.nom}
-              onChange={(e) => onChange('nom')(e)}
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* SECTION 1 : INFORMATIONS GÉNÉRALES */}
+        <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
+          <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
+            <div className="w-1 h-3 bg-blue-600 rounded-full" />
+            Informations Générales
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <FloatInput
+                id="nom"
+                name="nom"
+                label="Nom de l'établissement *"
+                value={formData.nom}
+                onChange={(e) => onChange('nom')(e)}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <FloatInput 
+                id="description"
+                name="description"
+                label="Description *"
+                value={formData.description}
+                onChange={(e) => onChange('description')(e)}
+                type="textarea"
+                rows={3}
+                maxLength={220}
+              />
+              <p className={`text-[10px] mt-1 ${(formData.description || "").length < 50 || (formData.description || "").length > 220 ? 'text-red-500' : 'text-gray-400'}`}>
+                {(formData.description || "").length} / 220 caractères (min 50)
+              </p>
+            </div>
+            <FloatInput 
+              id="email"
+              name="email"
+              label="Email *"
+              value={formData.email}
+              onChange={(e) => onChange('email')(e)}
+              type="email"
+            />
+            <SearchableSelect
+              id="type"
+              label="Type *"
+              value={formData.type}
+              options={typeOptions}
+              onChange={(e) => onChange('type')(e)}
+              hideSearch={true}
             />
           </div>
+        </div>
 
-          <SearchableSelect
-            id="province"
-            label="Province *"
-            value={formData.province}
-            options={provinceOptions}
-            onChange={(e) => onProvinceChange(e.target.value)}
-          />
+        {/* SECTION 2 : LOCALISATION */}
+        <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
+          <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
+            <div className="w-1 h-3 bg-blue-600 rounded-full" />
+            Localisation
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SearchableSelect
+              id="province"
+              label="Province *"
+              value={formData.province}
+              options={provinceOptions}
+              onChange={(e) => onProvinceChange(e.target.value)}
+            />
+            <SearchableSelect
+              id="region"
+              label="Région *"
+              value={formData.region}
+              options={formData.province ? provinceRegions[formData.province] : []}
+              onChange={(e) => onChange('region')(e)}
+              disabled={!formData.province}
+            />
+          </div>
+        </div>
 
-          <SearchableSelect
-            id="region"
-            label="Région *"
-            value={formData.region}
-            options={formData.province ? provinceRegions[formData.province] : []}
-            onChange={(e) => onChange('region')(e)}
-            disabled={!formData.province}
-          />
+        {/* SECTION 3 : CONTACT ET ADMISSION */}
+        <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
+          <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
+            <div className="w-1 h-3 bg-blue-600 rounded-full" />
+            Contact et Admission
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MultiInput
+              label="Contacts (Téléphone)"
+              id="contact_input"
+              placeholder="Ex: 0341234567"
+              values={formData.contact}
+              onAdd={(val) => handleAddCollection('contact', val)}
+              onRemove={(val) => handleRemoveCollection('contact', val)}
+              className="w-full"
+            />
+            <MultiSelect 
+              label="Admissions"
+              id="admission_select"
+              placeholder="Sélectionner un mode d'admission"
+              values={formData.admission}
+              options={admissionOptions}
+              onAdd={(val) => handleAddCollection('admission', val)}
+              onRemove={(val) => handleRemoveCollection('admission', val)}
+            />
+          </div>
+        </div>
 
-          <SearchableSelect
-            id="type"
-            label="Type *"
-            value={formData.type}
-            options={typeOptions}
-            onChange={(e) => onChange('type')(e)}
-          />
-
-          {/* Contact */}
-          <MultiInput
-            label="Contacts (Téléphone)"
-            id="contact_input"
-            placeholder="Ex: 0341234567"
-            values={formData.contact}
-            onAdd={(val) => handleAddCollection('contact', val)}
-            onRemove={(val) => handleRemoveCollection('contact', val)}
-          />
-
-          {/* Domaines */}
-          <MultiSelect 
-            label="Domaines"
-            id="domaine_select"
-            placeholder="Sélectionner un domaine"
-            values={formData.domaine}
-            options={domaineOptions}
-            onAdd={(val) => handleAddCollection('domaine', val)}
-            onRemove={(val) => handleRemoveCollection('domaine', val)}
-          />
-
-          {/* Mentions */}
-          <MultiSelect 
-            label="Mentions"
-            id="mention_select"
-            placeholder="Sélectionner une mention"
-            values={formData.mention}
-            options={mentionOptions}
-            onAdd={(val) => handleAddCollection('mention', val)}
-            onRemove={(val) => handleRemoveCollection('mention', val)}
-          />
-
-          {/* Métiers */}
-          <MultiSelect 
-            label="Métiers"
-            id="metier_select"
-            placeholder="Sélectionner un métier"
-            values={formData.metier}
-            options={metierOptions}
-            onAdd={(val) => handleAddCollection('metier', val)}
-            onRemove={(val) => handleRemoveCollection('metier', val)}
-          />
-
-          {/* Parcours */}
-          <MultiSelect 
-            label="Parcours de formation"
-            id="parcours_select"
-            placeholder="Sélectionner un parcours"
-            values={formData.parcours}
-            options={parcoursOptions}
-            onAdd={(val) => handleAddCollection('parcours', val)}
-            onRemove={(val) => handleRemoveCollection('parcours', val)}
-          />
-
-          {/* Niveaux */}
-          <MultiSelect 
-            label="Niveaux"
-            id="niveau_select"
-            placeholder="Sélectionner un niveau"
-            values={formData.niveau}
-            options={niveauOptions}
-            onAdd={(val) => handleAddCollection('niveau', val)}
-            onRemove={(val) => handleRemoveCollection('niveau', val)}
-          />
-
-          {/* Admissions */}
-          <MultiSelect 
-            label="Admissions"
-            id="admission_select"
-            placeholder="Sélectionner un mode d'admission"
-            values={formData.admission}
-            options={admissionOptions}
-            onAdd={(val) => handleAddCollection('admission', val)}
-            onRemove={(val) => handleRemoveCollection('admission', val)}
-          />
+        {/* SECTION 4 : OFFRE ACADÉMIQUE */}
+        <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
+          <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
+            <div className="w-1 h-3 bg-blue-600 rounded-full" />
+            Offre Académique
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <MultiSelect 
+              label="Domaines"
+              id="domaine_select"
+              placeholder="Sélectionner un domaine"
+              values={formData.domaine}
+              options={domaineOptions}
+              onAdd={(val) => handleAddCollection('domaine', val)}
+              onRemove={(val) => handleRemoveCollection('domaine', val)}
+            />
+            <MultiSelect 
+              label="Mentions"
+              id="mention_select"
+              placeholder="Sélectionner une mention"
+              values={formData.mention}
+              options={mentionOptions}
+              onAdd={(val) => handleAddCollection('mention', val)}
+              onRemove={(val) => handleRemoveCollection('mention', val)}
+            />
+            <MultiSelect 
+              label="Niveaux"
+              id="niveau_select"
+              placeholder="Sélectionner un niveau"
+              values={formData.niveau}
+              options={niveauOptions}
+              onAdd={(val) => handleAddCollection('niveau', val)}
+              onRemove={(val) => handleRemoveCollection('niveau', val)}
+            />
+            <MultiSelect 
+              label="Métiers"
+              id="metier_select"
+              placeholder="Sélectionner un métier"
+              values={formData.metier}
+              options={metierOptions}
+              onAdd={(val) => handleAddCollection('metier', val)}
+              onRemove={(val) => handleRemoveCollection('metier', val)}
+            />
+            <div className="md:col-span-2">
+              <MultiSelect 
+                label="Parcours de formation"
+                id="parcours_select"
+                placeholder="Sélectionner un parcours"
+                values={formData.parcours}
+                options={parcoursOptions}
+                onAdd={(val) => handleAddCollection('parcours', val)}
+                onRemove={(val) => handleRemoveCollection('parcours', val)}
+              />
+            </div>
+          </div>
         </div>
       </form>
     </ModalShell>
@@ -654,9 +758,7 @@ const EtablissementCard = ({ etablissement, onEdit, onDelete }) => (
       {Array.isArray(etablissement.domaine) && etablissement.domaine.map((d, i) => (
         <Pill key={i} tone="blue">{d}</Pill>
       ))}
-      {Array.isArray(etablissement.niveau) && etablissement.niveau.map((n, i) => (
-        <Pill key={i} tone="orange">{n}</Pill>
-      ))}
+      {etablissement.niveau && <Pill tone="orange">{etablissement.niveau}</Pill>}
     </div>
 
     {/* Contact */}
@@ -685,7 +787,7 @@ const exportToExcel = (data) => {
         Array.isArray(e.mention)   ? e.mention.join(', ')   : e.mention,
         Array.isArray(e.parcours)  ? e.parcours.join(', ')  : e.parcours,
         Array.isArray(e.metier)    ? e.metier.join(', ')    : e.metier,
-        Array.isArray(e.niveau)    ? e.niveau.join(', ')    : e.niveau,
+        e.niveau,
         Array.isArray(e.admission) ? e.admission.join(', ') : e.admission,
         Array.isArray(e.contact)   ? e.contact.map(formatPhone).join(', ') : formatPhone(e.contact)
       ])
@@ -750,7 +852,7 @@ const exportToPDF = (data) => {
       Array.isArray(e.mention) ? e.mention.join(', ') : e.mention,
       Array.isArray(e.parcours) ? e.parcours.join(', ') : e.parcours,
       Array.isArray(e.metier) ? e.metier.join(', ') : e.metier,
-      Array.isArray(e.niveau) ? e.niveau.join(', ') : e.niveau,
+      e.niveau,
       Array.isArray(e.admission) ? e.admission.join(', ') : e.admission,
       Array.isArray(e.contact) ? e.contact.map(formatPhone).join(', ') : formatPhone(e.contact)
     ]);
@@ -824,6 +926,7 @@ const exportToPDF = (data) => {
     throw error;
   }
 };
+
 
 export default function EtablissementsView() {
   const [etablissements, setEtablissements] = useState([]);
@@ -952,18 +1055,17 @@ export default function EtablissementsView() {
   };
 
   // ── Validation ─────────────────────────────────────────────────────
-  const isFormValid = () =>
-    formData.nom.trim() !== "" &&
-    formData.province !== "" &&
-    formData.region !== "" &&
-    formData.type !== "" &&
-    formData.mention.length > 0 &&
-    formData.domaine.length > 0 &&
-    formData.parcours.length > 0 &&
-    formData.metier.length > 0 &&
-    formData.niveau.length > 0 &&
-    formData.admission.length > 0 &&
-    formData.contact.length > 0;
+  const isFormValid = () => 
+    (formData.nom || "").trim() !== "" &&
+    (formData.region || "").trim() !== "" &&
+    (formData.type || "").trim() !== "" &&
+    (formData.description || "").trim().length >= 50 &&
+    (formData.description || "").trim().length <= 220 &&
+    (formData.email || "").trim() !== "" &&
+    (formData.niveau || []).length > 0 &&
+    (formData.contact || []).length > 0 &&
+    (formData.metier || []).length > 0 &&
+    (formData.admission || []).length > 0;
 
   // ── Gestion formulaire ─────────────────────────────────────────────
   const handleInputChange = (field) => (e) => {
@@ -996,10 +1098,12 @@ export default function EtablissementsView() {
     if (etab) {
       setEditingId(etab.id);
       setFormData({
-        nom: etab.nom,
-        province: etab.province,
-        region: etab.region,
-        type: etab.type,
+        nom: etab.nom || "",
+        province: etab.province || "",
+        region: etab.region || "",
+        type: etab.type || "",
+        description: etab.description || "",
+        email: etab.email || "",
         mention: Array.isArray(etab.mention) ? etab.mention : [],
         domaine: Array.isArray(etab.domaine) ? etab.domaine : [],
         parcours: Array.isArray(etab.parcours) ? etab.parcours : [],

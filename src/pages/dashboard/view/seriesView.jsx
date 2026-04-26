@@ -197,7 +197,11 @@ const SerieModal = ({ isEditing, formData, onClose, onSubmit, onChange, loadingS
           label="Description *"
           value={formData.description}
           onChange={(e) => onChange('description')(e)}
+          maxLength={220}
         />
+        <p className={`text-[10px] mt-1 ${formData.description.length < 50 || formData.description.length > 220 ? 'text-red-500' : 'text-gray-400'}`}>
+          {formData.description.length} / 220 caractères (min 50)
+        </p>
       </form>
     </ModalShell>
   );
@@ -536,7 +540,8 @@ export default function SeriesView() {
   const isFormValid = () =>
     formData.code.trim() !== "" &&
     formData.label.trim() !== "" &&
-    formData.description.trim() !== "";
+    formData.description.trim().length >= 50 &&
+    formData.description.trim().length <= 220;
 
   // ── Gestion formulaire ─────────────────────────────────────────────
   const handleInputChange = (field) => (e) => {

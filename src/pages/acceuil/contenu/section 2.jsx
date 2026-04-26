@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { getAllMetiersCache }  from "../../../services/metier.services";
 import { getAllDomaines }      from "../../../services/domaine.services";
 import { searchMetier }        from "../../../services/metier.services";
+import { ChevronDown, Search } from "lucide-react";
 import BuildingSVG        from "./BuildingSVG";
 import pictoExplorer      from "../../../assets/picto_Explorer.png";
 
@@ -163,6 +164,10 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
     return domainesList.filter((d) => d.label.toLowerCase().includes(q));
   }, [comboSearch, domainesList]);
 
+  const hasMetierSearchText = searchQuery.trim().length > 0;
+  const focusMetierSearch = isMetierComboOpen && hasMetierSearchText;
+  const metierFocusLayout = mode === "metier" || focusMetierSearch;
+
   const metiersParDomaine = useMemo(() => {
     if (!selectedDomaine) return [];
     const domaineNorm = selectedDomaine.label.toLowerCase().trim();
@@ -274,10 +279,10 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
       </div>
 
       {/* Layout */}
-      <div className="s2-layout">
+      <div className={`s2-layout ${metierFocusLayout ? "metier-focus" : ""}`}>
 
         {/* ══ Colonne gauche ══ */}
-        <div className={`s2-left transition-transform duration-500 ease-in-out ${(isMetierComboOpen || isComboOpen) ? "lg:-translate-y-20 -translate-y-12" : "translate-y-0"}`}>
+        <div className={`s2-left transition-transform duration-500 ease-in-out ${metierFocusLayout ? "translate-y-0" : ((isMetierComboOpen || isComboOpen) ? "lg:-translate-y-20 -translate-y-12" : "translate-y-0")}`}>
           <div className="s2-scroll">
             <div className="flex items-center justify-between mb-2">
               {onRetour && (
@@ -302,102 +307,143 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             </div>
 
             {/* ── COMBOBOX 1 : Recherche métier ── */}
-            <div className="s2-cbwrap" ref={metierComboRef}>
+            <div className={`s2-cbwrap ${isMetierComboOpen ? "open" : ""}`} ref={metierComboRef}>
               <p className="s2-lbl">Rechercher un métier</p>
-              <button className="s2-trigger" onClick={() => setIsMetierComboOpen(!isMetierComboOpen)}>
-                <span className={localSelected ? "s2-val blue" : "s2-ph"}>
+              <button
+                className="s2-trigger"
+                onClick={() => {
+                  setIsMetierComboOpen((prev) => !prev);
+                  setIsComboOpen(false);
+                }}
+              >
+                <span className={localSelected ? "s2-val-new" : "s2-ph"}>
                   {localSelected ? localSelected.label : "Ex : développeur, infirmier…"}
                 </span>
-                <HiOutlineSearch className="s2-icon blue" />
+                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  {localSelected && (
+                    <HiX 
+                      size={16} 
+                      className="text-gray-400 hover:text-red-500 cursor-pointer transition-colors"
+                      onClick={() => { setLocalSelected(null); setMode("idle"); }}
+                    />
+                  )}
+                  <HiOutlineSearch className="s2-icon-blue" />
+                </div>
               </button>
 
               {isMetierComboOpen && (
-                <div className="s2-drop s2-fadein">
-                  <div className="s2-drop-search">
-                    <HiOutlineSearch className="s2-drop-sicon" />
-                    <input
-                      type="text"
-                      placeholder="Médecin, designer, pilote…"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      className="s2-drop-input"
-                      autoFocus
-                    />
-                    {searchQuery && (
-                      <button className="s2-drop-clr" onClick={() => setSearchQuery("")}>
-                        <HiX size={13} />
-                      </button>
-                    )}
+                <div className="s2-drop-new s2-fadein">
+                  <div className="s2-drop-search-new">
+                    <div className="relative">
+                      <HiOutlineSearch size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Rechercher..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="s2-drop-input-new pr-8"
+                        autoFocus
+                      />
+                      {searchQuery && (
+                        <button 
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                          onClick={(e) => { e.stopPropagation(); setSearchQuery(""); }}
+                        >
+                          <HiX size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="s2-drop-list">
-                    {filteredMetiers.length > 0 ? filteredMetiers.map((m, i) => (
-                      <button key={m.id} onClick={() => handleSelectMetier(m, false)}
-                        className={`s2-drop-item ${localSelected?.id === m.id ? "active-blue" : ""} ${i !== filteredMetiers.length - 1 ? "bordered" : ""}`}>
-                        <div className="s2-drop-row">
-                          <span className="s2-drop-name">{m.label}</span>
-                          {localSelected?.id === m.id && <HiCheck className="s2-chk blue" />}
+                  <div className="s2-drop-list-new">
+                    {filteredMetiers.length > 0 ? filteredMetiers.map((m) => (
+                      <div
+                        key={m.id}
+                        onClick={() => handleSelectMetier(m, false)}
+                        className={`s2-drop-item-new ${localSelected?.id === m.id ? "active" : ""}`}
+                      >
+                        <div className="flex flex-col">
+                          <span className="s2-item-name">{m.label}</span>
+                          <span className="s2-item-badge">{Array.isArray(m.domaine) ? m.domaine.join(", ") : m.domaine}</span>
                         </div>
-                        <span className="s2-badge blue">{Array.isArray(m.domaine) ? m.domaine.join(", ") : m.domaine}</span>
-                      </button>
-                    )) : (
-                      <div className="s2-empty">
-                        <p>Aucun métier trouvé</p>
-                        <span>Essayez un autre mot-clé</span>
+                        {localSelected?.id === m.id && <HiCheck className="text-blue-600" size={14} />}
                       </div>
+                    )) : (
+                      <div className="py-4 text-center text-xs text-gray-400 italic">Aucun résultat</div>
                     )}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Fiche métier mobile removed as per user request */}
-
-            {/* ── Séparateur + COMBOBOX 2 ── */}
-            {mode !== "metier" && (
+            {/* ── Séparateur ── */}
+            {mode !== "metier" && !focusMetierSearch && (
               <>
                 <div className="s2-sep" style={{ animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.35s both" }}>
                   <div className="s2-sep-l" /><span className="s2-sep-txt">ou</span><div className="s2-sep-l" />
                 </div>
 
-                <div className="s2-cbwrap" ref={comboRef}>
+                {/* ── COMBOBOX 2 : Recherche domaine ── */}
+                <div className={`s2-cbwrap ${isComboOpen ? "open" : ""}`} ref={comboRef}>
                   <p className="s2-lbl">Explorer par domaine</p>
-                  <button onClick={() => setIsComboOpen(!isComboOpen)}
-                    className={`s2-trigger ${isComboOpen ? "open-green" : ""}`}>
-                    <span className={selectedDomaine ? "s2-val green" : "s2-ph"}>
+                  <button
+                    onClick={() => {
+                      setIsComboOpen((prev) => !prev);
+                      setIsMetierComboOpen(false);
+                    }}
+                    className="s2-trigger"
+                  >
+                    <span className={selectedDomaine ? "s2-val-new green" : "s2-ph"}>
                       {selectedDomaine ? selectedDomaine.label : "Sélectionner un domaine…"}
                     </span>
-                    <HiChevronDown className={`s2-icon green ${isComboOpen ? "rot180" : ""}`} />
+                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                      {selectedDomaine && (
+                        <HiX 
+                          size={16} 
+                          className="text-gray-400 hover:text-red-500 cursor-pointer transition-colors"
+                          onClick={() => setSelectedDomaine(null)}
+                        />
+                      )}
+                      <HiChevronDown className={`s2-icon-green ${isComboOpen ? "rot180" : ""}`} />
+                    </div>
                   </button>
 
                   {isComboOpen && (
-                    <div className="s2-drop s2-fadein">
-                      <div className="s2-drop-search">
-                        <HiOutlineSearch className="s2-drop-sicon" />
-                        <input
-                          type="text"
-                          placeholder="Rechercher un domaine…"
-                          value={comboSearch}
-                          onChange={(e) => setComboSearch(e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="s2-drop-input"
-                          autoFocus
-                        />
-                        {comboSearch && (
-                          <button className="s2-drop-clr" onClick={() => setComboSearch("")}>
-                            <HiX size={13} />
-                          </button>
-                        )}
+                    <div className="s2-drop-new s2-fadein">
+                      <div className="s2-drop-search-new">
+                        <div className="relative">
+                          <HiOutlineSearch size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input
+                            type="text"
+                            placeholder="Rechercher..."
+                            value={comboSearch}
+                            onChange={(e) => setComboSearch(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="s2-drop-input-new pr-8"
+                            autoFocus
+                          />
+                          {comboSearch && (
+                            <button 
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                              onClick={(e) => { e.stopPropagation(); setComboSearch(""); }}
+                            >
+                              <HiX size={14} />
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div className="s2-drop-list">
-                        {filteredDomaines.length > 0 ? filteredDomaines.map((d, i) => (
-                          <button key={d.id} onClick={() => handleSelectDomaine(d)}
-                            className={`s2-drop-item ${selectedDomaine?.id === d.id ? "active-green" : ""} ${i !== filteredDomaines.length - 1 ? "bordered" : ""}`}>
-                            <span className="s2-drop-name">{d.label}</span>
-                            {selectedDomaine?.id === d.id && <HiCheck className="s2-chk green" />}
-                          </button>
+                      <div className="s2-drop-list-new">
+                        {filteredDomaines.length > 0 ? filteredDomaines.map((d) => (
+                          <div
+                            key={d.id}
+                            onClick={() => handleSelectDomaine(d)}
+                            className={`s2-drop-item-new ${selectedDomaine?.id === d.id ? "active" : ""}`}
+                          >
+                            <span className="s2-item-name">{d.label}</span>
+                            {selectedDomaine?.id === d.id && <HiCheck className="text-blue-600" size={14} />}
+                          </div>
                         )) : (
-                          <div className="s2-empty"><p>Aucun domaine trouvé</p></div>
+                          <div className="py-4 text-center text-xs text-gray-400 italic">Aucun résultat</div>
                         )}
                       </div>
                     </div>
@@ -423,7 +469,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         </div>
 
         {/* ══ Colonne droite — Desktop ══ */}
-        <div className="s2-right">
+        <div className={`s2-right ${metierFocusLayout ? "metier-focus-hidden" : ""}`}>
           {/* Fiche métier desktop preview removed as per user request */}
           {mode === "domaine" && selectedDomaine && (
             <div className="s2-r-dom s2-fadein">
@@ -505,19 +551,46 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
 
         /* Layout principal */
         .s2-layout { position:relative;z-index:10;display:flex;flex:1; width: 100%; min-height: 100vh; }
+        .s2-layout.metier-focus { justify-content: center; }
 
         /* Colonne gauche */
         .s2-left { display:flex;flex-direction:column;width:100%;min-height:100%; }
         @media(min-width:1024px){ .s2-left{width:50%;} }
         @media(min-width:1280px){ .s2-left{width:52%;} }
+        .s2-layout.metier-focus .s2-left { width: 100%; align-items: center; }
 
         /* Zone scrollable — remplit l'espace restant */
         .s2-scroll {
+          position: relative;
           flex:1;min-height:0;overflow:visible;
           padding: 1rem 1rem 2rem; /* px-4 pt-4 approx */
         }
         @media(min-width: 640px) {
           .s2-scroll { padding: 1.5rem 2.5rem 2rem; } /* px-10 pt-6 approx */
+        }
+        .s2-layout.metier-focus .s2-scroll {
+          width: 100%;
+          max-width: 32rem;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding-top: 1.5rem;
+          padding-bottom: 2rem;
+        }
+        .s2-layout.metier-focus .s2-scroll > .flex {
+          position: fixed;
+          top: 1.5rem;
+          left: clamp(1rem, 2.6vw, 2.5rem);
+          width: auto;
+          z-index: 20;
+        }
+        @media(min-width: 640px) {
+          .s2-layout.metier-focus .s2-scroll {
+            padding-top: 1.5rem;
+            padding-bottom: 2rem;
+          }
         }
 
         /* Retour */
@@ -555,6 +628,18 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           .s2-h1 { text-align: center; }
           .s2-desc { text-align: center; margin-left: auto; margin-right: auto; }
         }
+        .s2-layout.metier-focus .s2-header-mob {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .s2-layout.metier-focus .s2-h1 { text-align: center; }
+        .s2-layout.metier-focus .s2-desc {
+          text-align: center;
+          margin-left: auto;
+          margin-right: auto;
+        }
 
         /* Label */
         .s2-lbl {
@@ -574,12 +659,17 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           z-index: 100;
           margin-bottom: 1.25rem; 
         }
+        .s2-layout.metier-focus .s2-cbwrap {
+          margin-left: auto;
+          margin-right: auto;
+        }
         .s2-cbwrap:focus-within { z-index: 200; }
+        .s2-cbwrap.open { z-index: 1200; }
         @media(max-width: 1023px) {
           .s2-cbwrap { max-width: 100%; display: flex; flex-direction: column; align-items: center; }
         }
 
-        /* Trigger bouton blanc */
+        /* Original Rounded Trigger */
         .s2-trigger {
           width: 100%;
           background: rgba(255, 255, 255, 0.95);
@@ -601,7 +691,6 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           box-shadow: 0 12px 40px -4px rgba(0, 0, 0, 0.15);
           transform: translateY(-2px);
         }
-        .s2-trigger.open-green { border-color: #4ade80; }
         .s2-trigger:active { transform: translateY(0); }
 
         .s2-ph {
@@ -613,140 +702,73 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           text-overflow: ellipsis;
           white-space: nowrap;
         }
-        .s2-val {
+        
+        .s2-val-new {
+          display: block;
           font-size: 0.875rem;
+          color: #1e40af;
           font-weight: 700;
           flex: 1;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
-        .s2-val.blue  { color: #1e40af; }
-        .s2-val.green { color: #166534; }
+        .s2-val-new.green { color: #166534; }
 
-        .s2-icon { font-size: 1.125rem; flex-shrink: 0; transition: transform 0.3s ease; }
-        .s2-icon.blue  { color: #3b82f6; }
-        .s2-icon.green { color: #22c55e; }
+        .s2-icon-blue { font-size: 1.125rem; color: #3b82f6; flex-shrink: 0; }
+        .s2-icon-green { font-size: 1.125rem; color: #22c55e; flex-shrink: 0; transition: transform 0.3s; }
         .rot180 { transform: rotate(180deg); }
 
-        /* Dropdown */
-        .s2-drop {
+        /* Refined Dropdown (match etablissementsView content style) */
+        .s2-drop-new {
           position: absolute;
           left: 0;
           right: 0;
-          top: calc(100% + 10px);
-          background: rgba(255, 255, 255, 0.98);
-          backdrop-filter: blur(24px);
+          top: calc(100% + 8px);
+          background: white;
           border-radius: 1.25rem;
-          box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.25);
-          border: 1px solid rgba(0, 0, 0, 0.05);
-          overflow: hidden;
+          box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.2);
+          border: 1px solid rgba(0,0,0,0.05);
           z-index: 1000;
-          transform-origin: top;
-          animation: s2DropIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-        @keyframes s2DropIn {
-          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          overflow: hidden;
         }
 
-        /* Input de recherche */
-        .s2-drop-search {
-          position: relative;
-          padding: 1rem;
-          background: rgba(248, 250, 252, 0.5);
+        .s2-drop-search-new {
+          padding: 0.75rem 1rem;
+          background: #f8fafc;
           border-bottom: 1px solid #f1f5f9;
         }
-        .s2-drop-sicon {
-          position: absolute;
-          left: 1.75rem;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #64748b;
-          font-size: 0.875rem;
-          pointer-events: none;
-        }
-        .s2-drop-input {
+        .s2-drop-input-new {
           width: 100%;
           background: white;
           border: 1px solid #e2e8f0;
           border-radius: 0.75rem;
-          padding: 0.625rem 1rem 0.625rem 2.5rem;
-          font-size: 0.875rem;
-          font-family: 'Sora', sans-serif;
+          padding: 0.5rem 0.5rem 0.5rem 2.25rem;
+          font-size: 13px;
           outline: none;
-          transition: all 0.2s ease;
           color: #1e293b;
         }
-        .s2-drop-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        .s2-drop-input-new:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+        .s2-drop-list-new {
+          max-height: 15rem;
+          overflow-y: auto;
+          padding: 0.5rem;
         }
-        .s2-drop-clr {
-          position: absolute;
-          right: 1.5rem;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #94a3b8;
-          background: none;
-          border: none;
-          cursor: pointer;
-          padding: 4px;
-          border-radius: 50%;
+        .s2-drop-item-new {
+          padding: 0.75rem 1rem;
           display: flex;
           align-items: center;
-          justify-content: center;
-          transition: background 0.2s;
-        }
-        .s2-drop-clr:hover { background: #f1f5f9; color: #64748b; }
-
-        /* Liste items */
-        .s2-drop-list { 
-          max-height: 14rem; 
-          overflow-y: auto; 
-          background: transparent;
-        }
-        .s2-drop-list::-webkit-scrollbar { width: 4px; }
-        .s2-drop-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-
-        .s2-drop-item {
-          width: 100%;
-          padding: 0.875rem 1.25rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-          text-align: left;
-          background: transparent;
-          border: none;
+          justify-content: space-between;
+          border-radius: 0.75rem;
           cursor: pointer;
           transition: all 0.2s;
         }
-        .s2-drop-item:hover { background: rgba(59, 130, 246, 0.05); }
-        .s2-drop-item.active-blue { background: rgba(59, 130, 246, 0.08); }
-        .s2-drop-item.active-green { background: rgba(34, 197, 94, 0.08); }
-        .s2-drop-item.bordered { border-bottom: 1px solid rgba(0, 0, 0, 0.02); }
-
-        .s2-drop-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-        .s2-drop-name { font-size: 0.875rem; font-weight: 600; color: #1e293b; }
-        .s2-chk { font-size: 1rem; flex-shrink: 0; }
-        .s2-chk.blue { color: #2563eb; }
-        .s2-chk.green { color: #16a34a; }
-
-        .s2-badge {
-          display: inline-block;
-          font-size: 0.625rem;
-          font-weight: 700;
-          padding: 0.125rem 0.5rem;
-          border-radius: 0.5rem;
-          width: fit-content;
-          text-transform: uppercase;
-          letter-spacing: 0.025em;
-        }
-        .s2-badge.blue { background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
+        .s2-drop-item-new:hover { background: #eff6ff; }
+        .s2-drop-item-new.active { background: #eff6ff; color: #2563eb; }
         
-        .s2-empty { padding: 2rem 1.5rem; text-align: center; color: #64748b; }
-        .s2-empty p { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; }
-        .s2-empty span { font-size: 0.75rem; opacity: 0.7; }
+        .s2-item-name { font-size: 13px; font-weight: 600; color: #1e293b; }
+        .s2-item-badge { font-size: 11px; color: #64748b; font-weight: 500; }
 
         /* Séparateur */
         .s2-sep { 
@@ -820,6 +842,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             width:50%;height:100%;
             padding:2.5rem clamp(1.5rem,3.5vw,3rem);
           }
+          .s2-right.metier-focus-hidden { display: none; }
         }
         @media(min-width:1280px){.s2-right{width:48%;}}
 

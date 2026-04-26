@@ -1,5 +1,6 @@
 // src/pages/dashboard/view/parcoursView.jsx
 import { useState, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   FaPlus, FaEdit, FaTrash, FaSearch,
   FaTimes, FaExclamationTriangle
@@ -172,6 +173,103 @@ const FloatInput = ({ id, name, label, value, onChange, type = "text", error, di
   );
 };
 
+const SearchableSelect = ({ label, value, options, onChange, disabled, error, id, hideSearch = false }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef(null);
+
+  const filteredOptions = useMemo(() => {
+    return (options || []).filter(opt =>
+      (opt.label || opt).toLowerCase().includes(search.toLowerCase())
+    );
+  }, [options, search]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = (options || []).find(opt => (opt.value || opt) === value);
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <div
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`relative block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-[13px] text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 cursor-pointer transition-colors
+          ${error ? "border-red-500" : isOpen ? "border-blue-600" : "border-gray-300"}
+          ${disabled ? "bg-gray-50 cursor-not-allowed text-gray-400" : ""}`}
+      >
+        <span className="block truncate">
+          {selectedOption ? (selectedOption.label || selectedOption) : "Sélectionner..."}
+        </span>
+        <ChevronDown
+          size={13}
+          className={`absolute right-3 top-1/2 -translate-y-1/2 transition-transform duration-200 text-gray-400 ${isOpen ? 'rotate-180' : ''}`}
+        />
+        <label
+          htmlFor={id}
+          className={`absolute text-[12px] duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 pointer-events-none
+            ${selectedOption || isOpen ? "scale-75 -translate-y-4" : ""}
+            ${error ? "text-red-500" : isOpen ? "text-blue-600" : "text-gray-500"}`}
+        >
+          {label.includes('*') ? (
+            <>
+              {label.replace('*', '')}
+              <span className="text-red-500 ml-0.5">*</span>
+            </>
+          ) : label}
+        </label>
+      </div>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] flex flex-col max-h-60 overflow-hidden">
+          {!hideSearch && (
+            <div className="p-1.5 border-b border-gray-100 bg-white">
+              <div className="relative">
+                <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={10} />
+                <input
+                  type="text"
+                  className="w-full pl-7 pr-2 py-1 text-[12px] border border-gray-100 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Rechercher..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            </div>
+          )}
+          <div className="overflow-y-auto">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt, i) => (
+                <div
+                  key={i}
+                  className={`px-3 py-1.5 text-[12px] cursor-pointer hover:bg-blue-50 transition-colors
+                    ${(opt.value || opt) === value ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"}`}
+                  onClick={() => {
+                    onChange({ target: { name: id, value: (opt.value || opt) } });
+                    setIsOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  {opt.label || opt}
+                </div>
+              ))
+            ) : (
+              <div className="px-3 py-2 text-[11px] text-gray-400 text-center italic">Aucun résultat</div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ── ModalShell — fond blanc pur ───────────────────────────────────────────────
 const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -190,9 +288,11 @@ const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
           <X size={17} className="text-gray-500" />
         </button>
       </div>
-      <div className="p-4 sm:p-5 overflow-y-auto flex-1 text-gray-900 bg-white">{children}</div>
+      <div className="p-4 sm:p-5 overflow-y-auto overflow-x-hidden flex-1 text-gray-900 bg-white min-h-[400px]">
+        {children}
+      </div>
       {footer && (
-        <div className="px-4 sm:px-5 py-3 sm:py-4 border-t border-gray-100 bg-white flex justify-end gap-2 flex-shrink-0">
+        <div className="mt-auto px-5 py-4 border-t border-gray-100 flex justify-end gap-2 bg-white">
           {footer}
         </div>
       )}
@@ -235,64 +335,76 @@ const ParcoursModal = ({ isEditing, formData, onClose, onSubmit, onChange, onNiv
         </BtnPrimary>
       </>}
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <FloatInput 
-          id="label"
-          name="label"
-          label="Parcours *"
-          value={formData.label}
-          onChange={(e) => onChange('label')(e)}
-        />
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* SECTION 1 : INFORMATIONS DU PARCOURS */}
+        <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
+          <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
+            <div className="w-1 h-3 bg-blue-600 rounded-full" />
+            Informations du Parcours
+          </h4>
+          <div className="grid grid-cols-1 gap-4">
+            <SearchableSelect 
+              id="mention"
+              label="Mention *"
+              value={formData.mention}
+              onChange={(e) => {
+                const selectedMention = mentionOptions.find(m => m.label === e.target.value);
+                onChange('mention')(e);
+                if (selectedMention) {
+                  onChange('mentionId')({ target: { value: selectedMention.id } });
+                }
+              }}
+              options={mentionOptions.map(m => ({ value: m.label, label: m.label }))}
+            />
 
-        <FloatInput 
-          id="mention"
-          name="mention"
-          label="Mention *"
-          type="select"
-          value={formData.mention}
-          onChange={(e) => {
-            const selectedMention = mentionOptions.find(m => m.label === e.target.value);
-            onChange('mention')(e);
-            if (selectedMention) {
-              onChange('mentionId')({ target: { value: selectedMention.id } });
-            }
-          }}
-          options={mentionOptions.map(m => ({ value: m.label, label: m.label }))}
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-          <FloatInput 
-            id="niveau"
-            name="niveau"
-            label="Niveau"
-            type="select"
-            value={formData.niveau}
-            onChange={(e) => onNiveauChange(e.target.value)}
-            options={niveauOptions}
-          />
-
-          <FloatInput 
-            id="duree"
-            name="duree"
-            label="Durée"
-            type="select"
-            value={formData.duree}
-            onChange={(e) => onChange('duree')(e)}
-            disabled={formData.niveau !== ""}
-            options={dureeOptions}
-          />
+            <FloatInput 
+              id="label"
+              name="label"
+              label="Nom du Parcours *"
+              value={formData.label}
+              onChange={(e) => onChange('label')(e)}
+            />
+          </div>
         </div>
 
-        {/* Info synchro */}
-        {formData.niveau && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
-            <span className="text-blue-500 text-xs">ℹ</span>
-            <p className="text-xs text-blue-600">
-              <span className="font-semibold">{formData.niveau}</span> → durée automatiquement définie à{" "}
-              <span className="font-semibold">{formData.duree}</span>
-            </p>
+        {/* SECTION 2 : CONFIGURATION ACADÉMIQUE */}
+        <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
+          <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
+            <div className="w-1 h-3 bg-blue-600 rounded-full" />
+            Configuration Académique
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SearchableSelect 
+              id="niveau"
+              label="Niveau"
+              value={formData.niveau}
+              onChange={(e) => onNiveauChange(e.target.value)}
+              options={niveauOptions}
+              hideSearch={true}
+            />
+
+            <SearchableSelect 
+              id="duree"
+              label="Durée"
+              value={formData.duree}
+              onChange={(e) => onChange('duree')(e)}
+              disabled={formData.niveau !== ""}
+              options={dureeOptions}
+              hideSearch={true}
+            />
           </div>
-        )}
+
+          {/* Info synchro */}
+          {formData.niveau && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
+              <span className="text-blue-500 text-xs">ℹ</span>
+              <p className="text-xs text-blue-600">
+                <span className="font-semibold">{formData.niveau}</span> → durée automatiquement définie à{" "}
+                <span className="font-semibold">{formData.duree}</span>
+              </p>
+            </div>
+          )}
+        </div>
       </form>
     </ModalShell>
   );
@@ -367,11 +479,11 @@ const ParcoursCard = ({ parcours, onEdit, onDelete }) => (
 const exportToExcel = (data) => {
   try {
     const worksheetData = [
-      ['ID', 'PARCOURS', 'MENTION', 'NIVEAU', 'DURÉE'],
+      ['ID', 'MENTION', 'PARCOURS', 'NIVEAU', 'DURÉE'],
       ...data.map(p => [
         p.id,
-        p.label,
         p.mention,
+        p.label,
         p.niveau || '',
         p.duree || ''
       ])
@@ -423,15 +535,15 @@ const exportToPDF = (data) => {
 
     const tableData = data.map(p => [
       p.id.toString(),
-      p.label,
       p.mention,
+      p.label,
       p.niveau || '',
       p.duree || ''
     ]);
 
     autoTable(doc, {
       startY: 38,
-      head: [['ID', 'Parcours', 'Mention', 'Niveau', 'Durée']],
+      head: [['ID', 'Mention', 'Parcours', 'Niveau', 'Durée']],
       body: tableData,
       theme: 'grid',
       headStyles: {
@@ -738,8 +850,8 @@ export default function ParcoursView() {
   // Colonnes du tableau
   const COLS = [
     { key: 'id', label: 'ID' },
-    { key: 'label', label: 'Parcours' },
     { key: 'mention', label: 'Mention' },
+    { key: 'label', label: 'Parcours' },
     { key: 'niveau', label: 'Niveau' },
     { key: 'duree', label: 'Durée' },
   ];
@@ -929,8 +1041,8 @@ export default function ParcoursView() {
                     onClick={(e) => handleRowClick(parcours, e)}
                   >
                     <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center">{parcours.id}</td>
-                    <td className="px-3 py-3 text-sm text-gray-900 text-center truncate max-w-[250px]" title={parcours.label}>{parcours.label}</td>
                     <td className="px-3 py-3 text-sm text-gray-700 text-center truncate max-w-[200px]" title={parcours.mention}>{parcours.mention}</td>
+                    <td className="px-3 py-3 text-sm text-gray-900 text-center truncate max-w-[250px]" title={parcours.label}>{parcours.label}</td>
                     <td className="px-3 py-3 text-center">
                       <Pill tone="blue">{parcours.niveau || "—"}</Pill>
                     </td>

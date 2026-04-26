@@ -10,6 +10,7 @@ import {
   FiAward,
   FiUsers,
   FiChevronRight,
+  FiMail,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import {
@@ -54,32 +55,23 @@ function FicheModal({ fiche, metier, onClose }) {
 
   if (!fiche) return null;
 
-
-
   const getAdmission = (type) =>
     type === "Public" ? "Concours d'entrée" : "Sur dossier / entretien";
 
   const formatPhone = (phone) => {
     if (!phone) return "";
-    // Nettoyer le numéro
     let cleaned = String(phone).replace(/\s/g, "").replace(/-/g, "");
-    
-    // Si c'est un format malgache standard (0341234567)
     if (cleaned.length === 10 && cleaned.startsWith("0")) {
       return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 8)} ${cleaned.slice(8, 10)}`;
     }
-    // Si c'est un format avec indicatif (261341234567)
     if (cleaned.length === 12 && cleaned.startsWith("261")) {
       return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7, 10)} ${cleaned.slice(10, 12)}`;
     }
-    // Retourner tel quel si format inconnu
     return phone;
   };
 
-  // Helper pour convertir un tableau JSON ou une string en texte affichable
   const toDisplay = (val, isPhone = false, isList = true) => {
     if (!val) return "";
-    
     if (Array.isArray(val)) {
       if (val.length === 1) return isPhone ? formatPhone(val[0]) : val[0];
       if (!isList) return val.map(item => isPhone ? formatPhone(item) : item).join(", ");
@@ -93,11 +85,9 @@ function FicheModal({ fiche, metier, onClose }) {
         </ul>
       );
     }
-    
     return isPhone ? formatPhone(val) : String(val);
   };
 
-  // On prépare les données
   const mentionDisplay = toDisplay(fiche.mention);
   const parcoursDisplay = toDisplay(fiche.parcours);
   const niveauDisplay = toDisplay(fiche.niveau);
@@ -105,132 +95,92 @@ function FicheModal({ fiche, metier, onClose }) {
   const contactDisplay = toDisplay(fiche.contact, true);
 
   const fields = [
-    { icon: <FiBook size={15} />,  label: "Établissement", value: fiche.nom },
-    { icon: <FiAward size={15} />, label: "Mention",       value: mentionDisplay },
-    { icon: <FiBook size={15} />,  label: "Parcours",      value: parcoursDisplay },
-    { icon: <FiAward size={15} />, label: "Niveau",        value: niveauDisplay },
-
-    {
-      icon:  <FiUsers size={15} />,
-      label: "Admission",
-      value: admissionDisplay,
-    },
-    { icon: <FiPhone size={15} />,  label: "Contact",      value: contactDisplay },
-    {
-      icon:  <FiMapPin size={15} />,
-      label: "Localisation",
-      value: `${fiche.ville || fiche.region || fiche.province}, Madagascar`,
-    },
+    { icon: <FiAward className="text-indigo-500" />, label: "Mention", value: mentionDisplay },
+    { icon: <FiBook className="text-emerald-500" />, label: "Parcours", value: parcoursDisplay },
+    { icon: <FiAward className="text-purple-500" />, label: "Niveau", value: niveauDisplay },
+    { icon: <FiUsers className="text-rose-500" />, label: "Admission", value: admissionDisplay },
+    { icon: <FiPhone className="text-amber-500" />, label: "Contact", value: contactDisplay },
+    { icon: <FiMail className="text-blue-400" />, label: "Email", value: fiche.email },
+    { icon: <FiMapPin className="text-orange-500" />, label: "Localisation", value: `${fiche.ville || fiche.region || fiche.province}, Madagascar` },
   ];
 
-  if (metier) {
-    if (metier.label) {
-      fields.unshift({ icon: <FiAward size={15} />, label: "Métier",          value: metier.label });
-    }
-    if (metier.serie) {
-      fields.push({    icon: <FiBook size={15} />,  label: "Série",           value: toDisplay(metier.serie, false, false) });
-    }
-    if (metier.parcours) {
-      fields.push({    icon: <FiBook size={15} />,  label: "Parcours Métier", value: toDisplay(metier.parcours) });
-    }
-  }
-
   return (
-    <div
-      className="fixed inset-0 z-[100] flex flex-col"
-      style={{
-        background:
-          "linear-gradient(160deg,#0f1e50 0%,#0e3a6e 30%,#0a6655 65%,#2a7a10 100%)",
-      }}
-    >
-      <div
-        className="h-1 w-full flex-shrink-0"
-        style={{ background: "linear-gradient(90deg,#1250c8,#28b090,#a0d820)" }}
-      />
-      <div
-        className="flex-shrink-0 px-6 sm:px-10 lg:px-16 pt-8 pb-6 flex items-center justify-between gap-6"
-        style={{ 
-          borderBottom: "1px solid rgba(255,255,255,0.1)",
-          background: "rgba(0,0,0,0.1)",
-          backdropFilter: "blur(20px)"
+    <div className="fixed inset-0 z-[100] flex flex-col sm:items-center sm:justify-center sm:p-6">
+      {/* Backdrop for Desktop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm hidden sm:block" onClick={onClose} />
+      
+      <div 
+        className="relative w-full h-full sm:h-auto sm:max-w-2xl bg-white sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:max-h-[90vh] animate-in fade-in zoom-in duration-300"
+        style={{
+          background: "linear-gradient(160deg,#0f1e50 0%,#0e3a6e 30%,#0a6655 65%,#2a7a10 100%)"
         }}
       >
-        <div className="min-w-0 flex-1">
-          <span
-            className="inline-block text-[10px] font-black tracking-[0.3em] uppercase px-4 py-1.5 rounded-full mb-4"
-            style={{
-              background: "rgba(255,255,255,0.15)",
-              color:      "white",
-              border: "1px solid rgba(255,255,255,0.1)"
-            }}
-          >
-            Fiche établissement
-          </span>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight break-words">
-            {fiche.nom}
-          </h2>
-          <div className="flex items-center gap-2 mt-4 text-white/60">
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-              <FiMapPin size={14} className="text-white/80" />
-            </div>
-            <span className="text-sm font-bold tracking-wide uppercase">{fiche.ville || fiche.region || fiche.province}</span>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 hover:bg-white/20 hover:scale-110 active:scale-95 group"
-          style={{ 
-            background: "rgba(255,255,255,0.1)",
-            border: "1px solid rgba(255,255,255,0.1)"
-          }}
-        >
-          <FiX size={24} className="text-white/80 group-hover:text-white transition-colors" />
-        </button>
-      </div>
+        {/* Top Rainbow Border */}
+        <div 
+          className="h-1 w-full flex-shrink-0" 
+          style={{ background: "linear-gradient(90deg,#1250c8,#28b090,#a0d820)" }} 
+        />
 
-      <div className="flex-1 overflow-y-auto px-4 sm:px-8 lg:px-12 py-8 custom-scrollbar-dark">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {fields.map(({ icon, label, value }) => (
-            <div
-              key={label}
-              className="group rounded-3xl p-6 flex flex-col gap-3 transition-all duration-300 hover:bg-white/15 hover:shadow-2xl hover:-translate-y-1"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border:     "1px solid rgba(255,255,255,0.12)",
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-white/20"
-                  style={{ 
-                    background: "rgba(255,255,255,0.1)",
-                    border: "1px solid rgba(255,255,255,0.1)"
-                  }}
-                >
-                  <div className="text-white/80 group-hover:text-white transition-colors">
-                    {icon}
+        {/* Header */}
+        <div className="p-5 sm:p-6 border-b border-white/10 flex items-start justify-between gap-4 bg-black/10 backdrop-blur-md">
+          <div className="min-w-0">
+            <span className="inline-block text-[9px] font-black tracking-widest uppercase text-white/90 bg-white/10 px-2.5 py-1 rounded-full mb-2 border border-white/10">
+              Fiche Établissement
+            </span>
+            <h2 className="text-lg sm:text-xl font-black text-white leading-tight">
+              {fiche.nom}
+            </h2>
+            <p className="mt-1.5 text-xs text-white/60 flex items-center gap-1.5 font-medium">
+              <FiMapPin size={12} className="text-white/40" />
+              {fiche.ville || fiche.region || fiche.province}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="shrink-0 p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors group"
+          >
+            <FiX size={20} className="text-white/60 group-hover:text-white" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-8 custom-scrollbar-dark">
+          {/* Description Section */}
+          {fiche.description && (
+            <div className="space-y-2">
+              <h4 className="text-[10px] font-black text-white/30 uppercase tracking-widest">À propos</h4>
+              <p className="text-sm text-white/80 leading-relaxed italic border-l-4 border-blue-500/50 pl-4 bg-white/5 py-3 rounded-r-xl">
+                "{fiche.description}"
+              </p>
+            </div>
+          )}
+
+          {/* Details List (Simplified) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+            {fields.map(({ icon, label, value }) => (
+              <div key={label} className="flex gap-4 group">
+                <div className="shrink-0 w-10 h-10 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-lg transition-transform group-hover:scale-110">
+                  <div className="text-white/80">{icon}</div>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">{label}</p>
+                  <div className="text-[13px] font-bold text-white/90 leading-relaxed">
+                    {value || "—"}
                   </div>
                 </div>
-                <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">
-                  {label}
-                </p>
               </div>
-              <div className="mt-1">
-                <div className="text-white font-bold text-xs sm:text-sm lg:text-base leading-relaxed break-words">
-                  {value || "—"}
-                </div>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
+
+
       </div>
 
       <style>{`
-        .custom-scrollbar-dark::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar-dark::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar-dark::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar-dark::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 9999px; }
+        .custom-scrollbar-dark::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        .custom-scrollbar-dark::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
       `}</style>
     </div>
   );
@@ -379,9 +329,12 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
         {/* Contenu scrollable */}
         <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin-white pr-1">
           <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight mb-2">
-              UNIVERSITÉS<br className="sm:hidden" />&amp; INSTITUTS
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight tracking-tight mb-1">
+              UNIVERSITÉS<br className="sm:hidden" /> & INSTITUTS
             </h1>
+            <p className="text-[11px] sm:text-xs text-white/70 font-medium mb-3 max-w-2xl leading-relaxed">
+              Découvrez les établissements d'enseignement supérieur proposant des formations adaptées à votre profil et vos ambitions professionnelles.
+            </p>
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-block bg-white/20 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-white">
                 {mentionLabel}
@@ -404,7 +357,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
                     key={t}
                     type="button"
                     onClick={() => setFilterType(t)}
-                    className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                    className="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all"
                     style={
                       filterType === t
                         ? { background: "white", color: "#1250c8" }
@@ -425,7 +378,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
                     key={n}
                     type="button"
                     onClick={() => setFilterNiveau(n)}
-                    className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                    className="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all"
                     style={
                       filterNiveau === n
                         ? { background: "white", color: "#1250c8" }
@@ -454,24 +407,24 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
             {etablissementsFiltres.length !== 1 ? "s" : ""}
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-2 mb-8 lg:mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 mb-8 lg:mb-6">
             {etablissementsFiltres.length > 0 ? (
               etablissementsFiltres.map((etab, i) => (
                 <button
                   key={etab.id || i}
                   type="button"
                   onClick={() => handleSelectEtablissement(etab)}
-                  className="group w-full text-left rounded-2xl p-4 flex flex-col gap-3 cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1"
+                  className="group w-full text-left rounded-xl p-3 flex flex-col gap-2 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5"
                   style={{
                     background:    "rgba(255,255,255,0.98)",
                     backdropFilter: "blur(4px)",
                     border:        "1px solid rgba(255,255,255,0.7)",
                   }}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2 flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-1.5">
+                    <div className="flex items-start gap-1.5 flex-1 min-w-0">
                       <div
-                        className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
+                        className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5"
                         style={{
                           background:
                             etab.type === "Public"
@@ -479,19 +432,19 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
                               : "linear-gradient(135deg,#28b090,#a0d820)",
                         }}
                       />
-                      <span className="font-bold text-sm text-gray-900 leading-snug break-words flex-1">
+                      <span className="font-bold text-[13px] text-gray-900 leading-tight break-words flex-1">
                         {etab.nom}
                       </span>
                     </div>
                     <FiChevronRight
-                      size={16}
+                      size={14}
                       className="text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0"
                     />
                   </div>
                   
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <span
-                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                       style={{
                         background: etab.type === "Public" ? "rgba(18,80,200,0.12)" : "rgba(40,176,144,0.12)",
                         color:      etab.type === "Public" ? "#1250c8"              : "#0a6655",
@@ -499,14 +452,20 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
                     >
                       {etab.type}
                     </span>
-                    <span className="text-[10px] text-gray-500 font-medium flex items-center gap-0.5">
-                      <FiMapPin size={9} />
+                    <span className="text-[9px] text-gray-500 font-bold flex items-center gap-0.5">
+                      <FiMapPin size={8} />
                       {etab.ville || etab.region || etab.province}
                     </span>
                   </div>
 
+                  {etab.description && (
+                    <p className="text-[10px] text-gray-500 line-clamp-2 leading-relaxed">
+                      {etab.description}
+                    </p>
+                  )}
+
                   {etab.mention && (
-                    <p className="text-xs text-gray-600 line-clamp-1">
+                    <p className="text-[10px] text-blue-600/70 font-semibold line-clamp-1 border-t border-gray-100 pt-1.5 mt-0.5">
                       {Array.isArray(etab.mention) ? etab.mention.join(", ") : etab.mention}
                     </p>
                   )}

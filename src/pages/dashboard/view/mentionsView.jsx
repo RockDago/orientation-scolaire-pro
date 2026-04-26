@@ -1,5 +1,6 @@
 // src/pages/dashboard/view/mentionsView.jsx
 import { useState, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   FaPlus, FaEdit, FaTrash, FaSearch,
   FaTimes, FaExclamationTriangle
@@ -117,15 +118,14 @@ const FloatInput = ({ id, name, label, value, onChange, type = "text", error, di
 };
 
 // ── SearchableSelect Component ──────────────────────────────────────────────
-const SearchableSelect = ({ label, value, options = [], onChange, disabled, error, id }) => {
+const SearchableSelect = ({ label, value, options = [], onChange, disabled, error, id, hideSearch = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const containerRef = useRef(null);
 
   const filteredOptions = useMemo(() => {
-    if (!Array.isArray(options)) return [];
-    return options.filter(opt => 
-      String(opt.label || opt).toLowerCase().includes(search.toLowerCase())
+    return (options || []).filter(opt =>
+      (opt.label || opt).toLowerCase().includes(search.toLowerCase())
     );
   }, [options, search]);
 
@@ -148,7 +148,7 @@ const SearchableSelect = ({ label, value, options = [], onChange, disabled, erro
     <div className="relative" ref={containerRef}>
       <div 
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 cursor-pointer transition-colors
+        className={`relative block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-[13px] text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 cursor-pointer transition-colors
           ${error ? "border-red-500" : isOpen ? "border-blue-600" : "border-gray-300"}
           ${disabled ? "bg-gray-50 cursor-not-allowed text-gray-400" : ""}`}
       >
@@ -156,11 +156,11 @@ const SearchableSelect = ({ label, value, options = [], onChange, disabled, erro
           {selectedOption ? (selectedOption.label || selectedOption) : "Sélectionner..."}
         </span>
         <ChevronDown 
-          size={14} 
+          size={13} 
           className={`absolute right-3 top-1/2 -translate-y-1/2 transition-transform duration-200 text-gray-400 ${isOpen ? 'rotate-180' : ''}`} 
         />
         <label
-          className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 pointer-events-none
+          className={`absolute text-[12px] duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 pointer-events-none
             ${selectedOption || isOpen ? "scale-75 -translate-y-4" : ""}
             ${error ? "text-red-500" : isOpen ? "text-blue-600" : "text-gray-500"}`}
         >
@@ -174,26 +174,29 @@ const SearchableSelect = ({ label, value, options = [], onChange, disabled, erro
       </div>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] overflow-hidden max-h-60 flex flex-col">
-          <div className="p-2 border-b border-gray-100 sticky top-0 bg-white">
-            <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
-              <input
-                type="text"
-                className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-100 rounded-md focus:outline-none focus:border-blue-500"
-                placeholder="Rechercher..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                autoFocus
-              />
+        <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] flex flex-col max-h-60 overflow-hidden">
+          {!hideSearch && (
+            <div className="p-1.5 border-b border-gray-100 bg-white">
+              <div className="relative">
+                <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={10} />
+                <input
+                  type="text"
+                  className="w-full pl-7 pr-2 py-1 text-[12px] border border-gray-100 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Rechercher..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
             </div>
-          </div>
+          )}
           <div className="overflow-y-auto">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt, i) => (
                 <div
                   key={opt.id || opt.value || opt || i}
-                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 transition-colors
+                  className={`px-3 py-1.5 text-[12px] cursor-pointer hover:bg-blue-50 transition-colors
                     ${String(opt.value || opt) === String(value) ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"}`}
                   onClick={() => {
                     onChange({ target: { name: id, value: (opt.value || opt) } });
@@ -205,7 +208,7 @@ const SearchableSelect = ({ label, value, options = [], onChange, disabled, erro
                 </div>
               ))
             ) : (
-              <div className="px-4 py-3 text-sm text-gray-400 text-center italic">Aucun résultat</div>
+              <div className="px-3 py-2 text-[11px] text-gray-400 text-center italic">Aucun résultat</div>
             )}
           </div>
         </div>
@@ -214,7 +217,7 @@ const SearchableSelect = ({ label, value, options = [], onChange, disabled, erro
   );
 };
 
-// ── ModalShell — fond blanc pur ───────────────────────────────────────────────
+// ── ModalShell ───────────────────────────────────────────────────────────────
 const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
@@ -232,12 +235,14 @@ const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
           <X size={17} className="text-gray-500" />
         </button>
       </div>
-      <div className="p-4 sm:p-5 overflow-y-auto flex-1 text-gray-900 bg-white">{children}</div>
-      {footer && (
-        <div className="px-4 sm:px-5 py-3 sm:py-4 border-t border-gray-100 bg-white flex justify-end gap-2 flex-shrink-0">
-          {footer}
-        </div>
-      )}
+      <div className="p-4 sm:p-5 overflow-y-auto overflow-x-hidden flex-1 text-gray-900 bg-white min-h-[400px]">
+        {children}
+        {footer && (
+          <div className="mt-8 pt-4 border-t border-gray-100 flex justify-end gap-2">
+            {footer}
+          </div>
+        )}
+      </div>
     </div>
   </div>
 );
@@ -302,7 +307,11 @@ const MentionModal = ({ isEditing, formData, onClose, onSubmit, onChange, loadin
           onChange={(e) => onChange('description')(e)}
           type="textarea"
           rows={3}
+          maxLength={220}
         />
+        <p className={`text-[10px] mt-1 ${formData.description.length < 50 || formData.description.length > 220 ? 'text-red-500' : 'text-gray-400'}`}>
+          {formData.description.length} / 220 caractères (min 50)
+        </p>
       </form>
     </ModalShell>
   );
@@ -621,10 +630,11 @@ export default function MentionsView() {
     setCurrentPage(1);
   };
 
-  const isFormValid = () =>
+  const isFormValid = () => 
     formData.label.trim() !== "" &&
-    formData.description.trim() !== "" &&
-    formData.domaine_id !== "";
+    formData.domaine_id !== "" &&
+    formData.description.trim().length >= 50 &&
+    formData.description.trim().length <= 220;
 
   const handleInputChange = (field) => (e) => {
     const value = e?.target?.value ?? e;
