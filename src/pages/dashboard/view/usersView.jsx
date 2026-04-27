@@ -26,6 +26,14 @@ import { FaEye, FaEyeSlash, FaCheck, FaTimes as FaTimesCircle } from "react-icon
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 const PER_PAGE_OPTIONS = [10, 20, 30, 50, 100];
+const EMPTY_FORM_DATA = {
+  nom: "",
+  prenom: "",
+  nom_utilisateur: "",
+  email: "",
+  mot_de_passe: "",
+  confirmation_mot_de_passe: ""
+};
 
 // ── Menu Export ───────────────────────────────────────────────────────────────
 const ExportMenu = ({ onExport, filteredData }) => {
@@ -338,7 +346,7 @@ const ResetPasswordModal = ({ user, onClose, onSubmit, loading }) => {
             value={pass}
             onChange={(e) => setPass(e.target.value)}
           />
-          <button onClick={() => setShowPass(!showPass)} className="absolute right-3 top-[18px] text-gray-400">
+          <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-[18px] text-gray-400">
             {showPass ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
           </button>
         </div>
@@ -485,13 +493,7 @@ export default function UsersView() {
   const [perPage, setPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
   
-  const [formData, setFormData] = useState({ 
-    nom: "", 
-    prenom: "", 
-    email: "", 
-    mot_de_passe: "",
-    confirmation_mot_de_passe: ""
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM_DATA);
 
   const currentUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "{}");
 
@@ -543,47 +545,56 @@ export default function UsersView() {
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * perPage + 1;
   const endItem = Math.min(currentPage * perPage, totalItems);
 
-  const handleInputChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
+  const handleInputChange = (field) => (e) => {
+    const value = e?.target?.value ?? "";
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const isFormValid = () => {
+    const nom = formData.nom ?? "";
+    const prenom = formData.prenom ?? "";
+    const nomUtilisateur = formData.nom_utilisateur ?? "";
+    const email = formData.email ?? "";
+
     if (editingId) {
-      return formData.nom.trim() !== "" && formData.prenom.trim() !== "" && formData.nom_utilisateur.trim() !== "" && formData.email.trim() !== "";
+      return nom.trim() !== "" && prenom.trim() !== "" && nomUtilisateur.trim() !== "" && email.trim() !== "";
     }
-    const passValidation = validatePassword(formData.mot_de_passe);
+    const passValidation = validatePassword(formData.mot_de_passe ?? "");
     const isPassValid = Object.values(passValidation).every(Boolean);
     const isPassMatch = formData.mot_de_passe === formData.confirmation_mot_de_passe;
 
     return (
-      formData.nom.trim() !== "" && 
-      formData.prenom.trim() !== "" && 
-      formData.nom_utilisateur.trim() !== "" && 
-      formData.email.trim() !== "" && 
+      nom.trim() !== "" && 
+      prenom.trim() !== "" && 
+      nomUtilisateur.trim() !== "" && 
+      email.trim() !== "" && 
       isPassValid && 
       isPassMatch
     );
   };
 
   const handleOpenModal = (user = null) => {
-    if (user) {
-      setEditingId(user.id);
+    const selectedUser =
+      user &&
+      typeof user === "object" &&
+      !("nativeEvent" in user) &&
+      ("id" in user || "nom" in user || "prenom" in user)
+        ? user
+        : null;
+
+    if (selectedUser) {
+      setEditingId(selectedUser.id);
       setFormData({
-        nom: user.nom,
-        prenom: user.prenom,
-        nom_utilisateur: user.nom_utilisateur,
-        email: user.email,
+        nom: selectedUser.nom ?? "",
+        prenom: selectedUser.prenom ?? "",
+        nom_utilisateur: selectedUser.nom_utilisateur ?? "",
+        email: selectedUser.email ?? "",
         mot_de_passe: "",
         confirmation_mot_de_passe: ""
       });
     } else {
       setEditingId(null);
-      setFormData({ 
-        nom: "", 
-        prenom: "", 
-        nom_utilisateur: "", 
-        email: "", 
-        mot_de_passe: "",
-        confirmation_mot_de_passe: ""
-      });
+      setFormData(EMPTY_FORM_DATA);
     }
     setShowModal(true);
   };
@@ -694,7 +705,7 @@ export default function UsersView() {
             </h1>
             <p className="text-xs sm:text-sm text-gray-500">{totalItems} utilisateur{totalItems > 1 ? 's' : ''} au total</p>
           </div>
-          <button onClick={handleOpenModal} className="flex w-full sm:w-auto items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition">
+          <button onClick={() => handleOpenModal()} className="flex w-full sm:w-auto items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition">
             <FaPlus /> 
             <span>Ajouter un admin</span>
           </button>
