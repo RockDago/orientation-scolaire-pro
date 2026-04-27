@@ -166,7 +166,6 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
                     <div className="relative">
                       <HiOutlineSearch size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
-                        autoFocus
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
@@ -318,7 +317,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
         }
         .s8-trigger {
           width: 100%;
-          min-height: 56px;
+          min-height: 50px;
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(12px);
           border: 1px solid rgba(255, 255, 255, 0.3);
@@ -343,7 +342,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          font-size: clamp(0.78rem, 0.95vw, 0.9rem);
+          font-size: clamp(0.7rem, 0.9vw, 0.85rem);
           font-weight: 500;
           color: #94a3b8;
         }
@@ -352,7 +351,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          font-size: clamp(0.78rem, 0.95vw, 0.9rem);
+          font-size: clamp(0.7rem, 0.9vw, 0.85rem);
           font-weight: 700;
           color: #166534;
         }
@@ -393,7 +392,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
           border: 1px solid #e2e8f0;
           border-radius: 0.75rem;
           padding: 0.45rem 0.7rem 0.45rem 2.1rem;
-          font-size: clamp(0.78rem, 0.95vw, 0.88rem);
+          font-size: clamp(0.7rem, 0.9vw, 0.82rem);
           font-weight: 500;
           outline: none;
           color: #1e293b;

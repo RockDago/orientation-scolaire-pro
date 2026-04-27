@@ -13,16 +13,14 @@ function MetierDetailPanel({ metier }) {
   if (!metier) return null;
 
   return (
-    <div className="relative h-full rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/25 shadow-2xl p-4 sm:p-6 xl:p-8 flex flex-col overflow-hidden">
+    <div className="relative h-full rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/25 p-4 sm:p-6 xl:p-8 flex flex-col overflow-hidden">
       {/* Titre & badges */}
       <div className="shrink-0 mb-3 sm:mb-5">
         <h2 className="text-white font-black text-lg sm:text-2xl xl:text-3xl leading-tight mb-2 sm:mb-3">
           {metier.label}
         </h2>
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
-          <span className="text-white text-[10px] sm:text-xs font-bold bg-white/20 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full">
-            {Array.isArray(metier.mention) ? metier.mention.join(", ") : metier.mention}
-          </span>
+
           {metier.niveau && (
             <span className="text-white text-[10px] sm:text-xs font-bold bg-[#155faa]/60 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full">
               Niveau : {Array.isArray(metier.niveau) ? metier.niveau.join(", ") : metier.niveau}
@@ -186,7 +184,7 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
                   <div
                     key={item.id}
                     onClick={() => setSelectedMetier(item)}
-                    className={`rounded-2xl p-3 sm:p-4 border cursor-pointer transition-all ${active ? "bg-white/20 border-white/50 shadow-lg" : "bg-white/10 border-white/20 hover:bg-white/15"}`}
+                    className={`rounded-2xl p-3 sm:p-4 border cursor-pointer transition-all ${active ? "bg-white/20 border-white/50" : "bg-white/10 border-white/20 hover:bg-white/15"}`}
                   >
                     <div className="flex justify-between items-start mb-1.5 sm:mb-2">
                       <h3 className="font-bold text-white text-[clamp(0.88rem,1.15vw,1.05rem)] leading-snug">{item.label}</h3>
@@ -195,7 +193,7 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
                       </span>
                     </div>
                     <p className="text-white/75 text-[clamp(0.72rem,0.9vw,0.82rem)] leading-relaxed line-clamp-2">{item.description}</p>
-                    <p className="text-white/50 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider mt-1.5 sm:mt-2">{Array.isArray(item.mention) ? item.mention.join(", ") : item.mention}</p>
+
                   </div>
                 );
               })}
@@ -263,9 +261,7 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
               <h1 className="text-[clamp(1.85rem,4.8vw,3.7rem)] font-black text-white leading-tight tracking-tight mt-0.5 mb-1 uppercase">
                 {m?.label || "Métier"}
               </h1>
-              <div className="inline-block bg-white/20 backdrop-blur-md rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-white mb-1.5 sm:mb-2 border border-white/20">
-                {Array.isArray(m?.mention) ? m.mention.join(", ") : (m?.mention || "Formation")}
-              </div>
+
             </div>
 
           {/* Zone scrollable */}

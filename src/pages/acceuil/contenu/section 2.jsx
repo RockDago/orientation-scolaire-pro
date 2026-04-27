@@ -71,7 +71,7 @@ function MetierCard({ metier, onSelect }) {
     <button
       type="button"
       onClick={() => onSelect(metier)}
-      className="w-full text-left bg-white/10 backdrop-blur-xl border border-white/25 rounded-2xl p-4 transition-all hover:bg-white/18 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0"
+      className="w-full text-left bg-white/10 backdrop-blur-xl border border-white/25 rounded-2xl p-4 transition-all hover:bg-white/18 hover:-translate-y-0.5 active:translate-y-0"
     >
       <div className="flex items-start justify-between gap-2 mb-1">
         <span className="text-white font-bold text-base leading-snug flex-1">{metier.label}</span>
@@ -207,6 +207,11 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
     setTimeout(() => {
       onSelectMetier?.(targetMetier);
       setIsLoading(false);
+      // Réinitialiser les champs après la recherche
+      setLocalSelected(null);
+      setSearchQuery("");
+      setSelectedDomaine(null);
+      setMode("idle");
     }, 5000);
   };
 
@@ -300,7 +305,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
               style={{ animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.15s both" }}
             >
               <h1 className="s2-h1">
-                EXPLORER<br /><span className="s2-h1-sub">LES MÉTIERS</span>
+                EXPLORER LES MÉTIERS
               </h1>
               <p className="s2-desc">
                 Aide les élèves et les parents à choisir un métier et le parcours d'études adapté.
@@ -308,7 +313,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             </div>
 
             {/* ── COMBOBOX 1 : Recherche métier ── */}
-            <div className={`s2-cbwrap ${isMetierComboOpen ? "open" : ""}`} ref={metierComboRef}>
+            <div className={`s2-cbwrap ${isMetierComboOpen ? "open" : ""} ${isComboOpen ? "hidden" : ""}`} ref={metierComboRef}>
               <p className="s2-lbl">Rechercher un métier</p>
               <button
                 className="s2-trigger"
@@ -337,15 +342,14 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                   <div className="s2-drop-search-new">
                     <div className="relative">
                       <HiOutlineSearch size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Rechercher..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        className="s2-drop-input-new pr-8"
-                        autoFocus
-                      />
+                        <input
+                          type="text"
+                          placeholder="Rechercher..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="s2-drop-input-new pr-8"
+                        />
                       {searchQuery && (
                         <button 
                           className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
@@ -378,14 +382,16 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             </div>
 
             {/* ── Séparateur ── */}
+            {mode !== "metier" && !focusMetierSearch && !isComboOpen && !isMetierComboOpen && (
+              <div className="s2-sep" style={{ animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.35s both" }}>
+                <div className="s2-sep-l" /><span className="s2-sep-txt">ou</span><div className="s2-sep-l" />
+              </div>
+            )}
+
             {mode !== "metier" && !focusMetierSearch && (
               <>
-                <div className="s2-sep" style={{ animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.35s both" }}>
-                  <div className="s2-sep-l" /><span className="s2-sep-txt">ou</span><div className="s2-sep-l" />
-                </div>
-
                 {/* ── COMBOBOX 2 : Recherche domaine ── */}
-                <div className={`s2-cbwrap ${isComboOpen ? "open" : ""}`} ref={comboRef}>
+                <div className={`s2-cbwrap ${isComboOpen ? "open" : ""} ${isMetierComboOpen ? "hidden" : ""}`} ref={comboRef}>
                   <p className="s2-lbl">Explorer par domaine</p>
                   <button
                     onClick={() => {
@@ -421,7 +427,6 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                             onChange={(e) => setComboSearch(e.target.value)}
                             onClick={(e) => e.stopPropagation()}
                             className="s2-drop-input-new pr-8"
-                            autoFocus
                           />
                           {comboSearch && (
                             <button 
@@ -570,8 +575,13 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         /* Zone scrollable — remplit l'espace restant */
         .s2-scroll {
           position: relative;
-          flex:1;min-height:0;overflow:visible;
+          flex:1;min-height:0;overflow-y:auto;
           padding: 1rem 1rem 7rem; /* reserve space for fixed footer actions */
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE/Edge */
+        }
+        .s2-scroll::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
         }
         @media(min-width: 640px) {
           .s2-scroll { padding: 1.5rem 2.5rem 2rem; } /* px-10 pt-6 approx */
@@ -697,7 +707,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         /* Original Rounded Trigger */
         .s2-trigger {
           width: 100%;
-          min-height: clamp(3.1rem, 4.4vw, 3.5rem);
+          min-height: clamp(2.75rem, 4vw, 3.25rem);
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(12px);
           border: 1px solid rgba(255, 255, 255, 0.3);
@@ -720,7 +730,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-trigger:active { transform: translateY(0); }
 
         .s2-ph {
-          font-size: clamp(0.78rem, 0.95vw, 0.9rem);
+          font-size: clamp(0.7rem, 0.9vw, 0.85rem);
           font-weight: 500;
           color: #94a3b8;
           flex: 1;
@@ -731,7 +741,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         
         .s2-val-new {
           display: block;
-          font-size: clamp(0.78rem, 0.95vw, 0.9rem);
+          font-size: clamp(0.7rem, 0.9vw, 0.85rem);
           color: #1e40af;
           font-weight: 700;
           flex: 1;
@@ -761,6 +771,14 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           overflow: hidden;
           max-height: min(22rem, calc(100dvh - 13rem));
         }
+        @media(min-width: 1024px) {
+          .s2-drop-new {
+            max-height: 330px;
+            z-index: 2000;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.3);
+          }
+        }
 
         .s2-drop-search-new {
           padding: 0.65rem 0.85rem;
@@ -775,7 +793,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           border: 1px solid #e2e8f0;
           border-radius: 0.75rem;
           padding: 0.45rem 0.7rem 0.45rem 2.1rem;
-          font-size: clamp(0.78rem, 0.95vw, 0.88rem);
+          font-size: clamp(0.7rem, 0.9vw, 0.82rem);
           outline: none;
           color: #1e293b;
         }
@@ -785,7 +803,22 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           flex: 1;
           min-height: 0;
           overflow-y: auto;
-          padding: 0.45rem;
+          padding: 0.6rem;
+        }
+        /* Custom Scrollbar for Dropdown */
+        .s2-drop-list-new::-webkit-scrollbar {
+          width: 5px;
+        }
+        .s2-drop-list-new::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 10px;
+        }
+        .s2-drop-list-new::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 10px;
+        }
+        .s2-drop-list-new::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
         }
         .s2-drop-item-new {
           min-height: 44px;

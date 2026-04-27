@@ -14,6 +14,7 @@ import MentionsView from "./pages/dashboard/view/mentionsView.jsx";
 import SeriesView from "./pages/dashboard/view/seriesView.jsx";
 import DomainesView from "./pages/dashboard/view/domainesView.jsx";
 import EtablissementsView from "./pages/dashboard/view/etablissementsView.jsx";
+import UsersView from "./pages/dashboard/view/usersView.jsx";
 import NotFound404 from "../src/pages/error/NotFound404.jsx";
 
 const AuthContext = createContext(null);
@@ -121,6 +122,7 @@ function App() {
               path="parametres/etablissement/:uuid"
               element={<EtablissementsView />}
             />
+            <Route path="utilisateurs/:uuid" element={<UsersView />} />
             {/* Fallback to index with random UUID if missing */}
             <Route path="*" element={<Navigate to={`/dashboard/admin/${Math.random().toString(36).substring(2, 11)}`} replace />} />
           </Route>

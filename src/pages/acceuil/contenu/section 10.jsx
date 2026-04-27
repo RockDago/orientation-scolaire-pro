@@ -100,6 +100,83 @@ function filtrerMetiers(metiers, reponseDomaine, reponseEtudes) {
   });
 }
 
+function MetierDetailPanel({ metier, onVoirParcours }) {
+  if (!metier) return null;
+
+  return (
+    <div className="relative w-full h-auto max-h-full rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/25 p-6 sm:p-10 xl:p-12 flex flex-col overflow-hidden">
+      {/* Titre & badges */}
+      <div className="shrink-0 mb-3 sm:mb-5">
+        <h2 className="text-white font-black text-lg sm:text-2xl xl:text-3xl leading-tight mb-2 sm:mb-3 uppercase">
+          {metier.label}
+        </h2>
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
+          {metier.mention && (
+            <span className="text-white text-[10px] sm:text-xs font-bold bg-white/20 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full uppercase tracking-wider">
+              {Array.isArray(metier.mention) ? metier.mention.join(", ") : metier.mention}
+            </span>
+          )}
+          {metier.niveau && (
+            <span className="text-white text-[10px] sm:text-xs font-bold bg-[#155faa]/60 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full uppercase tracking-wider">
+              Niveau : {Array.isArray(metier.niveau) ? metier.niveau.join(", ") : metier.niveau}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Contenu - On permet le scroll si le texte est vraiment trop long pour la page */}
+      <div className="overflow-y-auto scrollbar-thin-white space-y-6 sm:space-y-8 pr-2">
+        <div>
+          <p className="text-white/55 text-[10px] uppercase tracking-widest font-bold mb-1.5 sm:mb-2">
+            Description du métier
+          </p>
+          <p className="text-white/95 text-xs sm:text-sm leading-relaxed font-medium">{metier.description}</p>
+        </div>
+
+        {metier.parcours?.length > 0 && (
+          <div>
+            <p className="text-white/55 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold mb-1.5 sm:mb-2">
+              Parcours d'études possibles
+            </p>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              {metier.parcours.map((p, i) => (
+                <span key={i} className="text-[10px] sm:text-xs bg-white/15 border border-white/20 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-white">
+                  {p}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {metier.serie?.length > 0 && (
+          <div>
+            <p className="text-white/55 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold mb-1.5 sm:mb-2">
+              Séries recommandées
+            </p>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              {metier.serie.map((p, i) => (
+                <span key={i} className="text-[10px] sm:text-xs bg-white/20 border border-white/30 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-full">
+                  {p}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="shrink-0 pt-8 sm:pt-10 flex justify-end">
+        <button
+          onClick={() => onVoirParcours?.(metier)}
+          className="group inline-flex items-center gap-2 text-white hover:text-[#c2e832] font-black text-[clamp(0.8rem,1vw,0.9rem)] transition-all uppercase tracking-wide"
+        >
+          Découvrir le parcours
+          <FiArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Section10({
   reponseDomaine,
   reponseEtudes,
@@ -162,7 +239,7 @@ export default function Section10({
     touchStartX.current = null;
   };
 
-  const handleVoirParcours = () => {
+  const handleVoirParcoursInternal = () => {
     if (!metier) return;
     onVoirParcours?.({
       id: metier.id,
@@ -225,200 +302,154 @@ export default function Section10({
                 {loadingText}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 justify-center mt-1">
-              {reponseDomaine && (
-                <span
-                  className="text-xs font-bold px-3 py-1.5 rounded-full"
-                  style={{
-                    background: "rgba(255,255,255,0.15)",
-                    color: "white",
-                  }}
-                >
-                  {reponseDomaine}
-                </span>
-              )}
-              {reponseEtudes && (
-                <span
-                  className="text-xs font-bold px-3 py-1.5 rounded-full"
-                  style={{
-                    background: "rgba(255,255,255,0.15)",
-                    color: "white",
-                  }}
-                >
-                  {reponseEtudes === "court" ? "≤ Bac+3" : "≥ Bac+4"}
-                </span>
-              )}
-            </div>
           </div>
         </div>
       )}
 
-      <div className="s10-shell relative z-10 flex flex-col h-full w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-3">
-        {/* Header simple */}
-        <div className="flex items-center justify-between shrink-0 mb-0">
-          <button
-            onClick={onRetour}
-            className="text-white/80 hover:text-white transition-colors flex items-center justify-center p-0"
-            aria-label="Retour"
-          >
-            <IoArrowBackCircleOutline size={32} className="sm:hidden" />
-            <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
-          </button>
-        </div>
-
-        {/* Titre giant */}
-        <div className="s10-title mb-6 lg:mb-4">
-          <h1 className="s10-page-title text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
-            Métiers<br />Suggérés
-          </h1>
-          {!loading && (
-            <p className="s10-result-count text-xs sm:text-sm text-white/60 font-black tracking-widest uppercase">
-              {total} résultat{total > 1 ? "s" : ""}
-            </p>
-          )}
-        </div>
-
-        {/* Zone de la carte */}
-        <div
-          className="s10-card-area flex-1 flex flex-col w-full max-w-2xl lg:max-w-4xl mx-auto min-h-0"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          {/* Aucun résultat */}
-          {!loading && total === 0 && (
-            <div
-              className="rounded-3xl p-8 flex flex-col items-center justify-center gap-3"
-              style={{
-                background: "rgba(255,255,255,0.14)",
-                border: "1px solid rgba(255,255,255,0.28)",
-                backdropFilter: "blur(12px)",
-              }}
-            >
-              <p className="text-white/85 text-center text-base leading-relaxed">
-                Désolé, aucun métier ne correspond à tes critères.
-                <br />
-                Essaie une autre combinaison.
-              </p>
-            </div>
-          )}
-
-          {/* Carte métier */}
-          {!loading && total > 0 && metier && (
-            <div
-              className="s10-card flex-1 flex flex-col rounded-3xl p-6 sm:p-8 slide-in overflow-hidden mb-4"
-              key={metier.id || index}
-              style={{
-                background: "rgba(255,255,255,0.14)",
-                border: "1px solid rgba(255,255,255,0.28)",
-                backdropFilter: "blur(12px)",
-              }}
-            >
-              <div className="s10-card-body flex-1 overflow-y-auto pr-1 scrollbar-hide">
-                {metier.mention && (Array.isArray(metier.mention) ? metier.mention.length > 0 : metier.mention !== "—") && (
-                  <div className="s10-card-badge mb-4">
-                    <span
-                      className="inline-block text-[11px] font-black tracking-widest uppercase px-3 py-1.5 rounded-full"
-                      style={{
-                        background: "rgba(255,255,255,0.20)",
-                        color: "white",
-                      }}
-                    >
-                      {Array.isArray(metier.mention) ? metier.mention.join(", ") : metier.mention}
-                    </span>
-                  </div>
-                )}
-
-                <h2 className="s10-card-title text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight mb-6 pr-4 uppercase">
-                  {metier.label}
-                </h2>
-
-                {metier.description && (
-                  <div className="s10-description space-y-2 mb-6">
-                    <p className="s10-section-label text-xs font-black text-white/50 uppercase tracking-widest">Description</p>
-                    <p className="s10-description-text text-xs sm:text-sm text-white/90 leading-relaxed font-medium">
-                      {metier.description}
-                    </p>
-                  </div>
-                )}
-
-                <div className="s10-meta-grid grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                  {metier.niveau && (Array.isArray(metier.niveau) ? metier.niveau.length > 0 : true) && (
-                    <div className="s10-meta-box bg-white/10 rounded-2xl p-3 border border-white/10">
-                      <p className="s10-meta-label text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Niveau Requis</p>
-                      <p className="s10-meta-value text-white font-bold text-sm">{Array.isArray(metier.niveau) ? metier.niveau.join(", ") : metier.niveau}</p>
-                    </div>
-                  )}
-                  {metier.serie && (Array.isArray(metier.serie) ? metier.serie.length > 0 : true) && (
-                    <div className="bg-white/10 rounded-2xl p-3 border border-white/10">
-                      <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Série</p>
-                      <p className="text-white font-bold text-sm">{Array.isArray(metier.serie) ? metier.serie.join(", ") : metier.serie}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="s10-cta-row shrink-0 pt-6 flex justify-end">
-                <button
-                  onClick={handleVoirParcours}
-                  className="group inline-flex items-center gap-2 text-white hover:text-[#c2e832] font-black text-[clamp(0.8rem,1vw,1rem)] transition-all uppercase tracking-wide"
-                >
-                  Découvrir le parcours
-                  <FiArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Pagination & Home */}
-        {!loading && total > 0 && (
-          <div className="s10-pagination shrink-0 pt-2 pb-12">
-            <div className="flex items-center justify-between max-w-2xl lg:max-w-4xl mx-auto w-full px-2 mb-4">
+      {!loading && (
+        <div className="relative z-10 flex-1 flex flex-col min-h-0 overflow-hidden h-full">
+          
+          {/* ─── VUE DESKTOP (Section 3 Style) ─── */}
+          <div className="hidden lg:flex flex-row flex-1 min-h-0 overflow-hidden h-full">
+            {/* Gauche : Liste */}
+            <div className="flex flex-col w-1/2 xl:w-[52%] px-10 lg:px-14 pt-12 h-full min-h-0 overflow-hidden">
+              
+              {/* Bouton retour */}
               <button
-                onClick={handlePrev}
-                disabled={total <= 1}
-                className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all disabled:opacity-30 bg-white/10 text-white border border-white/10 pointer-events-auto"
-                aria-label="Précédent"
+                onClick={onRetour}
+                className="text-white/80 hover:text-white transition-colors w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shrink-0 mb-6"
+                aria-label="Retour"
               >
-                <FiChevronLeft size={24} />
+                <IoArrowBackCircleOutline size={42} />
               </button>
 
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex items-center gap-1.5 flex-wrap justify-center">
-                  {metiersFiltres.slice(0, 8).map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setIndex(i)}
-                      className="rounded-full transition-all"
-                      style={{
-                        width: i === index ? "18px" : "6px",
-                        height: "6px",
-                        background: i === index ? "white" : "rgba(255,255,255,0.3)",
-                      }}
-                      aria-label={`Métier ${i + 1}`}
-                    />
-                  ))}
-                  {total > 8 && <span className="text-white/40 text-[9px] font-black">+{total - 8}</span>}
-                </div>
-                <p className="text-[10px] font-black text-white/50 tracking-widest uppercase">
-                  {index + 1} / {total}
+              <div className="shrink-0 mb-6">
+                <h1 className="text-[clamp(1.85rem,4.8vw,3.7rem)] font-black text-white leading-tight tracking-tight uppercase">
+                  Métiers Suggérés
+                </h1>
+                <p className="text-white/80 text-[clamp(0.72rem,0.95vw,0.95rem)] font-semibold mt-2 uppercase tracking-widest">
+                  {total} résultat{total > 1 ? "s" : ""} trouvé{total > 1 ? "s" : ""}
                 </p>
               </div>
 
-              <button
-                onClick={handleNext}
-                disabled={total <= 1}
-                className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all disabled:opacity-30 bg-white/10 text-white border border-white/10 pointer-events-auto"
-                aria-label="Suivant"
-              >
-                <FiChevronRight size={24} />
-              </button>
+              {/* Liste scrollable */}
+              <div className="flex-1 overflow-y-auto scrollbar-thin-white space-y-3 pr-2 pb-20 min-h-0">
+                {total === 0 ? (
+                  <div className="bg-white/10 rounded-2xl p-6 border border-white/20 text-center">
+                    <p className="text-white/85 text-sm">Aucun métier trouvé.</p>
+                  </div>
+                ) : (
+                  metiersFiltres.map((item, i) => (
+                    <div
+                      key={item.id || i}
+                      onClick={() => setIndex(i)}
+                      className={`rounded-2xl p-4 border cursor-pointer transition-all ${index === i ? "bg-white/20 border-white/50" : "bg-white/10 border-white/20 hover:bg-white/15"}`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-white text-[1rem] uppercase">{item.label}</h3>
+                        <span className="text-[10px] bg-white/25 text-white px-2 py-1 rounded-full font-bold uppercase">
+                          {Array.isArray(item.niveau) ? item.niveau[0] : item.niveau}
+                        </span>
+                      </div>
+                      <p className="text-white/75 text-xs leading-relaxed line-clamp-2">{item.description}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Droite : Détails */}
+            <div className="flex-1 px-8 xl:px-12 pt-40 pb-10 h-full overflow-hidden">
+              {metier && (
+                <MetierDetailPanel metier={metier} onVoirParcours={handleVoirParcoursInternal} />
+              )}
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Home Fixed - Centered at the global standard position */}
+          {/* ─── VUE MOBILE / TABLETTE (Carousel) ─── */}
+          <div className="lg:hidden flex flex-col flex-1 min-h-0 h-full overflow-hidden">
+            <div className="px-6 pt-6">
+              <button
+                onClick={onRetour}
+                className="text-white/80 hover:text-white transition-colors flex items-center justify-center p-0 mb-4"
+                aria-label="Retour"
+              >
+                <IoArrowBackCircleOutline size={32} className="sm:hidden" />
+                <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
+              </button>
+
+              <div className="s10-title mb-6">
+                <h1 className="s10-page-title text-[clamp(1.85rem,4.8vw,3.7rem)] font-black text-white leading-tight tracking-tight uppercase">
+                  Métiers Suggérés
+                </h1>
+                <p className="s10-result-count text-xs sm:text-sm text-white/60 font-black tracking-widest uppercase mt-1">
+                  {total} résultat{total > 1 ? "s" : ""} trouvé{total > 1 ? "s" : ""}
+                </p>
+              </div>
+            </div>
+
+            {/* Zone de la carte CAROUSEL */}
+            <div
+              className="s10-card-area flex-1 flex flex-col justify-center w-full max-w-4xl mx-auto min-h-0 px-6"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              {total === 0 ? (
+                <div className="rounded-3xl p-8 flex flex-col items-center justify-center bg-white/10 border border-white/20 backdrop-blur-md">
+                  <p className="text-white/85 text-center text-base">Aucun résultat.</p>
+                </div>
+              ) : (
+                metier && (
+                  <div className="slide-in max-h-full overflow-hidden flex flex-col" key={metier.id || index}>
+                    <MetierDetailPanel metier={metier} onVoirParcours={handleVoirParcoursInternal} />
+                  </div>
+                )
+              )}
+            </div>
+
+            {/* Pagination Carousel */}
+            {total > 0 && (
+              <div className="s10-pagination shrink-0 pt-4 pb-20 px-6">
+                <div className="flex items-center justify-between w-full max-w-md mx-auto">
+                  <button
+                    onClick={handlePrev}
+                    disabled={total <= 1}
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/10 text-white border border-white/10 disabled:opacity-30"
+                  >
+                    <FiChevronLeft size={24} />
+                  </button>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                      {metiersFiltres.slice(0, 10).map((_, i) => (
+                        <div
+                          key={i}
+                          className="rounded-full transition-all"
+                          style={{
+                            width: i === index ? "18px" : "6px",
+                            height: "6px",
+                            background: i === index ? "white" : "rgba(255,255,255,0.3)",
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-[10px] font-black text-white/50 uppercase tracking-widest">{index + 1} / {total}</p>
+                  </div>
+                  <button
+                    onClick={handleNext}
+                    disabled={total <= 1}
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/10 text-white border border-white/10 disabled:opacity-30"
+                  >
+                    <FiChevronRight size={24} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+        </div>
+      )}
+
+      {/* Home Fixed - Centered */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
         <button
           onClick={onHome}
@@ -431,143 +462,10 @@ export default function Section10({
       </div>
 
       <style>{`
-        .s10-shell {
-          flex: 1;
-          min-height: 0;
-        }
-        .s10-title {
-          margin-bottom: clamp(0.9rem, 2vh, 1.5rem);
-        }
-        .s10-page-title {
-          font-size: clamp(2.35rem, 5vw, 4.6rem);
-        }
-        .s10-result-count {
-          font-size: clamp(0.72rem, 0.95vw, 0.9rem);
-        }
-        .s10-card-area {
-          width: min(100%, 68rem);
-        }
-        .s10-card {
-          width: min(100%, 62rem);
-          margin-inline: auto;
-          max-height: min(31rem, calc(100dvh - 18rem));
-          padding: clamp(1.1rem, 2vw, 2rem);
-        }
-        .s10-card-body {
-          min-height: 0;
-        }
-        .s10-card-title {
-          font-size: clamp(2rem, 3.2vw, 3.6rem);
-        }
-        .s10-description-text {
-          font-size: clamp(0.85rem, 1vw, 1rem);
-        }
-        .s10-meta-grid > div {
-          padding: 0.9rem 1rem;
-          border-radius: 1rem;
-        }
-        .s10-meta-grid > div > p:first-child {
-          font-size: 0.62rem;
-        }
-        .s10-meta-grid > div > p:last-child,
-        .s10-meta-value {
-          font-size: clamp(0.84rem, 1vw, 1rem);
-          line-height: 1.35;
-        }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        @media (max-height: 900px) {
-          .s10-card {
-            max-height: min(28rem, calc(100dvh - 16rem));
-          }
-        }
-        @media (max-height: 820px) {
-          .s10-shell {
-            padding-top: 1rem;
-            padding-bottom: 0.5rem;
-          }
-          .s10-page-title {
-            font-size: clamp(2rem, 4.1vw, 3.6rem);
-            line-height: 0.94;
-          }
-          .s10-result-count {
-            font-size: 0.72rem;
-          }
-          .s10-card {
-            width: min(100%, 56rem);
-            max-height: min(24.5rem, calc(100dvh - 14rem));
-            border-radius: 1.75rem;
-            padding: 1.1rem 1.25rem;
-          }
-          .s10-card-badge {
-            margin-bottom: 0.75rem;
-          }
-          .s10-card-title {
-            font-size: clamp(1.7rem, 2.5vw, 2.5rem);
-            margin-bottom: 1rem;
-            padding-right: 0;
-          }
-          .s10-description {
-            margin-bottom: 1rem;
-            gap: 0.35rem;
-          }
-          .s10-section-label,
-          .s10-meta-grid > div > p:first-child,
-          .s10-meta-label {
-            font-size: 0.58rem;
-          }
-          .s10-description-text,
-          .s10-meta-grid > div > p:last-child,
-          .s10-meta-value {
-            font-size: 0.8rem;
-            line-height: 1.42;
-          }
-          .s10-meta-grid {
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-          }
-          .s10-meta-grid > div {
-            padding: 0.78rem 0.9rem;
-          }
-          .s10-cta-row {
-            padding-top: 0.85rem;
-          }
-          .s10-pagination {
-            padding-bottom: 3rem;
-          }
-        }
-        @media (max-height: 720px) {
-          .s10-page-title {
-            font-size: clamp(1.8rem, 3.5vw, 3rem);
-          }
-          .s10-card {
-            width: min(100%, 52rem);
-            max-height: min(21.5rem, calc(100dvh - 12.5rem));
-            padding: 0.95rem 1rem;
-          }
-          .s10-card-title {
-            font-size: clamp(1.45rem, 2.1vw, 2rem);
-            margin-bottom: 0.75rem;
-          }
-          .s10-description-text,
-          .s10-meta-grid > div > p:last-child,
-          .s10-meta-value {
-            font-size: 0.75rem;
-            line-height: 1.35;
-          }
-          .s10-meta-grid {
-            gap: 0.6rem;
-          }
-          .s10-meta-grid > div {
-            padding: 0.7rem 0.8rem;
-          }
-          .s10-cta-row button {
-            font-size: 0.82rem;
-          }
-          .s10-pagination {
-            padding-bottom: 2.75rem;
-          }
-        }
+        .scrollbar-thin-white::-webkit-scrollbar { width: 5px; }
+        .scrollbar-thin-white::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin-white::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 999px; }
+        .scrollbar-thin-white::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.40); }
         @keyframes slideIn {
           from { opacity: 0; transform: translateX(20px); }
           to   { opacity: 1; transform: translateX(0); }

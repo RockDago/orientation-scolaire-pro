@@ -14,6 +14,7 @@ import {
   FaExclamationCircle,
   FaLayerGroup,
   FaListAlt,
+  FaUsers,
 } from "react-icons/fa";
 import logo from "../../../assets/logo.jpeg";
 
@@ -283,6 +284,26 @@ const Sidebar = ({
                   </span>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Utilisateurs */}
+          <div
+            onClick={() => goTo(`/dashboard/admin/utilisateurs/${uuid}`)}
+            className={`${baseItemClass} ${
+              location.pathname === `/dashboard/admin/utilisateurs/${uuid}` ? activeClass : inactiveClass
+            }`}
+            title={collapsed ? "Utilisateurs" : ""}
+          >
+            <div className="flex items-center gap-3">
+              <FaUsers
+                className={`text-lg flex-shrink-0 ${
+                  location.pathname === `/dashboard/admin/utilisateurs/${uuid}`
+                    ? "text-blue-600"
+                    : "text-gray-400 group-hover:text-gray-600"
+                }`}
+              />
+              {!collapsed && <span>Utilisateurs</span>}
             </div>
           </div>
         </nav>

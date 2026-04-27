@@ -1,1117 +1,471 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import Chart from "chart.js/auto";
 import {
-  FaGlobe,
-  FaArrowUp,
-  FaArrowDown,
-  FaBriefcase,
-  FaSync,
-} from "react-icons/fa";
-import {
-  PiChartLineUp,
-  PiChartBar,
-  PiChartPieSlice,
-} from "react-icons/pi";
-import { HiOutlineCalendar } from "react-icons/hi2";
+  ChevronLeft,
+  ChevronRight,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  Calendar,
+  BarChart2,
+  Clock,
+  Search,
+  Globe,
+  Briefcase,
+  TrendingUp,
+  Activity,
+  RefreshCw,
+  MoreVertical
+} from "lucide-react";
 import { getDashboardData } from "../../../services/dashboard.services";
+import Button from "../../../components/ui/boutton";
 
-const PIE_COLORS = [
+// Couleurs graphiques
+const chartColors = [
+  { border: "#3b82f6", background: "rgba(59,130,246,0.1)" },
+  { border: "#10b981", background: "rgba(16,185,129,0.1)" },
+  { border: "#f59e0b", background: "rgba(245,158,11,0.1)" },
+  { border: "#ef4444", background: "rgba(239,68,68,0.1)" },
+  { border: "#8b5cf6", background: "rgba(139,92,246,0.1)" },
+  { border: "#06b6d4", background: "rgba(6,182,212,0.1)" },
+];
+
+const pieColors = [
   "#3b82f6",
   "#10b981",
   "#f59e0b",
   "#ef4444",
   "#8b5cf6",
   "#06b6d4",
+  "#94a3b8",
+  "#64748b",
 ];
 
-// ─── UTILS ────────────────────────────────────────────────────────────────────
+// Composants UI locaux (car PageLoader est manquant)
+const SimpleLoader = () => (
+  <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest animate-pulse">Chargement...</p>
+  </div>
+);
 
-// Fonction utilitaire pour calculer le total des vues à partir des différentes sources
-const calculateTotalViews = (data) => {
-  if (!data) return 0;
-
-  let total = 0;
-
-  // 1. Essayer d'abord les stats.total_views
-  if (data.stats?.total_views) {
-    total = data.stats.total_views;
-  }
-  // 2. Essayer les vues par page
-  else if (data.charts?.views_by_page) {
-    total = data.charts.views_by_page.reduce((sum, page) => sum + (page.total || 0), 0);
-  }
-  // 3. Essayer les données d'activité hebdomadaire
-  else if (data.charts?.weekly_activity) {
-    total = data.charts.weekly_activity.reduce((sum, day) => sum + (day.vues || day.views || 0), 0);
-  }
-  // 4. Essayer les données de visibilité mensuelle
-  else if (data.charts?.monthly_visibility) {
-    total = data.charts.monthly_visibility.reduce((sum, month) => sum + (month.visites || month.views || month.value || 0), 0);
-  }
-
-  return total;
-};
-
-// Fonction utilitaire pour calculer la tendance
-const calculateTrend = (data) => {
-  if (!data) return 0;
-  
-  // Essayer d'abord les stats.trend_views
-  if (data.stats?.trend_views) {
-    return data.stats.trend_views;
-  }
-  
-  return 0;
-};
-
-// Fonction utilitaire pour extraire le top métier
-const extractTopMetier = (data) => {
-  if (!data) return null;
-
-  // 1. Essayer depuis stats.top_metier
-  if (data.stats?.top_metier) {
-    return data.stats.top_metier;
-  }
-  
-  // 2. Essayer depuis charts.top_metiers
-  if (data.charts?.top_metiers && data.charts.top_metiers.length > 0) {
-    return data.charts.top_metiers[0];
-  }
-
-  // 3. Retourner un objet par défaut
-  return {
-    name: "—",
-    value: 0,
-    croissance: "0%"
-  };
-};
-
-// Fonction pour préparer les données du graphique d'activité hebdomadaire
-const prepareWeeklyActivity = (data) => {
-  if (!data) return [];
-  
-  // Si nous avons déjà des données formatées
-  if (data.charts?.weekly_activity) {
-    return data.charts.weekly_activity;
-  }
-  
-  // Si nous avons des vues par page, on peut les formater
-  if (data.charts?.views_by_page) {
-    // Grouper par page ou créer des données factices pour l'affichage
-    return data.charts.views_by_page.map((item, index) => ({
-      day: item.page.split('/').pop() || `Page ${index + 1}`,
-      vues: item.total || 0
-    }));
-  }
-  
-  return [];
-};
-
-// ─── COMPOSANT DATE RANGE PICKER ─────────────────────────────────────────────
-
-const DateRangePicker = ({ value, onChange }) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  const presets = [
-    {
-      l: "Tous les résultats",
-      f: () => ({ from: null, to: null, label: "Tous les résultats" }),
-    },
-    {
-      l: "Aujourd'hui",
-      f: () => {
-        const d = new Date().toISOString().slice(0, 10);
-        return { from: d, to: d, label: "Aujourd'hui" };
-      },
-    },
-    {
-      l: "7 derniers jours",
-      f: () => {
-        const e = new Date();
-        const s = new Date();
-        s.setDate(s.getDate() - 7);
-        return {
-          from: s.toISOString().slice(0, 10),
-          to: e.toISOString().slice(0, 10),
-          label: "7 derniers jours",
-        };
-      },
-    },
-    {
-      l: "30 derniers jours",
-      f: () => {
-        const e = new Date();
-        const s = new Date();
-        s.setDate(s.getDate() - 30);
-        return {
-          from: s.toISOString().slice(0, 10),
-          to: e.toISOString().slice(0, 10),
-          label: "30 derniers jours",
-        };
-      },
-    },
-    {
-      l: "Cette année",
-      f: () => {
-        const year = new Date().getFullYear();
-        return { from: `${year}-01-01`, to: `${year}-12-31`, label: "Cette année" };
-      },
-    },
-    {
-      l: "12 derniers mois",
-      f: () => {
-        const e = new Date();
-        const s = new Date();
-        s.setFullYear(s.getFullYear() - 1);
-        return {
-          from: s.toISOString().slice(0, 10),
-          to: e.toISOString().slice(0, 10),
-          label: "12 derniers mois",
-        };
-      },
-    },
-    {
-      l: "Depuis le début",
-      f: () => ({ from: "2000-01-01", to: null, label: "Depuis le début" }),
-    },
-  ];
-
-  useEffect(() => {
-    const h = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, []);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium cursor-pointer transition-all bg-white border border-gray-200 text-gray-700 hover:border-gray-300 sm:w-auto"
-      >
-        <HiOutlineCalendar className="w-3.5 h-3.5 text-blue-500" />
-        {value.label || "Période"}
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 10 10"
-          fill="none"
-          className={`ml-0.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        >
-          <path
-            d="M2 3.5l3 3 3-3"
-            stroke="#94a3b8"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </button>
-
-      {open && (
-        <div
-          className="absolute top-full left-0 sm:left-auto sm:right-0 z-[9999] w-[min(92vw,20rem)] min-w-0 p-1.5 rounded-xl shadow-xl animate-in fade-in duration-150 bg-white border border-gray-200"
-        >
-          {presets.map((p) => (
-            <button
-              key={p.l}
-              onClick={() => {
-                onChange(p.f());
-                setOpen(false);
-              }}
-              className="block w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
-              style={{
-                background:
-                  value.label === p.l ? "rgba(59,130,246,0.12)" : "transparent",
-                color:
-                  value.label === p.l ? "#3b82f6" : "#334155",
-              }}
-            >
-              {p.l}
-              {value.label === p.l && (
-                <span className="float-right text-blue-500">✓</span>
-              )}
-            </button>
-          ))}
-
-          <div className="mx-1.5 my-1 pt-1.5 border-t border-gray-200">
-            <div className="flex gap-1">
-              <input
-                type="date"
-                value={value.from || ""}
-                onChange={(e) =>
-                  onChange({
-                    ...value,
-                    from: e.target.value,
-                    to: value.to,
-                    label: "Personnalisé",
-                  })
-                }
-                className="flex-1 px-1.5 py-1 rounded-md text-xs border border-gray-200"
-              />
-              <input
-                type="date"
-                value={value.to || ""}
-                onChange={(e) =>
-                  onChange({
-                    ...value,
-                    from: value.from,
-                    to: e.target.value,
-                    label: "Personnalisé",
-                  })
-                }
-                className="flex-1 px-1.5 py-1 rounded-md text-xs border border-gray-200"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// ─── STAT CARD MODERNE ────────────────────────────────────────────────────────
-
-function StatCardModerne({
-  label,
+const KPICard = ({
+  title,
   value,
-  icon: Icon,
-  trend,
-  trendLabel,
-  accentColor,
-  suffix = "visites",
-}) {
-  const isPositive = trend > 0;
-  const isNeutral = trend === 0;
-
-  // S'assurer que value est un nombre et formater correctement
-  const displayValue = (() => {
-    const num = Number(value);
-    return isNaN(num) ? 0 : num.toLocaleString("fr-FR");
-  })();
-
-  return (
-    <div className="relative w-full overflow-hidden rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 lg:p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_8px_25px_-5px_rgba(0,0,0,0.08)] group">
-      <div
-        className="absolute top-0 right-0 w-32 h-32 opacity-5 blur-2xl rounded-bl-full transition-opacity group-hover:opacity-10"
-        style={{ backgroundColor: accentColor }}
-      />
-
-      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 space-y-3">
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
-              {label}
-            </span>
-            <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                isNeutral
-                  ? "bg-gray-50 text-gray-600"
-                  : isPositive
-                    ? "bg-emerald-50 text-emerald-600"
-                    : "bg-rose-50 text-rose-600"
-              }`}
-            >
-              {isNeutral ? "Stable" : isPositive ? "En hausse" : "En baisse"}
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-baseline gap-2">
-            <span className="text-[clamp(1.9rem,5vw,2.25rem)] font-extrabold text-gray-900 tracking-tight">
-              {displayValue}
-            </span>
-            <span className="text-sm font-medium text-gray-400">{suffix}</span>
-          </div>
-
-          <div className="flex items-center gap-2 pt-1 sm:pt-2">
-            <div
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${
-                isNeutral
-                  ? "bg-gray-50/50 border-gray-100"
-                  : isPositive
-                    ? "bg-emerald-50/50 border-emerald-100"
-                    : "bg-rose-50/50 border-rose-100"
-              }`}
-            >
-              {isNeutral ? (
-                <span className="w-3 h-3 flex items-center justify-center">
-                  —
-                </span>
-              ) : isPositive ? (
-                <FaArrowUp className="w-3 h-3 text-emerald-500" />
-              ) : (
-                <FaArrowDown className="w-3 h-3 text-rose-500" />
-              )}
-              <span
-                className={`text-sm font-bold ${
-                  isNeutral
-                    ? "text-gray-600"
-                    : isPositive
-                      ? "text-emerald-600"
-                      : "text-rose-600"
-                }`}
-              >
-                {isNeutral ? "0%" : Math.abs(trend) + "%"}
-              </span>
-              <span className="text-[11px] text-gray-500">{trendLabel}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative self-start rounded-xl bg-gray-50 p-0.5 shadow-inner">
-          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-white border border-gray-100 sm:w-14 sm:h-14">
-            <Icon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: accentColor }} />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-end gap-1 mt-6 h-6">
-        {[30, 45, 38, 52, 48, 65, 78].map((h, i) => (
-          <div key={i} className="flex-1 flex items-end h-full">
-            <div
-              className={`w-full rounded-t-sm transition-all duration-500 ${
-                i > 4 ? "opacity-100" : "opacity-20"
-              }`}
-              style={{
-                height: `${h}%`,
-                background: i > 4 ? accentColor : "#94a3b8",
-              }}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── COURBE SVG ───────────────────────────────────────────────────────────────
-
-function LineChartSVG({ data }) {
-  const [hov, setHov] = useState(null);
-  
-  // S'assurer que les données sont valides
-  if (!data || data.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-sm text-gray-500">Aucune donnée disponible pour le graphique</p>
-      </div>
-    );
-  }
-
-  const pts = data.map((d) => ({ 
-    y: d.month || d.mois || d.label || `Mois ${d.index || ''}`, 
-    v: d.visites || d.views || d.vues || d.value || 0 
-  }));
-
-  const W = 700;
-  const H = 260;
-  const PL = 48;
-  const PR = 20;
-  const PT = 30;
-  const PB = 42;
-  const cW = W - PL - PR;
-  const cH = H - PT - PB;
-
-  // Calcul dynamique des valeurs min et max
-  const allValues = pts.map((d) => d.v);
-  const maxV = allValues.length > 0 ? Math.max(...allValues) : 1000;
-
-  const xP = (i) => PL + (i / (pts.length - 1 || 1)) * cW;
-  const yP = (v) => PT + cH - (v / maxV) * cH;
-
-  // Générer des lignes de grille
-  const generateGridLines = (max) => {
-    if (max <= 0) return [];
-
-    const numLines = 4;
-    const step = Math.max(1, Math.ceil(max / numLines));
-
-    const lines = [];
-    for (let i = 1; i <= numLines; i++) {
-      const value = i * step;
-      if (value < max) {
-        lines.push(value);
-      } else {
-        break;
-      }
-    }
-
-    return lines;
-  };
-  const gridLines = generateGridLines(maxV);
-
-  const lp = pts
-    .map((d, i) => `${i ? "L" : "M"} ${xP(i).toFixed(1)} ${yP(d.v).toFixed(1)}`)
-    .join(" ");
-  const area =
-    pts.length > 0
-      ? `${lp} L ${xP(pts.length - 1).toFixed(1)} ${PT + cH} L ${PL} ${
-          PT + cH
-        } Z`
-      : "";
-
-  const gridColor = "#e2e8f0";
-  const axisColor = "#64748b";
-  const labelColor = "#1e293b";
-
-  return (
-    <div>
-      <p className="text-xs font-bold mb-1" style={{ color: labelColor }}>
-        Évolution mensuelle des visites
-      </p>
-      <p className="text-[11px] mb-3" style={{ color: axisColor }}>
-        Janvier à décembre · nombre de visites sur la plateforme
-      </p>
-
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full overflow-visible">
-        <defs>
-          <linearGradient id="lgLine" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#3b82f6" stopOpacity=".15" />
-            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
-        {/* Grille horizontale */}
-        {gridLines.map((v) => (
-          <g key={v}>
-            <line
-              x1={PL}
-              y1={yP(v)}
-              x2={W - PR}
-              y2={yP(v)}
-              stroke={gridColor}
-              strokeWidth="1"
-              strokeDasharray="4 4"
-            />
-            <text
-              x={PL - 8}
-              y={yP(v) + 4}
-              textAnchor="end"
-              fontSize="10"
-              fill={axisColor}
-              fontWeight="600"
-            >
-              {v >= 1000000
-                ? `${(v / 1000000).toFixed(1)}M`
-                : v >= 1000
-                  ? `${(v / 1000).toFixed(1)}k`
-                  : v}
-            </text>
-          </g>
-        ))}
-
-        {/* Légendes mois */}
-        {pts.map((d, i) => (
-          <text
-            key={i}
-            x={xP(i)}
-            y={H - 12}
-            textAnchor="middle"
-            fontSize="10"
-            fill={axisColor}
-            fontWeight="600"
-          >
-            {d.y}
-          </text>
-        ))}
-
-        {pts.length > 0 && (
-          <>
-            <path d={area} fill="url(#lgLine)" />
-            <path
-              d={lp}
-              fill="none"
-              stroke="#3b82f6"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </>
+  subtitle,
+  icon,
+  color,
+  onClick,
+  isActive,
+}) => (
+  <div
+    onClick={onClick}
+    className={`bg-white rounded-xl p-4 shadow-sm border cursor-pointer transition-all duration-200 
+      ${
+        isActive
+          ? "ring-2 ring-blue-500 border-blue-500 bg-blue-50/30"
+          : "border-slate-100 hover:shadow-md hover:border-slate-200"
+      }`}
+  >
+    <div className="flex justify-between items-start">
+      <div className="min-w-0 flex-1">
+        <p
+          className={`text-[10px] font-bold uppercase tracking-wider truncate ${
+            isActive ? "text-blue-700" : "text-slate-400"
+          }`}
+        >
+          {title}
+        </p>
+        <p className="mt-1 text-2xl font-bold text-slate-900 truncate">
+          {value}
+        </p>
+        {subtitle && (
+          <p className="text-[10px] font-semibold text-slate-400 mt-0.5 truncate">{subtitle}</p>
         )}
-
-        {pts.map((d, i) => (
-          <g
-            key={i}
-            onMouseEnter={() => setHov(i)}
-            onMouseLeave={() => setHov(null)}
-            className="cursor-pointer"
-          >
-            <line
-              x1={xP(i)}
-              y1={PT}
-              x2={xP(i)}
-              y2={PT + cH}
-              stroke="#3b82f6"
-              strokeWidth="1"
-              strokeDasharray="4 4"
-              className={`transition-opacity duration-300 ${
-                hov === i ? "opacity-30" : "opacity-0"
-              }`}
-            />
-            <circle
-              cx={xP(i)}
-              cy={yP(d.v)}
-              r={hov === i ? 5 : 4}
-              fill="#3b82f6"
-              stroke="#fff"
-              strokeWidth="2"
-            />
-            {hov === i && (
-              <>
-                <rect
-                  x={Math.max(10, xP(i) - 35)}
-                  y={8}
-                  width="70"
-                  height="22"
-                  rx="6"
-                  fill="#1e293b"
-                />
-                <text
-                  x={xP(i)}
-                  y={22}
-                  textAnchor="middle"
-                  fontSize="10"
-                  fontWeight="700"
-                  fill="#fff"
-                >
-                  {d.v >= 1000000
-                    ? `${(d.v / 1000000).toFixed(1)}M`
-                    : d.v >= 1000
-                      ? `${(d.v / 1000).toFixed(1)}k`
-                      : d.v.toLocaleString("fr-FR")}
-                </text>
-              </>
-            )}
-          </g>
-        ))}
-      </svg>
-    </div>
-  );
-}
-
-// ─── BARRES SVG ───────────────────────────────────────────────────────────────
-
-function BarChartSVG({ data }) {
-  const [hov, setHov] = useState(null);
-  
-  if (!data || data.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-sm text-gray-500">Aucune donnée disponible pour le graphique</p>
       </div>
-    );
-  }
-
-  const mapped = data.map((d, i) => ({
-    r: d.day || d.jour || d.label || `Jour ${d.index || ''}`,
-    v: d.vues || d.views || d.value || 0,
-    c: PIE_COLORS[i % PIE_COLORS.length],
-  }));
-
-  const W = 700;
-  const H = 260;
-  const PL = 42;
-  const PR = 18;
-  const PT = 32;
-  const PB = 58;
-  const cW = W - PL - PR;
-  const cH = H - PT - PB;
-  const groupW = cW / Math.max(mapped.length, 1);
-  const max = Math.max(...mapped.map((d) => d.v), 1);
-  
-  const gridColor = "#e2e8f0";
-  const axisColor = "#64748b";
-  const labelColor = "#1e293b";
-
-  return (
-    <div>
-      <p className="text-xs font-bold mb-1" style={{ color: labelColor }}>
-        Activité hebdomadaire
-      </p>
-      <p className="text-[11px] mb-3" style={{ color: axisColor }}>
-        Vues réparties par jour de la semaine
-      </p>
-
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full overflow-visible">
-        <defs>
-          {mapped.map((d, i) => (
-            <linearGradient
-              key={i}
-              id={`bgrad${i}`}
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
-              <stop offset="0%" stopColor={d.c} />
-              <stop offset="100%" stopColor={d.c} stopOpacity=".6" />
-            </linearGradient>
-          ))}
-        </defs>
-
-        {/* Grille horizontale */}
-        {[0.25, 0.5, 0.75, 1].map((ratio, idx) => {
-          const val = Math.round(max * ratio);
-          const yy = PT + cH - ratio * cH;
-          return (
-            <g key={idx}>
-              <line
-                x1={PL}
-                y1={yy}
-                x2={W - PR}
-                y2={yy}
-                stroke={gridColor}
-                strokeWidth="1.5"
-                strokeDasharray="4 4"
-              />
-              <text
-                x={PL - 6}
-                y={yy + 4}
-                textAnchor="end"
-                fontSize="9"
-                fill={axisColor}
-              >
-                {val >= 1000 ? `${val / 1000}k` : val}
-              </text>
-            </g>
-          );
-        })}
-
-        {mapped.map((d, i) => {
-          const bW = groupW * 0.5; // Largeur des barres
-          const x = PL + i * groupW + (groupW - bW) / 2;
-          const bH = (d.v / max) * cH;
-          const y = PT + cH - bH;
-          const active = hov === i;
-
-          return (
-            <g
-              key={i}
-              onMouseEnter={() => setHov(i)}
-              onMouseLeave={() => setHov(null)}
-              className="cursor-pointer"
-            >
-              <rect
-                x={x}
-                y={y}
-                width={bW}
-                height={bH}
-                rx="6"
-                fill={`url(#bgrad${i})`}
-                opacity={hov !== null && !active ? 0.35 : 1}
-              />
-              {active && (
-                <>
-                  <rect
-                    x={x + bW / 2 - 26}
-                    y={Math.max(6, y - 28)}
-                    width="52"
-                    height="20"
-                    rx="6"
-                    fill="#1e293b"
-                  />
-                  <text
-                    x={x + bW / 2}
-                    y={Math.max(19, y - 15)}
-                    textAnchor="middle"
-                    fontSize="9.5"
-                    fontWeight="700"
-                    fill="#fff"
-                  >
-                    {d.v}
-                  </text>
-                </>
-              )}
-              <text
-                x={x + bW / 2}
-                y={H - 14}
-                textAnchor="middle"
-                fontSize="8.5"
-                fill={axisColor}
-                fontWeight="700"
-              >
-                {d.r}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-    </div>
-  );
-}
-
-// ─── DONUT SVG ────────────────────────────────────────────────────────────────
-
-function DonutChartSVG({ data }) {
-  const [hov, setHov] = useState(null);
-  
-  if (!data || data.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-sm text-gray-500">Aucune donnée disponible pour le graphique</p>
-      </div>
-    );
-  }
-
-  const total = data.reduce((s, d) => s + (d.value || d.vues || d.count || 0), 0) || 0;
-
-  const cx = 120,
-    cy = 120,
-    R = 100,
-    r = 65;
-
-  const slices = data.reduce((acc, d, i) => {
-    const startAngle =
-      acc.length === 0 ? -Math.PI / 2 : acc[acc.length - 1].endAngle;
-    const a = total > 0 ? ((d.value || d.vues || d.count || 0) / total) * 2 * Math.PI : 0;
-    const endAngle = startAngle + a;
-
-    const x1 = cx + R * Math.cos(startAngle),
-      y1 = cy + R * Math.sin(startAngle);
-    const x2 = cx + R * Math.cos(endAngle),
-      y2 = cy + R * Math.sin(endAngle);
-    const ix1 = cx + r * Math.cos(startAngle),
-      iy1 = cy + r * Math.sin(startAngle);
-    const ix2 = cx + r * Math.cos(endAngle),
-      iy2 = cy + r * Math.sin(endAngle);
-    const lg = a > Math.PI ? 1 : 0;
-    const path = `M ${x1} ${y1} A ${R} ${R} 0 ${lg} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${r} ${r} 0 ${lg} 0 ${ix1} ${iy1} Z`;
-
-    acc.push({ 
-      ...d, 
-      path, 
-      color: PIE_COLORS[i % PIE_COLORS.length], 
-      endAngle,
-      name: d.name || d.label || d.nom || `Métier ${i + 1}`,
-      value: d.value || d.vues || d.count || 0,
-      croissance: d.croissance || d.trend || d.growth || "+0%"
-    });
-    return acc;
-  }, []);
-
-  const axisColor = "#64748b";
-  const labelColor = "#1e293b";
-
-  return (
-    <div>
-      <p className="text-xs font-bold mb-1" style={{ color: labelColor }}>
-        Métiers les plus recherchés
-      </p>
-      <p className="text-[11px] mb-3" style={{ color: axisColor }}>
-        Répartition par domaine (tendance du marché)
-      </p>
-
-      <div className="flex flex-col items-center gap-8 md:flex-row">
-        <div className="relative flex-shrink-0 mx-auto md:mx-0">
-          <svg
-            viewBox="0 0 240 240"
-            className="h-[clamp(170px,42vw,220px)] w-[clamp(170px,42vw,220px)] overflow-visible"
-          >
-            {slices.map((s, i) => (
-              <path
-                key={i}
-                d={s.path}
-                fill={s.color}
-                className="transition-all duration-300 cursor-pointer"
-                strokeWidth="3"
-                stroke="#fff"
-                opacity={hov !== null && hov !== i ? 0.3 : 1}
-                style={{
-                  transformOrigin: `${cx}px ${cy}px`,
-                  transform: `scale(${hov === i ? 1.04 : 1})`,
-                }}
-                onMouseEnter={() => setHov(i)}
-                onMouseLeave={() => setHov(null)}
-              />
-            ))}
-            <circle cx={cx} cy={cy} r="46" fill="#fff" />
-            <text
-              x={cx}
-              y={cy - 8}
-              textAnchor="middle"
-              fontSize="26"
-              fontWeight="900"
-              fill={hov !== null ? slices[hov].color : labelColor}
-            >
-              {hov !== null ? slices[hov].value : total}
-            </text>
-            <text
-              x={cx}
-              y={cy + 10}
-              textAnchor="middle"
-              fontSize="9.5"
-              fill={axisColor}
-            >
-              {hov !== null ? slices[hov].name : "recherches"}
-            </text>
-          </svg>
-        </div>
-
-        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
-          {slices.map((s, i) => (
-            <div
-              key={i}
-              onMouseEnter={() => setHov(i)}
-              onMouseLeave={() => setHov(null)}
-              className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-300 cursor-default ${
-                hov === i
-                  ? "bg-white shadow-md border-transparent scale-[1.02]"
-                  : "bg-white border-gray-100 hover:bg-gray-50"
-              }`}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={`w-3 h-3 rounded-full flex-shrink-0 transition-transform ${
-                    hov === i ? "scale-125 shadow-sm" : ""
-                  }`}
-                  style={{ backgroundColor: s.color }}
-                />
-                <span
-                  className={`text-xs font-medium truncate ${
-                    hov === i ? "text-gray-900" : "text-gray-500"
-                  }`}
-                  title={s.name}
-                >
-                  {s.name}
-                </span>
-              </div>
-              <div className="flex flex-col items-end flex-shrink-0 pl-2">
-                <span className="text-sm font-bold text-gray-900">
-                  {s.value}
-                </span>
-                <span className="text-[10px] font-bold text-emerald-500">
-                  {s.croissance}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div
+        className="p-2 flex-shrink-0 ml-2 flex items-center justify-center"
+      >
+        {(() => {
+          if (React.isValidElement(icon)) return icon;
+          const IconComponent = icon;
+          if (typeof icon === 'function' || (typeof icon === 'object' && icon !== null)) {
+             try {
+               return <IconComponent size={24} className={color.replace('bg-', 'text-')} />;
+             } catch (e) {
+               return <span className="text-xl">{String(icon)}</span>;
+             }
+          }
+          return <span className="text-xl">{icon}</span>;
+        })()}
       </div>
     </div>
-  );
-}
+  </div>
+);
 
-// ─── COMPOSANT PRINCIPAL ──────────────────────────────────────────────────────
+// Format date pour input type="date"
+const formatDateForInput = (date) => {
+  return date.toISOString().split("T")[0];
+};
 
-const DashboardAdminView = () => {
-  const [chart, setChart] = useState("bar"); // Mettre "bar" par défaut car il y a des données
-  const [dateRange, setDateRange] = useState({
-    label: "Depuis le début",
-    from: "2000-01-01",
-    to: null,
-  });
+export default function DashboardAdminView() {
+  const lineChartRef = useRef(null);
+  const barChartRef = useRef(null);
+  const pieChartRef = useRef(null);
+  const lineChartInstance = useRef(null);
+  const barChartInstance = useRef(null);
+  const pieChartInstance = useRef(null);
 
   const [dashData, setDashData] = useState(null);
-  const [loadingDash, setLoadingDash] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [customFilter, setCustomFilter] = useState({
+    startDate: "2000-01-01",
+    endDate: formatDateForInput(new Date()),
+    label: "Depuis le début",
+    period: "all"
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [datePickerMode, setDatePickerMode] = useState("presets");
 
   const fetchDash = async () => {
-    setLoadingDash(true);
-    setError(null);
     try {
-      console.log("Fetching dashboard data with filter:", dateRange);
-      
-      // Convertir le format dateRange vers le format attendu par l'API
-      const filter = dateRange.label === "Tous les résultats" ? "all" : 
-                     dateRange.label === "Aujourd'hui" ? "today" :
-                     dateRange.label === "7 derniers jours" ? "7j" :
-                     dateRange.label === "30 derniers jours" ? "30j" :
-                     dateRange.label === "Cette année" ? "this_year" :
-                     dateRange.label === "12 derniers mois" ? "12m" :
-                     dateRange.label === "Depuis le début" ? "all" :
-                     dateRange.label === "Personnalisé" ? "custom" : "all";
-      
+      setLoading(true);
+      setError("");
       const data = await getDashboardData(
-        filter,
-        dateRange.from,
-        dateRange.to,
+        customFilter.period,
+        customFilter.startDate,
+        customFilter.endDate
       );
-      
-      console.log("Données reçues de l'API:", data);
-      
       setDashData(data);
-    } catch (error) {
-      console.error("Erreur lors du chargement des données:", error);
-      setError(error.message || "Erreur de chargement");
-      setDashData(null);
+    } catch (err) {
+      console.error("Erreur dashboard:", err);
+      setError("Erreur lors du chargement des données");
     } finally {
-      setLoadingDash(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchDash();
-  }, [dateRange]);
+  }, [customFilter]);
 
-  // Calculer les statistiques
-  const totalViews = calculateTotalViews(dashData);
-  const trendViews = calculateTrend(dashData);
-  const topMetier = extractTopMetier(dashData);
+  useEffect(() => {
+    if (dashData && !loading) {
+      initializeCharts();
+    }
+    return () => destroyCharts();
+  }, [dashData, loading]);
 
-  // Préparer les données des graphiques
-  const visibiliteGrowthData = dashData?.charts?.monthly_visibility ?? [];
-  const activityData = prepareWeeklyActivity(dashData);
-  const metiersRecherchesData = dashData?.charts?.top_metiers ?? [];
-
-  console.log("Statistiques calculées:", { totalViews, trendViews, topMetier });
-  console.log("Données activité:", activityData);
-
-  const statGlobal = {
-    label: "Vues totales",
-    value: totalViews,
-    icon: FaGlobe,
-    trend: trendViews,
-    trendLabel: "vs période précédente",
-    accentColor: "#10b981",
-    suffix: "visites",
+  const destroyCharts = () => {
+    if (lineChartInstance.current) lineChartInstance.current.destroy();
+    if (barChartInstance.current) barChartInstance.current.destroy();
+    if (pieChartInstance.current) pieChartInstance.current.destroy();
   };
 
-  const statMetier = {
-    label: topMetier?.name ? `Top Métier : ${topMetier.name}` : "Top Métier : —",
-    value: topMetier?.value ?? 0,
-    icon: FaBriefcase,
-    trend: (() => {
-      const trendStr = topMetier?.croissance ?? "0%";
-      const num = parseInt(trendStr.toString().replace("+", "").replace("%", ""));
-      return isNaN(num) ? 0 : num;
-    })(),
-    trendLabel: "demande en hausse",
-    accentColor: "#3b82f6",
-    suffix: "recherches",
+  const initializeCharts = () => {
+    destroyCharts();
+    
+    // Create a color map for métiers to keep them consistent across charts
+    const colorMap = {};
+    if (dashData?.charts?.top_metiers) {
+      dashData.charts.top_metiers.forEach((m, i) => {
+        colorMap[m.name || m.label] = pieColors[i % pieColors.length];
+      });
+    }
+
+    initLineChart();
+    initBarChart(colorMap);
+    initPieChart(colorMap);
   };
 
-  const CHART_TABS = [
-    { key: "line", icon: PiChartLineUp, label: "Visibilité" },
-    { key: "bar", icon: PiChartBar, label: "Activité" },
-    { key: "pie", icon: PiChartPieSlice, label: "Métiers" },
-  ];
+  const initLineChart = () => {
+    if (!lineChartRef.current || !dashData?.charts?.monthly_visibility) return;
+    const ctx = lineChartRef.current.getContext("2d");
+    const data = dashData.charts.monthly_visibility;
+    lineChartInstance.current = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: data.map(d => d.month || d.mois || d.label),
+        datasets: [{
+          label: "Nombre de vues",
+          data: data.map(d => d.visites || d.views || 0),
+          borderColor: "#3b82f6",
+          backgroundColor: "rgba(59,130,246,0.08)",
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+          y: { 
+            beginAtZero: true, 
+            grid: { borderDash: [2, 4] }, 
+            ticks: { 
+              font: { size: 10 },
+              precision: 0,
+              callback: (value) => Math.floor(value) === value ? value : null
+            } 
+          }
+        }
+      }
+    });
+  };
+
+  const initBarChart = (colorMap) => {
+    if (!barChartRef.current || !dashData?.charts?.search_details) return;
+    const ctx = barChartRef.current.getContext("2d");
+    const { labels, datasets } = dashData.charts.search_details;
+    
+    // Add colors to datasets based on colorMap
+    const coloredDatasets = datasets.map((ds) => ({
+      ...ds,
+      backgroundColor: colorMap[ds.label] || "#cbd5e1",
+      borderRadius: 4,
+      barPercentage: 0.6,
+      categoryPercentage: 0.8
+    }));
+
+    barChartInstance.current = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: coloredDatasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { 
+          legend: { 
+            display: true, 
+            position: 'top',
+            labels: { usePointStyle: true, boxWidth: 8, font: { size: 9 } }
+          },
+          tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+          x: { 
+            stacked: false,
+            grid: { display: false }, 
+            ticks: { font: { size: 10, weight: 'bold' } } 
+          },
+          y: { 
+            stacked: false,
+            beginAtZero: true,
+            grid: { borderDash: [2, 4], color: '#f1f5f9' },
+            ticks: { font: { size: 10 } },
+            title: {
+              display: true,
+              text: "VOLUME DE RECHERCHES",
+              font: { size: 10, weight: 'bold' },
+              color: '#94a3b8'
+            }
+          }
+        }
+      }
+    });
+  };
+
+  const initPieChart = (colorMap) => {
+    if (!pieChartRef.current || !dashData?.charts?.top_metiers) return;
+    const ctx = pieChartRef.current.getContext("2d");
+    const data = dashData.charts.top_metiers.slice(0, 5);
+    const total = data.reduce((s, d) => s + (d.value || 0), 0);
+    pieChartInstance.current = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: data.map(d => d.name || d.label),
+        datasets: [{
+          data: data.map(d => d.value || 0),
+          backgroundColor: data.map(d => colorMap[d.name || d.label] || "#cbd5e1"),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "75%",
+        plugins: {
+          legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8, font: { size: 9 } } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = ctx.raw;
+                const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                return ` ${ctx.label}: ${val} (${pct}%)`;
+              }
+            }
+          }
+        }
+      },
+      plugins: [{
+        id: 'centerText',
+        beforeDraw: (chart) => {
+          const { ctx, chartArea: { top, bottom, left, right } } = chart;
+          ctx.save();
+          const centerX = (left + right) / 2;
+          const centerY = (top + bottom) / 2;
+          
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          // Total Number
+          ctx.font = 'bold 16px sans-serif';
+          ctx.fillStyle = '#0f172a';
+          ctx.fillText(total.toString(), centerX, centerY - 5);
+          
+          // "Total" Label
+          ctx.font = 'bold 9px sans-serif';
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillText('TOTAL', centerX, centerY + 12);
+          ctx.restore();
+        }
+      }]
+    });
+  };
+
+  const applyPresetFilter = (preset) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let startDate = null, endDate = formatDateForInput(now), period = "all", label = "Tous";
+
+    switch (preset) {
+      case "today": startDate = formatDateForInput(today); period = "today"; label = "Aujourd'hui"; break;
+      case "yesterday": {
+        const y = new Date(today); y.setDate(today.getDate() - 1);
+        startDate = formatDateForInput(y); endDate = formatDateForInput(y); period = "custom"; label = "Hier"; break;
+      }
+      case "week": {
+        const s = new Date(today); s.setDate(today.getDate() - 7);
+        startDate = formatDateForInput(s); period = "7j"; label = "7 derniers jours"; break;
+      }
+      case "month": {
+        const s = new Date(today); s.setDate(today.getDate() - 30);
+        startDate = formatDateForInput(s); period = "30j"; label = "30 derniers jours"; break;
+      }
+      case "year": {
+        const s = new Date(today.getFullYear(), 0, 1);
+        startDate = formatDateForInput(s); period = "this_year"; label = "Cette année"; break;
+      }
+      case "all": startDate = "2000-01-01"; period = "all"; label = "Toutes les périodes"; break;
+    }
+
+    setCustomFilter({ startDate, endDate, period, label });
+    setShowDatePicker(false);
+    setDatePickerMode("presets");
+  };
+
+  const applyCustomFilter = () => {
+    setCustomFilter(prev => ({ ...prev, period: "custom", label: "Personnalisé" }));
+    setShowDatePicker(false);
+  };
+
+  if (loading && !dashData) return <SimpleLoader />;
+
+  const stats = dashData?.stats || {};
 
   return (
-    <div className="min-h-[100dvh] p-0 bg-white font-sans text-gray-900 transition-colors duration-300">
-      <div className="mx-auto max-w-screen-2xl space-y-5 px-3 py-3 sm:space-y-6 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
+    <div className="min-h-screen bg-white font-sans text-slate-900">
+      <div className="w-full mx-auto p-6 space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <h1 className="text-[clamp(1.25rem,2.4vw,1.875rem)] font-bold tracking-tight text-gray-900">
-              Vue d'ensemble
+            <h1 className="text-xl font-bold text-slate-900">
+              Tableau de bord
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Suivez les performances globales de la plateforme d'éducation.
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
+              Analyse des performances
             </p>
-            {error && (
-              <p className="mt-2 text-sm text-red-500">
-                Erreur: {error}
-              </p>
-            )}
           </div>
-
-          {/* Filtres */}
-          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+          <div className="relative">
             <button
-              onClick={fetchDash}
-              disabled={loadingDash}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-600 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Actualiser les données"
+              className="flex items-center space-x-2 px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50 bg-white w-full md:w-auto justify-center"
+              onClick={() => {
+                setShowDatePicker(!showDatePicker);
+                setDatePickerMode("presets");
+              }}
             >
-              <FaSync
-                className={`w-4 h-4 ${loadingDash ? "animate-spin" : ""}`}
-              />
+              <Calendar className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-semibold">{customFilter.label}</span>
+              {(customFilter.startDate !== "2000-01-01") && (
+                <span className="ml-1 w-2 h-2 bg-blue-500 rounded-full"></span>
+              )}
             </button>
             
-            <DateRangePicker
-              value={dateRange}
-              onChange={setDateRange}
-            />
-          </div>
-        </div>
-
-        {/* Stat cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <StatCardModerne {...statGlobal} />
-          <StatCardModerne {...statMetier} />
-        </div>
-
-        {/* Graphiques */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] overflow-hidden">
-          <div className="flex flex-col gap-4 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-50/50 text-blue-600 sm:w-10 sm:h-10">
-                <PiChartLineUp className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-base font-bold text-gray-900">
-                  Analyses approfondies
-                </h2>
-                <p className="text-xs text-gray-500">
-                  Visualisez les tendances et performances
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-1 rounded-xl border border-gray-100 bg-white p-1 shadow-sm">
-              {CHART_TABS.map(({ key, icon: Icon, label }) => (
-                <button
-                  key={key}
-                  onClick={() => setChart(key)}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-300 sm:px-4 ${
-                    chart === key
-                      ? "bg-blue-50/50 text-blue-600 shadow-sm border border-blue-100/50"
-                      : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
-                >
-                  <Icon
-                    className={`w-4 h-4 ${chart === key ? "animate-pulse" : ""}`}
-                  />
-                  <span>{label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white p-4 sm:p-5">
-            <div className="mx-auto max-w-5xl">
-              {loadingDash && (
-                <div className="flex justify-center py-12">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-gray-500">Chargement des données...</span>
+            {showDatePicker && (
+              <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-50 min-w-72 md:min-w-80">
+                {datePickerMode === "presets" ? (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-bold text-gray-900 text-xs uppercase tracking-wider">Périodes</h4>
+                      <button onClick={() => setDatePickerMode("custom")} className="text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase">Personnalisé</button>
+                    </div>
+                    <div className="space-y-1">
+                      {["today", "yesterday", "week", "month", "year", "all"].map(p => (
+                        <button key={p} className="w-full text-left px-3 py-1.5 hover:bg-gray-50 rounded text-xs font-bold text-gray-700" onClick={() => applyPresetFilter(p)}>
+                          {p === "today" ? "Aujourd'hui" : p === "yesterday" ? "Hier" : p === "week" ? "7 derniers jours" : p === "month" ? "30 derniers jours" : p === "year" ? "Cette année" : "Depuis le début"}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-              {!loadingDash && (
-                <>
-                  {chart === "line" && visibiliteGrowthData.length === 0 && (
-                    <p className="text-sm text-gray-500 text-center py-8">
-                      Aucune donnée de visibilité disponible pour cette période.
-                    </p>
-                  )}
-                  {chart === "line" && visibiliteGrowthData.length > 0 && (
-                    <LineChartSVG data={visibiliteGrowthData} />
-                  )}
-                  {chart === "bar" && activityData.length === 0 && (
-                    <p className="text-sm text-gray-500 text-center py-8">
-                      Aucune donnée d'activité disponible pour cette période.
-                    </p>
-                  )}
-                  {chart === "bar" && activityData.length > 0 && (
-                    <BarChartSVG data={activityData} />
-                  )}
-                  {chart === "pie" && metiersRecherchesData.length === 0 && (
-                    <p className="text-sm text-gray-500 text-center py-8">
-                      Aucune recherche de métier disponible pour cette période.
-                    </p>
-                  )}
-                  {chart === "pie" && metiersRecherchesData.length > 0 && (
-                    <DonutChartSVG data={metiersRecherchesData} />
-                  )}
-                </>
-              )}
+                ) : (
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-gray-900 text-xs uppercase tracking-wider">Date personnalisée</h4>
+                    <div className="space-y-2">
+                      <input type="date" value={customFilter.startDate || ""} onChange={(e) => setCustomFilter(p => ({ ...p, startDate: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded text-xs font-bold" />
+                      <input type="date" value={customFilter.endDate || ""} onChange={(e) => setCustomFilter(p => ({ ...p, endDate: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded text-xs font-bold" />
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={applyCustomFilter} className="flex-1 px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-bold">Appliquer</button>
+                      <button onClick={() => setDatePickerMode("presets")} className="flex-1 px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-xs font-bold">Retour</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <KPICard title="Vues totales" value={stats.total_views || 0} subtitle="Toutes les pages" icon={Globe} color="bg-blue-500" />
+          <KPICard title="Métier le plus recherché" value={stats.top_metier?.value || 0} subtitle={stats.top_metier?.name || "N/A"} icon={Briefcase} color="bg-emerald-500" />
+        </div>
+
+
+
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 p-4">
+            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-widest mb-4">Visibilité temporelle</h3>
+            <div className="h-56 md:h-64 w-full">
+              <canvas ref={lineChartRef} />
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4">
+            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-widest mb-4">Répartition</h3>
+            <div className="h-56 md:h-64 w-full flex items-center justify-center">
+              <canvas ref={pieChartRef} />
             </div>
           </div>
         </div>
+
+        {/* Bar Chart */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 w-full">
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-widest mb-4">Détails de recherches</h3>
+          <div className="h-56 md:h-64 w-full">
+            <canvas ref={barChartRef} />
+          </div>
+        </div>
+
+
       </div>
     </div>
   );
-};
-
-export default DashboardAdminView;
+}

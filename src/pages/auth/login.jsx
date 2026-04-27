@@ -76,7 +76,7 @@ const Login = () => {
         error.response?.data?.message ||
         "Erreur de connexion. Veuillez réessayer.";
 
-      if (error.response?.status === 401) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
         setErrors({ general: message });
         toast.error(message, {
           position: "top-right",

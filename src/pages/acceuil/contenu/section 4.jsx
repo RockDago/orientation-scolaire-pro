@@ -110,7 +110,7 @@ function FicheModal({ fiche, metier, onClose }) {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm hidden sm:block" onClick={onClose} />
       
       <div 
-        className="relative w-full h-full sm:h-auto sm:max-w-2xl bg-white sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:max-h-[90dvh] animate-in fade-in zoom-in duration-300"
+        className="relative w-full h-full sm:h-auto sm:max-w-2xl bg-white sm:rounded-3xl overflow-hidden flex flex-col sm:max-h-[90dvh] animate-in fade-in zoom-in duration-300"
         style={{
           background: "linear-gradient(160deg,#0f1e50 0%,#0e3a6e 30%,#0a6655 65%,#2a7a10 100%)"
         }}
@@ -414,7 +414,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
                   key={etab.id || i}
                   type="button"
                   onClick={() => handleSelectEtablissement(etab)}
-                  className="group w-full text-left rounded-xl p-3 flex flex-col gap-2 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5"
+                  className="group w-full text-left rounded-xl p-3 flex flex-col gap-2 cursor-pointer transition-all hover:-translate-y-0.5"
                   style={{
                     background:    "rgba(255,255,255,0.98)",
                     backdropFilter: "blur(4px)",
