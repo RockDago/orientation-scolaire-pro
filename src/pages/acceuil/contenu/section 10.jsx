@@ -111,11 +111,6 @@ function MetierDetailPanel({ metier, onVoirParcours }) {
           {metier.label}
         </h2>
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
-          {metier.mention && (
-            <span className="text-white text-[10px] sm:text-xs font-bold bg-white/20 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full uppercase tracking-wider">
-              {Array.isArray(metier.mention) ? metier.mention.join(", ") : metier.mention}
-            </span>
-          )}
           {metier.niveau && (
             <span className="text-white text-[10px] sm:text-xs font-bold bg-[#155faa]/60 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full uppercase tracking-wider">
               Niveau : {Array.isArray(metier.niveau) ? metier.niveau.join(", ") : metier.niveau}
@@ -132,6 +127,21 @@ function MetierDetailPanel({ metier, onVoirParcours }) {
           </p>
           <p className="text-white/95 text-xs sm:text-sm leading-relaxed font-medium">{metier.description}</p>
         </div>
+
+        {metier.mention && (
+          <div>
+            <p className="text-white/55 text-[10px] uppercase tracking-widest font-bold mb-1.5 sm:mb-2">
+              Mention
+            </p>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              {(Array.isArray(metier.mention) ? metier.mention : [metier.mention]).map((m, idx) => (
+                <span key={idx} className="text-white text-[10px] sm:text-xs font-bold bg-white/20 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full uppercase tracking-wider">
+                  {m}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {metier.parcours?.length > 0 && (
           <div>
@@ -351,7 +361,21 @@ export default function Section10({
                           {Array.isArray(item.niveau) ? item.niveau[0] : item.niveau}
                         </span>
                       </div>
-                      <p className="text-white/75 text-xs leading-relaxed line-clamp-2">{item.description}</p>
+                      
+                      <p className="text-white/75 text-xs leading-relaxed line-clamp-2 mb-3">{item.description}</p>
+
+                      {item.mention && (
+                        <div className="mb-3">
+                          <p className="text-white/40 text-[9px] uppercase tracking-widest font-bold mb-1">Mention</p>
+                          <div className="flex flex-wrap gap-1">
+                            {(Array.isArray(item.mention) ? item.mention : [item.mention]).map((m, idx) => (
+                              <span key={idx} className="text-[9px] bg-white/10 text-white/90 px-2 py-0.5 rounded-full font-bold uppercase border border-white/10">
+                                {m}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}

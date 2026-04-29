@@ -762,23 +762,31 @@ const ViewModal = ({ item, onClose }) => (
             </div>
           )}
           <div className="flex-1 space-y-4">
-            <div>
-              <h4 className="text-xl font-black text-gray-900 leading-tight">{item.nom}</h4>
-              <div className="flex flex-wrap gap-2 mt-3">
-                <Pill tone="blue">{item.type}</Pill>
-                <Pill tone="purple">{item.province}</Pill>
-                <Pill tone="orange">{item.region}</Pill>
+            <div className="flex justify-between items-start">
+              <div>
+                <h4 className="text-xl font-black text-gray-900 leading-tight">{item.nom}</h4>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <Pill tone="blue">{item.type}</Pill>
+                  <Pill tone="purple">{item.province}</Pill>
+                  <Pill tone="orange">{item.region}</Pill>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ID</p>
+                <p className="text-xs font-bold text-blue-600">#{item.id}</p>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
                 <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Email</p>
-                <p className="text-sm font-semibold text-gray-900 truncate">{item.email}</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{item.email || "—"}</p>
               </div>
               <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
                 <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Téléphone</p>
                 <p className="text-sm font-semibold text-gray-900">
-                  {Array.isArray(item.contact) ? item.contact.map(formatPhone).join(', ') : formatPhone(item.contact)}
+                  {(Array.isArray(item.contact) && item.contact.length > 0)
+                    ? item.contact.map(formatPhone).join(', ')
+                    : item.contact ? formatPhone(item.contact) : "—"}
                 </p>
               </div>
             </div>
@@ -787,12 +795,10 @@ const ViewModal = ({ item, onClose }) => (
 
         <div className="grid grid-cols-1 gap-4">
           <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-            <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider flex items-center gap-2">
-               Description de l'établissement
-            </p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Description de l'établissement</p>
             <div className="text-sm text-gray-700 leading-relaxed bg-gray-50/80 p-4 rounded-lg border border-gray-100 italic relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-blue-400/30" />
-              "{item.description}"
+              "{item.description || "Aucune description disponible"}"
             </div>
           </div>
 
@@ -800,30 +806,54 @@ const ViewModal = ({ item, onClose }) => (
              <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
                 <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Domaines</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {(item.domaine || []).map((d, i) => <Pill key={i} tone="blue">{d}</Pill>)}
+                  {(item.domaine || []).length > 0 
+                    ? (item.domaine || []).map((d, i) => <Pill key={i} tone="blue">{d}</Pill>)
+                    : <span className="text-xs text-gray-400 italic">Aucun domaine spécifié</span>}
                 </div>
              </div>
              <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
                 <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Mentions</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {(item.mention || []).map((m, i) => <Pill key={i} tone="green">{m}</Pill>)}
+                  {(item.mention || []).length > 0
+                    ? (item.mention || []).map((m, i) => <Pill key={i} tone="green">{m}</Pill>)
+                    : <span className="text-xs text-gray-400 italic">Aucune mention spécifiée</span>}
                 </div>
              </div>
              <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
                 <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Niveaux</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {(item.niveau || []).map((n, i) => <Pill key={i} tone="purple">{n}</Pill>)}
+                  {(item.niveau || []).length > 0
+                    ? (item.niveau || []).map((n, i) => <Pill key={i} tone="purple">{n}</Pill>)
+                    : <span className="text-xs text-gray-400 italic">Aucun niveau spécifié</span>}
                 </div>
              </div>
              <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
                 <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Admissions</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {(item.admission || []).map((a, i) => <Pill key={i} tone="orange">{a}</Pill>)}
+                  {(item.admission || []).length > 0
+                    ? (item.admission || []).map((a, i) => <Pill key={i} tone="orange">{a}</Pill>)
+                    : <span className="text-xs text-gray-400 italic">Aucune admission spécifiée</span>}
+                </div>
+             </div>
+             <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Métiers</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(item.metier || []).length > 0
+                    ? (item.metier || []).map((m, i) => <Pill key={i} tone="red">{m}</Pill>)
+                    : <span className="text-xs text-gray-400 italic">Aucun métier spécifié</span>}
+                </div>
+             </div>
+             <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Parcours</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(item.parcours || []).length > 0
+                    ? (item.parcours || []).map((p, i) => <Pill key={i} tone="gray">{p}</Pill>)
+                    : <span className="text-xs text-gray-400 italic">Aucun parcours spécifié</span>}
                 </div>
              </div>
           </div>
 
-          {/* Dates de traçabilité (si disponibles) */}
+          {/* Dates de traçabilité */}
           {(item.created_at || item.updated_at) && (
             <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm grid grid-cols-2 gap-4 border-t-2 border-t-gray-50">
               {item.created_at && (
@@ -1466,7 +1496,7 @@ export default function EtablissementsView() {
                 <tr className="bg-gray-100 border-b-2 border-gray-200">
                   <th className="w-[180px] px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Établissement & Type</th>
                   <th className="w-[120px] px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Localisation</th>
-                  <th className="px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Offre Académique (Domaines | Mentions | Niveaux)</th>
+                  <th className="px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Offre Académique (Domaines | Mentions | Niveaux | Métiers | Parcours)</th>
                   <th className="w-[100px] px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600 text-center">Actions</th>
                 </tr>
               </thead>
@@ -1512,23 +1542,40 @@ export default function EtablissementsView() {
                       </div>
                     </td>
                     <td className="px-3 py-4">
-                      <div className="grid grid-cols-3 gap-3 h-full">
+                      <div className="grid grid-cols-5 gap-2 h-full">
                         <div className="border-r border-gray-100 pr-2">
                           <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Domaines</span>
                           <div className="flex flex-wrap gap-0.5">
-                            {(etab.domaine || []).map((d, i) => <Pill key={i} tone="blue">{d}</Pill>)}
+                            {(etab.domaine || []).slice(0, 3).map((d, i) => <Pill key={i} tone="blue">{d}</Pill>)}
+                            {(etab.domaine || []).length > 3 && <span className="text-[8px] text-gray-400">...</span>}
                           </div>
                         </div>
                         <div className="border-r border-gray-100 pr-2">
                           <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Mentions</span>
                           <div className="flex flex-wrap gap-0.5">
-                            {(etab.mention || []).map((m, i) => <Pill key={i} tone="gray">{m}</Pill>)}
+                            {(etab.mention || []).slice(0, 3).map((m, i) => <Pill key={i} tone="gray">{m}</Pill>)}
+                            {(etab.mention || []).length > 3 && <span className="text-[8px] text-gray-400">...</span>}
+                          </div>
+                        </div>
+                        <div className="border-r border-gray-100 pr-2">
+                          <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Niveaux</span>
+                          <div className="flex flex-wrap gap-0.5">
+                            {(etab.niveau || []).slice(0, 3).map((n, i) => <Pill key={i} tone="orange">{n}</Pill>)}
+                            {(etab.niveau || []).length > 3 && <span className="text-[8px] text-gray-400">...</span>}
+                          </div>
+                        </div>
+                        <div className="border-r border-gray-100 pr-2">
+                          <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Métiers</span>
+                          <div className="flex flex-wrap gap-0.5">
+                            {(etab.metier || []).slice(0, 3).map((m, i) => <Pill key={i} tone="red">{m}</Pill>)}
+                            {(etab.metier || []).length > 3 && <span className="text-[8px] text-gray-400">...</span>}
                           </div>
                         </div>
                         <div>
-                          <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Niveaux</span>
+                          <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Parcours</span>
                           <div className="flex flex-wrap gap-0.5">
-                            {(etab.niveau || []).map((n, i) => <Pill key={i} tone="orange">{n}</Pill>)}
+                            {(etab.parcours || []).slice(0, 3).map((p, i) => <Pill key={i} tone="blue">{p}</Pill>)}
+                            {(etab.parcours || []).length > 3 && <span className="text-[8px] text-gray-400">...</span>}
                           </div>
                         </div>
                       </div>

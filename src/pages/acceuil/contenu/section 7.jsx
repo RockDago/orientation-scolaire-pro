@@ -6,7 +6,6 @@ import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
 import { useNavigate } from "react-router-dom";
 
 const STATUTS = [
-  "Collégien(ne)",
   "Lycéen(ne)",
   "Etudiant(e)",
   "En reconversion",

@@ -28,7 +28,7 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: 📂 Sync files via FTP
+      - name: Sync files via FTP
         uses: kevinpainchaud/simple-ftp-deploy-action@v1.2.1
         with:
           ftp_host: ${{ secrets.FTP_HOST }}

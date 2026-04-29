@@ -203,12 +203,11 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
           .s1-title-main { font-size: clamp(1.4rem, 7vw, 2rem); }
           .s1-description { font-size: 0.8rem; }
           .s1-cards-container { gap: 1.25rem; margin-top: 1rem; }
-          .s1-card { padding: 0.65rem 1.1rem; border-radius: 1.15rem; }
+          .s1-card { padding: 0.9rem 1.35rem; border-radius: 1.15rem; }
           .s1-card-title { font-size: 1.25rem; }
           .s1-card-desc { font-size: 0.75rem; margin-top: 0.5rem; }
           .s1-card-content { padding-right: 3.5rem; }
           .s1-footer { font-size: 0.75rem; }
-
 
           /* ─── PETIT MOBILE 375×667 ─── */
           @media (max-width: 389px) {
@@ -264,7 +263,6 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             .s1-footer { font-size: 0.875rem; }
           }
 
-
           /* ─── LG (≥1024px) ─── */
           @media (min-width: 1024px) {
             .s1-container { padding-left: 3rem; padding-right: 3rem; padding-top: 0.5rem !important; }
@@ -305,7 +303,7 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             .s1-title-main { font-size: clamp(1.6rem, 4vw, 2.2rem); }
             .s1-description { font-size: 0.82rem; }
             .s1-cards-container { gap: 1rem; margin-top: 0.75rem; }
-            .s1-card { padding-top: 0.65rem; padding-bottom: 0.65rem; }
+            .s1-card { padding-top: 0.9rem; padding-bottom: 0.9rem; padding-left: 1.35rem; padding-right: 1.35rem; }
             .s1-card-title { font-size: 1.2rem; }
             .s1-card-desc { font-size: 0.74rem; }
             .s1-footer { padding-top: 1rem; }
@@ -318,7 +316,7 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             .s1-title-main { font-size: clamp(1.35rem, 3vw, 1.9rem); }
             .s1-description { font-size: 0.74rem; margin-top: 0.5rem; }
             .s1-cards-container { gap: 0.8rem; }
-            .s1-card { padding: 0.55rem 0.9rem; }
+            .s1-card { padding: 0.75rem 1.1rem; }
             .s1-card-title { font-size: 1.05rem; }
             .s1-card-desc { font-size: 0.68rem; margin-top: 0.3rem; }
             .s1-footer { font-size: 0.68rem; padding-top: 0.75rem; }

@@ -36,8 +36,8 @@ const dureeOptions = ["3 ans", "5 ans", "8 ans"];
 const emptyForm = {
   label:   "",
   mention: "",
-  duree:   "",
-  niveau:  "",
+  duree:   [],
+  niveau:  [],
   mentionId: null
 };
 
@@ -54,11 +54,24 @@ const TONES = {
   purple: "bg-purple-50 text-purple-700",
 };
 
-const Pill = ({ children, tone = "gray" }) => (
-  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${TONES[tone]}`}>
-    {children}
-  </span>
-);
+const Pill = ({ children, tone = "gray" }) => {
+  // Si le contenu ressemble à du JSON tronqué, on ne l'affiche pas tel quel
+  const content = String(children);
+  if (content.startsWith('[') || content.startsWith('{')) {
+    try {
+      // Si c'est du JSON valide mais passé comme string, on pourrait le parser, 
+      // mais ici on s'attend à ce que le parent gère les tableaux.
+      // Si on arrive ici, c'est probablement du JSON cassé ou mal mappé.
+      if (content.includes('"') || content.includes(',')) return null; 
+    } catch (e) {}
+  }
+
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${TONES[tone]}`}>
+      {children}
+    </span>
+  );
+};
 
 // ── Menu Export ───────────────────────────────────────────────────────────────
 const ExportMenu = ({ onExport, filteredParcours }) => {
@@ -270,6 +283,78 @@ const SearchableSelect = ({ label, value, options, onChange, disabled, error, id
   );
 };
 
+// ── MultiSelect Component ──────────────────────────────────────────────
+const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, placeholder = "Ajouter...", className = "md:col-span-1", withButton = false, hideSearch = false }) => {
+  const [selectedValue, setSelectedValue] = useState("");
+
+  const handleAdd = () => {
+    if (selectedValue) {
+      onAdd(selectedValue);
+      setSelectedValue("");
+    }
+  };
+
+  return (
+    <div className={`${className} space-y-4`}>
+      <h3 className="text-sm font-semibold text-gray-800 border-b pb-2">
+        {label} <span className="text-red-500">*</span>
+      </h3>
+
+      <div className={withButton ? "flex gap-3 items-end" : "flex-1"}>
+        <div className="flex-1">
+          <SearchableSelect
+            id={id}
+            label={placeholder}
+            hideSearch={hideSearch}
+            value={withButton ? selectedValue : ""}
+            options={(options || [])
+              .filter((opt) => !(values || []).includes(opt.label || opt))
+              .map((opt) => ({ value: opt.label || opt, label: opt.label || opt }))}
+            onChange={(e) => {
+              if (withButton) setSelectedValue(e.target.value);
+              else onAdd(e.target.value);
+            }}
+          />
+        </div>
+        {withButton && (
+          <button
+            onClick={handleAdd}
+            className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap"
+            type="button"
+            disabled={!selectedValue}
+          >
+            <FaPlusCircle size={14} />
+            Ajouter
+          </button>
+        )}
+      </div>
+
+      <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-lg border border-gray-200">
+        {(values || []).map((val, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm transition-shadow"
+          >
+            <span className="text-xs text-gray-700 font-medium">{val}</span>
+            <button
+              onClick={() => onRemove(val)}
+              className="text-gray-400 hover:text-red-500 transition-colors"
+              type="button"
+            >
+              <FaTimes size={12} />
+            </button>
+          </div>
+        ))}
+        {(values || []).length === 0 && (
+          <span className="text-gray-400 text-xs w-full text-center py-2 italic">
+            Aucun élément ajouté
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ── ModalShell — fond blanc pur ───────────────────────────────────────────────
 const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
@@ -320,7 +405,7 @@ const BtnPrimary = ({ onClick, children, loading, disabled }) => (
 );
 
 // ── Modale parcours ───────────────────────────────────────────────────────────
-const ParcoursModal = ({ isEditing, formData, onClose, onSubmit, onChange, onNiveauChange, loadingSave, isFormValid, mentionOptions }) => {
+const ParcoursModal = ({ isEditing, formData, onClose, onSubmit, onChange, loadingSave, isFormValid, mentionOptions, handleAddCollection, handleRemoveCollection }) => {
   const handleSubmit = (e) => { e.preventDefault(); onSubmit(); };
 
   return (
@@ -373,37 +458,34 @@ const ParcoursModal = ({ isEditing, formData, onClose, onSubmit, onChange, onNiv
             <div className="w-1 h-3 bg-blue-600 rounded-full" />
             Configuration Académique
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SearchableSelect 
-              id="niveau"
-              label="Niveau"
-              value={formData.niveau}
-              onChange={(e) => onNiveauChange(e.target.value)}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <MultiSelect 
+              label="Niveaux"
+              id="niveau_select"
+              placeholder="Sélectionner un niveau"
+              hideSearch={true}
+              values={formData.niveau}
               options={niveauOptions}
-              hideSearch={true}
+              onAdd={(val) => handleAddCollection('niveau', val)}
+              onRemove={(val) => handleRemoveCollection('niveau', val)}
             />
-
-            <SearchableSelect 
-              id="duree"
-              label="Durée"
-              value={formData.duree}
-              onChange={(e) => onChange('duree')(e)}
-              disabled={formData.niveau !== ""}
-              options={dureeOptions}
-              hideSearch={true}
-            />
-          </div>
-
-          {/* Info synchro */}
-          {formData.niveau && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
-              <span className="text-blue-500 text-xs">ℹ</span>
-              <p className="text-xs text-blue-600">
-                <span className="font-semibold">{formData.niveau}</span> → durée automatiquement définie à{" "}
-                <span className="font-semibold">{formData.duree}</span>
-              </p>
+            {/* Affichage des durées calculées (lecture seule) */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-800 border-b pb-2">
+                Durées correspondantes
+              </h3>
+              <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-lg border border-gray-200">
+                {(formData.duree || []).map((dur, index) => (
+                  <div key={index} className="bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm">
+                    <span className="text-xs text-purple-700 font-medium">{dur}</span>
+                  </div>
+                ))}
+                {(formData.duree || []).length === 0 && (
+                  <span className="text-gray-400 text-xs w-full text-center py-2 italic">Aucune durée (sélectionnez un niveau)</span>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </form>
     </ModalShell>
@@ -434,11 +516,27 @@ const ViewModal = ({ item, onClose }) => (
 
           <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
             <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Niveau</p>
-            <Pill tone="purple">{item.niveau || "—"}</Pill>
+            <div className="flex flex-wrap gap-1">
+              {Array.isArray(item.niveau) ? (
+                item.niveau.length > 0 ? item.niveau.map((niv, i) => (
+                  <Pill key={i} tone="purple">{niv}</Pill>
+                )) : <span className="text-xs text-gray-400">—</span>
+              ) : (
+                item.niveau ? <Pill tone="purple">{item.niveau}</Pill> : <span className="text-xs text-gray-400">—</span>
+              )}
+            </div>
           </div>
           <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
             <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Durée</p>
-            <Pill tone="orange">{item.duree || "—"}</Pill>
+            <div className="flex flex-wrap gap-1">
+              {Array.isArray(item.duree) ? (
+                item.duree.length > 0 ? item.duree.map((dur, i) => (
+                  <Pill key={i} tone="orange">{dur}</Pill>
+                )) : <span className="text-xs text-gray-400">—</span>
+              ) : (
+                item.duree ? <Pill tone="orange">{item.duree}</Pill> : <span className="text-xs text-gray-400">—</span>
+              )}
+            </div>
           </div>
 
           <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm sm:col-span-2">
@@ -534,9 +632,22 @@ const ParcoursCard = ({ parcours, onEdit, onDelete, onView }) => (
     </div>
 
     {/* Badges */}
-    <div className="flex items-center gap-2 border-t border-gray-100 pt-2">
-      <Pill tone="blue">{parcours.niveau || "Niveau non défini"}</Pill>
-      <Pill tone="purple">{parcours.duree || "Durée non définie"}</Pill>
+    <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-2">
+      {Array.isArray(parcours.niveau) ? (
+        parcours.niveau.length > 0 ? parcours.niveau.map((niv, i) => (
+          <Pill key={i} tone="blue">{niv}</Pill>
+        )) : <Pill tone="blue">Niveau non défini</Pill>
+      ) : (
+        parcours.niveau ? <Pill tone="blue">{parcours.niveau}</Pill> : <Pill tone="blue">Niveau non défini</Pill>
+      )}
+      
+      {Array.isArray(parcours.duree) ? (
+        parcours.duree.length > 0 ? parcours.duree.map((dur, i) => (
+          <Pill key={i} tone="purple">{dur}</Pill>
+        )) : <Pill tone="purple">Durée non définie</Pill>
+      ) : (
+        parcours.duree ? <Pill tone="purple">{parcours.duree}</Pill> : <Pill tone="purple">Durée non définie</Pill>
+      )}
     </div>
   </div>
 );
@@ -545,13 +656,13 @@ const ParcoursCard = ({ parcours, onEdit, onDelete, onView }) => (
 const exportToExcel = (data) => {
   try {
     const worksheetData = [
-      ['ID', 'MENTION', 'PARCOURS', 'NIVEAU', 'DURÉE'],
+      ['ID', 'PARCOURS', 'MENTION', 'NIVEAU', 'DURÉE'],
       ...data.map(p => [
         p.id,
-        p.mention,
         p.label,
-        p.niveau || '',
-        p.duree || ''
+        p.mention,
+        Array.isArray(p.niveau) ? p.niveau.join(', ') : (p.niveau || ''),
+        Array.isArray(p.duree) ? p.duree.join(', ') : (p.duree || '')
       ])
     ];
 
@@ -601,15 +712,15 @@ const exportToPDF = (data) => {
 
     const tableData = data.map(p => [
       p.id.toString(),
-      p.mention,
       p.label,
-      p.niveau || '',
-      p.duree || ''
+      p.mention,
+      Array.isArray(p.niveau) ? p.niveau.join(', ') : (p.niveau || ''),
+      Array.isArray(p.duree) ? p.duree.join(', ') : (p.duree || '')
     ]);
 
     autoTable(doc, {
       startY: 38,
-      head: [['ID', 'Mention', 'Parcours', 'Niveau', 'Durée']],
+      head: [['ID', 'Parcours', 'Mention', 'Niveau', 'Durée']],
       body: tableData,
       theme: 'grid',
       headStyles: {
@@ -790,18 +901,57 @@ export default function ParcoursView() {
     setCurrentPage(1);
   };
 
-  // ── Synchronisation niveau → durée automatique ─────────────────────
-  const handleNiveauChange = (niveau) => {
-    setFormData({
-      ...formData,
-      niveau,
-      duree: niveauDureeMap[niveau] ?? "",
+  const handleAddCollection = (field, value) => {
+    setFormData(prev => {
+      const newFieldValues = [...(prev[field] || []), value];
+      let newDuree = prev.duree || [];
+
+      // Si on ajoute un niveau, on ajoute automatiquement la durée correspondante
+      if (field === 'niveau') {
+        const correspondingDuree = niveauDureeMap[value];
+        if (correspondingDuree && !newDuree.includes(correspondingDuree)) {
+          newDuree = [...newDuree, correspondingDuree];
+        }
+      }
+
+      return {
+        ...prev,
+        [field]: newFieldValues,
+        duree: newDuree
+      };
+    });
+  };
+
+  const handleRemoveCollection = (field, value) => {
+    setFormData(prev => {
+      const newFieldValues = (prev[field] || []).filter(item => item !== value);
+      let newDuree = prev.duree || [];
+
+      // Si on retire un niveau, on retire aussi la durée correspondante 
+      // (seulement si aucun autre niveau sélectionné n'utilise cette durée)
+      if (field === 'niveau') {
+        const correspondingDuree = niveauDureeMap[value];
+        const stillNeedsDuree = newFieldValues.some(niv => niveauDureeMap[niv] === correspondingDuree);
+        
+        if (correspondingDuree && !stillNeedsDuree) {
+          newDuree = newDuree.filter(d => d !== correspondingDuree);
+        }
+      }
+
+      return {
+        ...prev,
+        [field]: newFieldValues,
+        duree: newDuree
+      };
     });
   };
 
   // ── Validation ─────────────────────────────────────────────────────
   const isFormValid = () =>
-    formData.label.trim() !== "" && formData.mention.trim() !== "";
+    formData.label.trim() !== "" && 
+    formData.mention.trim() !== "" &&
+    Array.isArray(formData.niveau) && formData.niveau.length > 0 &&
+    Array.isArray(formData.duree) && formData.duree.length > 0;
 
   // ── Gestion formulaire ─────────────────────────────────────────────
   const handleInputChange = (field) => (e) => {
@@ -822,8 +972,8 @@ export default function ParcoursView() {
         label: p.label,
         mention: p.mention,
         mentionId: mention?.id || null,
-        duree: p.duree,
-        niveau: p.niveau,
+        duree: Array.isArray(p.duree) ? p.duree : [],
+        niveau: Array.isArray(p.niveau) ? p.niveau : [],
       });
     } else {
       setEditingId(null);
@@ -920,8 +1070,8 @@ export default function ParcoursView() {
 
   // Colonnes du tableau
   const COLS = [
-    { key: 'mention', label: 'Mention' },
     { key: 'label', label: 'Parcours' },
+    { key: 'mention', label: 'Mention' },
     { key: 'niveau', label: 'Niveau' },
     { key: 'duree', label: 'Durée' },
   ];
@@ -946,7 +1096,8 @@ export default function ParcoursView() {
           onClose={() => { setShowModal(false); resetForm(); }}
           onSubmit={handleSave}
           onChange={handleInputChange}
-          onNiveauChange={handleNiveauChange}
+          handleAddCollection={handleAddCollection}
+          handleRemoveCollection={handleRemoveCollection}
           loadingSave={loadingSave}
           isFormValid={isFormValid}
           mentionOptions={mentionOptions}
@@ -1118,13 +1269,29 @@ export default function ParcoursView() {
                     className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer"
                     onClick={(e) => handleRowClick(parcours, e)}
                   >
-                    <td className="px-3 py-3 text-sm text-gray-700 text-center truncate max-w-[200px]" title={parcours.mention}>{parcours.mention}</td>
                     <td className="px-3 py-3 text-sm text-gray-900 text-center truncate max-w-[250px]" title={parcours.label}>{parcours.label}</td>
+                    <td className="px-3 py-3 text-sm text-gray-700 text-center truncate max-w-[200px]" title={parcours.mention}>{parcours.mention}</td>
                     <td className="px-3 py-3 text-center">
-                      <Pill tone="blue">{parcours.niveau || "???"}</Pill>
+                      <div className="flex flex-wrap justify-center gap-1">
+                        {Array.isArray(parcours.niveau) ? (
+                          parcours.niveau.length > 0 ? parcours.niveau.map((niv, i) => (
+                            <Pill key={i} tone="blue">{niv}</Pill>
+                          )) : <span className="text-xs text-gray-400">—</span>
+                        ) : (
+                          parcours.niveau ? <Pill tone="blue">{parcours.niveau}</Pill> : <span className="text-xs text-gray-400">—</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-3 py-3 text-center">
-                      <Pill tone="purple">{parcours.duree || "???"}</Pill>
+                      <div className="flex flex-wrap justify-center gap-1">
+                        {Array.isArray(parcours.duree) ? (
+                          parcours.duree.length > 0 ? parcours.duree.map((dur, i) => (
+                            <Pill key={i} tone="purple">{dur}</Pill>
+                          )) : <span className="text-xs text-gray-400">—</span>
+                        ) : (
+                          parcours.duree ? <Pill tone="purple">{parcours.duree}</Pill> : <span className="text-xs text-gray-400">—</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-3 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
