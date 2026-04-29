@@ -1,4 +1,5 @@
 // src/pages/dashboard/view/seriesView.jsx
+// src/pages/dashboard/view/seriesView.jsx
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
   FaPlus, FaEdit, FaTrash, FaSearch,
@@ -7,7 +8,7 @@ import {
 import { 
   Download, FileSpreadsheet, FileText,
   ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  X
+  X, Eye
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -223,7 +224,7 @@ const SerieModal = ({ isEditing, formData, onClose, onSubmit, onChange, loadingS
           label="Code *"
           value={formData.code}
           onChange={(e) => onChange('code')(e)}
-          maxLength="2"
+          maxLength="8"
         />
         
         <FloatInput 
@@ -282,16 +283,79 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
   </ModalShell>
 );
 
+// ── Modale de visualisation ───────────────────────────────────────────────────
+const ViewModal = ({ item, onClose }) => (
+  <ModalShell
+    title="Détails de la série"
+    icon={Eye}
+    onClose={onClose}
+    footer={<button onClick={onClose} className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition">Fermer</button>}
+  >
+    <div className="space-y-6">
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+
+        {/* Grille d'informations détaillées */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">ID</p>
+            <p className="text-sm font-bold text-blue-600">#{item.id}</p>
+          </div>
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Code</p>
+            <Pill tone="blue">{item.code}</Pill>
+          </div>
+          
+          <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm sm:col-span-2">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider flex items-center gap-2">
+               Description complète
+            </p>
+            <div className="text-sm text-gray-700 leading-relaxed bg-gray-50/80 p-4 rounded-lg border border-gray-100 italic relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-blue-400/30" />
+              "{item.description}"
+            </div>
+          </div>
+
+          {/* Dates de traçabilité (si disponibles) */}
+          {(item.created_at || item.updated_at) && (
+            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm sm:col-span-2 grid grid-cols-2 gap-4 border-t-2 border-t-gray-50">
+              {item.created_at && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Créé le</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    {new Date(item.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+              {item.updated_at && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Dernière modification</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    {new Date(item.updated_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </ModalShell>
+);
+
 // ── Carte série — vue mobile ───────────────────────────────────────────────
-const SerieCard = ({ serie, onEdit, onDelete }) => (
+const SerieCard = ({ serie, onEdit, onDelete, onView }) => (
   <div
     className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-    onClick={() => onEdit(serie)}
+    onClick={() => onView(serie)}
   >
     {/* Ligne 1 : ID + actions */}
     <div className="flex items-center justify-between">
       <span className="text-xs font-bold text-gray-400">ID {serie.id}</span>
       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => onView(serie)}
+          className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Voir les détails">
+          <Eye size={14} className="text-blue-600" />
+        </button>
         <button onClick={() => onEdit(serie)}
           className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Modifier">
           <FaEdit size={14} className="text-blue-600" />
@@ -472,6 +536,7 @@ export default function SeriesView() {
   const [showModal, setShowModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const [viewItem, setViewItem] = useState(null);
   
   // Pagination et tri
   const [currentPage, setCurrentPage] = useState(1);
@@ -595,8 +660,12 @@ export default function SeriesView() {
   };
 
   // ── Ouvrir modal ───────────────────────────────────────────────────
-  const handleOpenModal = (s = null) => {
+  const handleOpenModal = (s = null, isView = false) => {
     if (s) {
+      if (isView) {
+        setViewItem(s);
+        return;
+      }
       setEditingId(s.id);
       setFormData({ code: s.code, label: s.label, description: s.description });
     } else {
@@ -608,7 +677,7 @@ export default function SeriesView() {
 
   const handleRowClick = (serie, e) => { 
     if (e.target.closest('button')) return; 
-    handleOpenModal(serie); 
+    handleOpenModal(serie, true); 
   };
 
   // ── Sauvegarder (créer ou modifier) ───────────────────────────────
@@ -686,7 +755,6 @@ export default function SeriesView() {
 
   // Colonnes du tableau
   const COLS = [
-    { key: 'id', label: 'ID' },
     { key: 'code', label: 'Code' },
     { key: 'label', label: 'Libellé' },
     { key: 'description', label: 'Description' },
@@ -698,6 +766,13 @@ export default function SeriesView() {
       <ToastContainer />
 
       {/* Modales */}
+      {viewItem && (
+        <ViewModal 
+          item={viewItem} 
+          onClose={() => setViewItem(null)} 
+        />
+      )}
+
       {showModal && (
         <SerieModal 
           isEditing={!!editingId}
@@ -823,6 +898,7 @@ export default function SeriesView() {
                 serie={serie} 
                 onEdit={handleOpenModal} 
                 onDelete={handleDeleteClick} 
+                onView={(s) => handleOpenModal(s, true)}
               />
             ))}
           </div>
@@ -850,7 +926,7 @@ export default function SeriesView() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className="py-16 text-center text-gray-500">
+                    <td colSpan={4} className="py-16 text-center text-gray-500">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                         <span className="text-sm">Chargement...</span>
@@ -859,13 +935,7 @@ export default function SeriesView() {
                   </tr>
                 ) : paginatedSeries.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-gray-500">
-                      <div className="flex flex-col items-center gap-2 opacity-50">
-                        <FaSearch size={24}/>
-                        <span className="text-sm">
-                          {searchTerm ? "Aucun résultat trouvé" : "Aucune série disponible"}
-                        </span>
-                      </div>
+                    <td colSpan={4} className="py-12 text-center text-gray-500">
                     </td>
                   </tr>
                 ) : paginatedSeries.map((serie) => (
@@ -874,7 +944,6 @@ export default function SeriesView() {
                     className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer"
                     onClick={(e) => handleRowClick(serie, e)}
                   >
-                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center">{serie.id}</td>
                     <td className="px-3 py-3 text-center">
                       <Pill tone="blue">{serie.code}</Pill>
                     </td>
@@ -882,6 +951,13 @@ export default function SeriesView() {
                     <td className="px-3 py-3 text-sm text-gray-700 text-center max-w-xs truncate">{serie.description}</td>
                     <td className="px-3 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleOpenModal(serie, true); }}
+                          className="p-1.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" 
+                          title="Voir les détails"
+                        >
+                          <Eye size={15} className="text-blue-600" />
+                        </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleOpenModal(serie); }}
                           className="p-1.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" 

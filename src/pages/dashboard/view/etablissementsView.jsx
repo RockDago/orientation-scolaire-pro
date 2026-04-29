@@ -8,7 +8,7 @@ import {
 import { 
   Download, FileSpreadsheet, FileText,
   ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  X
+  X, Eye
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -61,8 +61,6 @@ const provinceOptions  = Object.keys(provinceRegions);
 const typeOptions      = ["Public", "Privé"];
 const niveauOptions    = ["Licence", "Master", "Doctorat"];
 const admissionOptions = ["Concours", "Dossier", "Entretien", "Test", "Concours + Dossier"];
-
-// (niveauDureeMap supprimé)
 
 const emptyForm = {
   nom: "",
@@ -733,7 +731,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
       <button 
         onClick={onConfirm} 
         disabled={loading}
-        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${confirmColor === 'red' ? 'bg-red-600 hover:bg-red-700' : 'bg-gradient-to-r from-blue-600 to-indigo-600'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${CONFIRM_COLORS[confirmColor]} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? (
           <div className="flex items-center gap-2">
@@ -747,16 +745,123 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
   </ModalShell>
 );
 
+// ── Modale de visualisation ───────────────────────────────────────────────────
+const ViewModal = ({ item, onClose }) => (
+  <ModalShell
+    title="Détails de l'établissement"
+    icon={Eye}
+    onClose={onClose}
+    footer={<button onClick={onClose} className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition">Fermer</button>}
+  >
+    <div className="space-y-6">
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+        <div className="flex flex-col md:flex-row gap-6 mb-6">
+          {item.logo && (
+            <div className="w-full md:w-48 h-48 rounded-2xl bg-white border border-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
+              <img src={item.logo} alt={item.nom} className="w-full h-full object-contain p-4" />
+            </div>
+          )}
+          <div className="flex-1 space-y-4">
+            <div>
+              <h4 className="text-xl font-black text-gray-900 leading-tight">{item.nom}</h4>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <Pill tone="blue">{item.type}</Pill>
+                <Pill tone="purple">{item.province}</Pill>
+                <Pill tone="orange">{item.region}</Pill>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Email</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{item.email}</p>
+              </div>
+              <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Téléphone</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {Array.isArray(item.contact) ? item.contact.map(formatPhone).join(', ') : formatPhone(item.contact)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider flex items-center gap-2">
+               Description de l'établissement
+            </p>
+            <div className="text-sm text-gray-700 leading-relaxed bg-gray-50/80 p-4 rounded-lg border border-gray-100 italic relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-blue-400/30" />
+              "{item.description}"
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Domaines</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(item.domaine || []).map((d, i) => <Pill key={i} tone="blue">{d}</Pill>)}
+                </div>
+             </div>
+             <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Mentions</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(item.mention || []).map((m, i) => <Pill key={i} tone="green">{m}</Pill>)}
+                </div>
+             </div>
+             <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Niveaux</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(item.niveau || []).map((n, i) => <Pill key={i} tone="purple">{n}</Pill>)}
+                </div>
+             </div>
+             <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Admissions</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(item.admission || []).map((a, i) => <Pill key={i} tone="orange">{a}</Pill>)}
+                </div>
+             </div>
+          </div>
+
+          {/* Dates de traçabilité (si disponibles) */}
+          {(item.created_at || item.updated_at) && (
+            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm grid grid-cols-2 gap-4 border-t-2 border-t-gray-50">
+              {item.created_at && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Créé le</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    {new Date(item.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+              {item.updated_at && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Dernière modification</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    {new Date(item.updated_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </ModalShell>
+);
+
 // ── Carte établissement — vue mobile ───────────────────────────────────────
-const EtablissementCard = ({ etablissement, onEdit, onDelete }) => (
+const EtablissementCard = ({ etablissement, onEdit, onDelete, onView }) => (
   <div
     className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-    onClick={() => onEdit(etablissement)}
+    onClick={() => onView(etablissement)}
   >
-    {/* Ligne 1 : ID + actions */}
     <div className="flex items-center justify-between">
-      <span className="text-xs font-bold text-gray-400">ID {etablissement.id}</span>
       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => onView(etablissement)}
+          className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Voir les détails">
+          <Eye size={14} className="text-blue-600" />
+        </button>
         <button onClick={() => onEdit(etablissement)}
           className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Modifier">
           <FaEdit size={14} className="text-blue-600" />
@@ -768,31 +873,21 @@ const EtablissementCard = ({ etablissement, onEdit, onDelete }) => (
       </div>
     </div>
 
-    {/* Infos principales */}
     <div>
       <p className="text-sm font-semibold text-gray-900">{etablissement.nom}</p>
       <p className="text-xs text-gray-500 mt-0.5">{etablissement.province} / {etablissement.region}</p>
     </div>
 
-    {/* Badges */}
     <div className="flex flex-wrap gap-1 border-t border-gray-100 pt-2">
       <Pill tone={etablissement.type === "Public" ? "green" : "purple"}>
         {etablissement.type}
       </Pill>
-      {Array.isArray(etablissement.domaine) && etablissement.domaine.map((d, i) => (
+      {Array.isArray(etablissement.domaine) && etablissement.domaine.slice(0, 3).map((d, i) => (
         <Pill key={i} tone="blue">{d}</Pill>
       ))}
-      {etablissement.niveau && <Pill tone="orange">{etablissement.niveau}</Pill>}
-    </div>
-
-    {/* Contact */}
-    <div className="text-xs text-gray-600 space-y-0.5">
-      <span className="font-medium">Contacts:</span>
-      <div className="flex flex-wrap gap-1 mt-1">
-        {Array.isArray(etablissement.contact) && etablissement.contact.map((c, i) => (
-          <span key={i} className="bg-gray-100 px-2 py-0.5 rounded text-[10px]">{formatPhone(c)}</span>
-        ))}
-      </div>
+      {Array.isArray(etablissement.domaine) && etablissement.domaine.length > 3 && (
+        <span className="text-[10px] text-gray-400">+{etablissement.domaine.length - 3}</span>
+      )}
     </div>
   </div>
 );
@@ -811,7 +906,7 @@ const exportToExcel = (data) => {
         Array.isArray(e.mention)   ? e.mention.join(', ')   : e.mention,
         Array.isArray(e.parcours)  ? e.parcours.join(', ')  : e.parcours,
         Array.isArray(e.metier)    ? e.metier.join(', ')    : e.metier,
-        e.niveau,
+        Array.isArray(e.niveau)    ? e.niveau.join(', ')    : e.niveau,
         Array.isArray(e.admission) ? e.admission.join(', ') : e.admission,
         Array.isArray(e.contact)   ? e.contact.map(formatPhone).join(', ') : formatPhone(e.contact)
       ])
@@ -876,7 +971,7 @@ const exportToPDF = (data) => {
       Array.isArray(e.mention) ? e.mention.join(', ') : e.mention,
       Array.isArray(e.parcours) ? e.parcours.join(', ') : e.parcours,
       Array.isArray(e.metier) ? e.metier.join(', ') : e.metier,
-      e.niveau,
+      Array.isArray(e.niveau) ? e.niveau.join(', ') : e.niveau,
       Array.isArray(e.admission) ? e.admission.join(', ') : e.admission,
       Array.isArray(e.contact) ? e.contact.map(formatPhone).join(', ') : formatPhone(e.contact)
     ]);
@@ -965,6 +1060,7 @@ export default function EtablissementsView() {
   const [showModal, setShowModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const [viewItem, setViewItem] = useState(null);
   
   // Pagination et tri
   const [currentPage, setCurrentPage] = useState(1);
@@ -1028,7 +1124,6 @@ export default function EtablissementsView() {
       }
     }, 400);
     return () => clearTimeout(delay);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
   // ── Tri et pagination ───────────────────────────────────────────────
@@ -1062,16 +1157,6 @@ export default function EtablissementsView() {
     pages.push(totalPages);
     return pages;
   }, [totalPages, currentPage]);
-
-  const requestSort = (key) => setSortConfig(prev => ({ 
-    key, 
-    direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' 
-  }));
-
-  const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return <div className="inline-flex flex-col ml-1 opacity-30"><ChevronUp size={10} className="text-gray-500"/><ChevronDown size={10} className="-mt-1 text-gray-500"/></div>;
-    return sortConfig.direction === 'asc' ? <ChevronUp size={13} className="ml-1 text-blue-600"/> : <ChevronDown size={13} className="ml-1 text-blue-600"/>;
-  };
 
   const resetFilters = () => {
     setSearchTerm('');
@@ -1118,8 +1203,12 @@ export default function EtablissementsView() {
   };
 
   // ── Ouvrir modal ───────────────────────────────────────────────────
-  const handleOpenModal = (etab = null) => {
+  const handleOpenModal = (etab = null, isView = false) => {
     if (etab) {
+      if (isView) {
+        setViewItem(etab);
+        return;
+      }
       setEditingId(etab.id);
       setFormData({
         nom: etab.nom || "",
@@ -1145,7 +1234,7 @@ export default function EtablissementsView() {
 
   const handleRowClick = (etab, e) => { 
     if (e.target.closest('button')) return; 
-    handleOpenModal(etab); 
+    handleOpenModal(etab, true); 
   };
 
   // ── Sauvegarder ────────────────────────────────────────────────────
@@ -1222,22 +1311,17 @@ export default function EtablissementsView() {
     }
   };
 
-  // Colonnes du tableau (simplifiées pour l'affichage)
-  const COLS = [
-    { key: 'id', label: 'ID' },
-    { key: 'nom', label: 'Établissement & Type' },
-    { key: 'province', label: 'Localisation' },
-    { key: 'domaine', label: 'Domaines' },
-    { key: 'mention', label: 'Mentions' },
-    { key: 'parcours', label: 'Parcours' },
-    { key: 'niveau', label: 'Niveaux' },
-    { key: 'contact', label: 'Contacts' },
-  ];
-
   // ── Rendu ──────────────────────────────────────────────────────────
   return (
     <div className="min-h-[100dvh] bg-white p-0">
       <ToastContainer />
+
+      {viewItem && (
+        <ViewModal 
+          item={viewItem} 
+          onClose={() => setViewItem(null)} 
+        />
+      )}
 
       {/* Modales */}
       {showModal && (
@@ -1340,7 +1424,7 @@ export default function EtablissementsView() {
                   </button>
                 )}
               </div>
-              <ExportMenu onExport={handleExport} filteredEtablissements={paginatedEtablissements} />
+              <ExportMenu onExport={handleExport} filteredEtablissements={sortedEtablissements} />
             </div>
             {loading && (
               <div className="mt-2">
@@ -1371,6 +1455,7 @@ export default function EtablissementsView() {
                 etablissement={etab} 
                 onEdit={handleOpenModal} 
                 onDelete={handleDeleteClick}
+                onView={setViewItem}
               />
             ))}
           </div>
@@ -1379,17 +1464,16 @@ export default function EtablissementsView() {
             <table className="w-full border-collapse table-fixed">
               <thead>
                 <tr className="bg-gray-100 border-b-2 border-gray-200">
-                  <th className="w-[40px] px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">ID</th>
                   <th className="w-[180px] px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Établissement & Type</th>
                   <th className="w-[120px] px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Localisation</th>
-                  <th className="px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Offre Académique (Domaines | Mentions | Niveaux | Parcours)</th>
+                  <th className="px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600">Offre Académique (Domaines | Mentions | Niveaux)</th>
                   <th className="w-[100px] px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-[10px]">
                 {loading ? (
                    <tr>
-                    <td colSpan={5} className="py-16 text-center text-gray-500">
+                    <td colSpan={4} className="py-16 text-center text-gray-500">
                        <div className="flex flex-col items-center gap-3">
                          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                          <span className="text-sm">Chargement...</span>
@@ -1398,7 +1482,7 @@ export default function EtablissementsView() {
                   </tr>
                 ) : paginatedEtablissements.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-gray-500">
+                    <td colSpan={4} className="py-12 text-center text-gray-500">
                        <div className="flex flex-col items-center gap-2 opacity-50">
                          <FaSearch size={24}/>
                          <span className="text-sm">
@@ -1413,7 +1497,6 @@ export default function EtablissementsView() {
                     className="hover:bg-blue-50/30 transition-colors cursor-pointer border-b border-gray-50"
                     onClick={(e) => handleRowClick(etab, e)}
                   >
-                    <td className="px-1 py-4 text-center text-gray-400 font-medium">{etab.id}</td>
                     <td className="px-2 py-4 text-center">
                       <div className="flex flex-col items-center gap-1 text-center">
                         <span className="font-bold leading-tight line-clamp-2" title={etab.nom}>{etab.nom}</span>
@@ -1429,7 +1512,7 @@ export default function EtablissementsView() {
                       </div>
                     </td>
                     <td className="px-3 py-4">
-                      <div className="grid grid-cols-4 gap-3 h-full">
+                      <div className="grid grid-cols-3 gap-3 h-full">
                         <div className="border-r border-gray-100 pr-2">
                           <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Domaines</span>
                           <div className="flex flex-wrap gap-0.5">
@@ -1442,22 +1525,23 @@ export default function EtablissementsView() {
                             {(etab.mention || []).map((m, i) => <Pill key={i} tone="gray">{m}</Pill>)}
                           </div>
                         </div>
-                        <div className="border-r border-gray-100 pr-2">
+                        <div>
                           <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Niveaux</span>
                           <div className="flex flex-wrap gap-0.5">
                             {(etab.niveau || []).map((n, i) => <Pill key={i} tone="orange">{n}</Pill>)}
-                          </div>
-                        </div>
-                        <div className="pl-1">
-                          <span className="text-[8px] font-bold text-gray-400 uppercase block mb-1 italic">Parcours</span>
-                          <div className="flex flex-wrap gap-0.5">
-                            {(etab.parcours || []).map((p, i) => <Pill key={i} tone="blue">{p}</Pill>)}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-2 py-4 text-center">
                       <div className="flex items-center justify-center gap-1">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setViewItem(etab); }}
+                          className="p-1 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" 
+                          title="Voir les détails"
+                        >
+                          <Eye size={14} className="text-blue-600" />
+                        </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleOpenModal(etab); }}
                           className="p-1 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" 

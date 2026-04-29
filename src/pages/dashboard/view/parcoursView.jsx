@@ -8,7 +8,7 @@ import {
 import { 
   Download, FileSpreadsheet, FileText,
   ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  X
+  X, Eye
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -410,6 +410,69 @@ const ParcoursModal = ({ isEditing, formData, onClose, onSubmit, onChange, onNiv
   );
 };
 
+// ── Modale de visualisation ───────────────────────────────────────────────────
+const ViewModal = ({ item, onClose }) => (
+  <ModalShell
+    title="Détails du parcours"
+    icon={Eye}
+    onClose={onClose}
+    footer={<button onClick={onClose} className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition">Fermer</button>}
+  >
+    <div className="space-y-6">
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+
+        {/* Grille d'informations détaillées */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">ID</p>
+            <p className="text-sm font-bold text-blue-600">#{item.id}</p>
+          </div>
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Libellé</p>
+            <Pill tone="blue">{item.label}</Pill>
+          </div>
+
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Niveau</p>
+            <Pill tone="purple">{item.niveau || "—"}</Pill>
+          </div>
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Durée</p>
+            <Pill tone="orange">{item.duree || "—"}</Pill>
+          </div>
+
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm sm:col-span-2">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Mention</p>
+            <p className="text-sm font-semibold text-gray-900">{item.mention}</p>
+          </div>
+          
+          {/* Dates de traçabilité (si disponibles) */}
+          {(item.created_at || item.updated_at) && (
+            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm sm:col-span-2 grid grid-cols-2 gap-4 border-t-2 border-t-gray-50">
+              {item.created_at && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Créé le</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    {new Date(item.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+              {item.updated_at && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Dernière modification</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    {new Date(item.updated_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </ModalShell>
+);
+
 // ── Modale de confirmation ────────────────────────────────────────────────────
 const CONFIRM_COLORS = {
   blue:"bg-blue-600 hover:bg-blue-700", red:"bg-red-600 hover:bg-red-700",
@@ -426,7 +489,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
       <button 
         onClick={onConfirm} 
         disabled={loading}
-        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${confirmColor === 'red' ? 'bg-red-600 hover:bg-red-700' : 'bg-gradient-to-r from-blue-600 to-indigo-600'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${CONFIRM_COLORS[confirmColor]} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? (
           <div className="flex items-center gap-2">
@@ -441,15 +504,18 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
 );
 
 // ── Carte parcours — vue mobile ───────────────────────────────────────────────
-const ParcoursCard = ({ parcours, onEdit, onDelete }) => (
+const ParcoursCard = ({ parcours, onEdit, onDelete, onView }) => (
   <div
     className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-    onClick={() => onEdit(parcours)}
+    onClick={() => onView(parcours)}
   >
     {/* Ligne 1 : ID + actions */}
     <div className="flex items-center justify-between">
-      <span className="text-xs font-bold text-gray-400">ID {parcours.id}</span>
       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => onView(parcours)}
+          className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Voir">
+          <Eye size={14} className="text-blue-600" />
+        </button>
         <button onClick={() => onEdit(parcours)}
           className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Modifier">
           <FaEdit size={14} className="text-blue-600" />
@@ -622,6 +688,7 @@ export default function ParcoursView() {
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
   
   const [formData, setFormData] = useState(emptyForm);
+  const [viewItem, setViewItem] = useState(null);
 
   // ── Toast ──────────────────────────────────────────────────────────
   const showToast = (message, type = "success") => {
@@ -743,8 +810,12 @@ export default function ParcoursView() {
   };
 
   // ── Ouvrir modal ───────────────────────────────────────────────────
-  const handleOpenModal = (p = null) => {
+  const handleOpenModal = (p = null, isView = false) => {
     if (p) {
+      if (isView) {
+        setViewItem(p);
+        return;
+      }
       setEditingId(p.id);
       const mention = mentionOptions.find(m => m.label === p.mention);
       setFormData({
@@ -763,7 +834,7 @@ export default function ParcoursView() {
 
   const handleRowClick = (parcours, e) => { 
     if (e.target.closest('button')) return; 
-    handleOpenModal(parcours); 
+    handleOpenModal(parcours, true); 
   };
 
   // ── Sauvegarder ────────────────────────────────────────────────────
@@ -849,7 +920,6 @@ export default function ParcoursView() {
 
   // Colonnes du tableau
   const COLS = [
-    { key: 'id', label: 'ID' },
     { key: 'mention', label: 'Mention' },
     { key: 'label', label: 'Parcours' },
     { key: 'niveau', label: 'Niveau' },
@@ -862,6 +932,13 @@ export default function ParcoursView() {
       <ToastContainer />
 
       {/* Modales */}
+      {viewItem && (
+        <ViewModal 
+          item={viewItem} 
+          onClose={() => setViewItem(null)} 
+        />
+      )}
+
       {showModal && (
         <ParcoursModal 
           isEditing={!!editingId}
@@ -989,6 +1066,7 @@ export default function ParcoursView() {
                 parcours={parcours} 
                 onEdit={handleOpenModal} 
                 onDelete={handleDeleteClick}
+                onView={(p) => handleOpenModal(p, true)}
               />
             ))}
           </div>
@@ -999,7 +1077,7 @@ export default function ParcoursView() {
               <thead>
                 <tr className="bg-gray-100 border-b-2 border-gray-200">
                   {COLS.map(({ key, label }) => (
-                    <th 
+                    <th
                       key={key}
                       className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:bg-gray-200 whitespace-nowrap"
                       onClick={() => requestSort(key)}
@@ -1016,7 +1094,7 @@ export default function ParcoursView() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="py-16 text-center text-gray-500">
+                    <td colSpan={5} className="py-16 text-center text-gray-500">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                         <span className="text-sm">Chargement...</span>
@@ -1025,42 +1103,48 @@ export default function ParcoursView() {
                   </tr>
                 ) : paginatedParcours.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-gray-500">
+                    <td colSpan={5} className="py-12 text-center text-gray-500">
                       <div className="flex flex-col items-center gap-2 opacity-50">
                         <FaSearch size={24}/>
                         <span className="text-sm">
-                          {searchTerm ? "Aucun résultat trouvé" : "Aucun parcours disponible"}
+                          {searchTerm ? "Aucun r??sultat trouv??" : "Aucun parcours disponible"}
                         </span>
                       </div>
                     </td>
                   </tr>
                 ) : paginatedParcours.map((parcours) => (
-                  <tr 
+                  <tr
                     key={parcours.id}
                     className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer"
                     onClick={(e) => handleRowClick(parcours, e)}
                   >
-                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center">{parcours.id}</td>
                     <td className="px-3 py-3 text-sm text-gray-700 text-center truncate max-w-[200px]" title={parcours.mention}>{parcours.mention}</td>
                     <td className="px-3 py-3 text-sm text-gray-900 text-center truncate max-w-[250px]" title={parcours.label}>{parcours.label}</td>
                     <td className="px-3 py-3 text-center">
-                      <Pill tone="blue">{parcours.niveau || "—"}</Pill>
+                      <Pill tone="blue">{parcours.niveau || "???"}</Pill>
                     </td>
                     <td className="px-3 py-3 text-center">
-                      <Pill tone="purple">{parcours.duree || "—"}</Pill>
+                      <Pill tone="purple">{parcours.duree || "???"}</Pill>
                     </td>
                     <td className="px-3 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <button 
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleOpenModal(parcours, true); }}
+                          className="p-1.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition"
+                          title="Voir les détails"
+                        >
+                          <Eye size={15} className="text-blue-600" />
+                        </button>
+                        <button
                           onClick={(e) => { e.stopPropagation(); handleOpenModal(parcours); }}
-                          className="p-1.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" 
+                          className="p-1.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition"
                           title="Modifier"
                         >
                           <FaEdit size={15} className="text-blue-600" />
                         </button>
-                        <button 
+                        <button
                           onClick={(e) => { e.stopPropagation(); handleDeleteClick(parcours); }}
-                          className="p-1.5 rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition" 
+                          className="p-1.5 rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition"
                           title="Supprimer"
                         >
                           <FaTrash size={15} className="text-red-600" />

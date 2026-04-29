@@ -7,7 +7,7 @@ import {
 import { 
   Download, FileSpreadsheet, FileText,
   ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  X, Mail, Phone, MapPin
+  X, Mail, Phone, MapPin, Eye
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -34,6 +34,22 @@ const EMPTY_FORM_DATA = {
   mot_de_passe: "",
   confirmation_mot_de_passe: ""
 };
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+const TONES = {
+  gray:   "bg-gray-100 text-gray-600",
+  blue:   "bg-blue-50  text-blue-700",
+  green:  "bg-green-50  text-green-700",
+  red:    "bg-red-50    text-red-700",
+  orange: "bg-orange-50 text-orange-700",
+  purple: "bg-purple-50 text-purple-700",
+};
+
+const Pill = ({ children, tone = "gray" }) => (
+  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${TONES[tone]}`}>
+    {children}
+  </span>
+);
 
 // ── Menu Export ───────────────────────────────────────────────────────────────
 const ExportMenu = ({ onExport, filteredData }) => {
@@ -376,6 +392,11 @@ const ResetPasswordModal = ({ user, onClose, onSubmit, loading }) => {
 };
 
 // ── Modale de confirmation ────────────────────────────────────────────────────
+const CONFIRM_COLORS = {
+  blue:"bg-blue-600 hover:bg-blue-700", red:"bg-red-600 hover:bg-red-700",
+  orange:"bg-orange-600 hover:bg-orange-700", green:"bg-green-600 hover:bg-green-700"
+};
+
 const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmText = "Confirmer", confirmColor = "blue", loading }) => (
   <ModalShell 
     title={title} 
@@ -386,7 +407,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
       <button 
         onClick={onConfirm} 
         disabled={loading}
-        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${confirmColor === 'red' ? 'bg-red-600 hover:bg-red-700' : 'bg-gradient-to-r from-blue-600 to-indigo-600'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${CONFIRM_COLORS[confirmColor]} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? (
           <div className="flex items-center gap-2">
@@ -400,29 +421,120 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
   </ModalShell>
 );
 
+// ── Modale de visualisation ───────────────────────────────────────────────────
+const ViewModal = ({ item, onClose }) => (
+  <ModalShell
+    title="Détails de l'utilisateur"
+    icon={Eye}
+    onClose={onClose}
+    footer={<button onClick={onClose} className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition">Fermer</button>}
+  >
+    <div className="space-y-6">
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+        <div className="flex items-center gap-6 mb-6">
+          <div className="w-20 h-20 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-blue-600 font-black text-2xl shadow-sm">
+            {item.prenom?.[0]}{item.nom?.[0]}
+          </div>
+          <div>
+            <h4 className="text-xl font-black text-gray-900">{item.prenom} {item.nom}</h4>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-sm text-gray-500 font-medium">@{item.nom_utilisateur}</p>
+              <Pill tone={item.role === 'admin' ? 'blue' : 'gray'}>
+                {item.role === 'admin' ? 'Administrateur' : item.role}
+              </Pill>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">ID</p>
+            <p className="text-sm font-bold text-blue-600">#{item.id}</p>
+          </div>
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Statut</p>
+            {item.est_actif ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-700 border border-green-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                Actif
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                Désactivé
+              </span>
+            )}
+          </div>
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Email professionnel</p>
+            <p className="text-sm font-semibold text-gray-900 truncate">{item.email}</p>
+          </div>
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Téléphone</p>
+            <p className="text-sm font-semibold text-gray-900">{item.telephone || "—"}</p>
+          </div>
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm sm:col-span-2">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Adresse de résidence</p>
+            <p className="text-sm font-semibold text-gray-900 italic">
+               {item.adresse ? `"${item.adresse}"` : "Non renseignée"}
+            </p>
+          </div>
+
+          {/* Dates de traçabilité (si disponibles) */}
+          {(item.created_at || item.updated_at) && (
+            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm sm:col-span-2 grid grid-cols-2 gap-4 border-t-2 border-t-gray-50">
+              {item.created_at && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Compte créé le</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    {new Date(item.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+              {item.updated_at && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Dernière mise à jour</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    {new Date(item.updated_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </ModalShell>
+);
+
 // ── Carte utilisateur — vue mobile ───────────────────────────────────────────────
-const UserCard = ({ user, currentUserId, onEdit, onReset, onToggle, onDelete }) => (
-  <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm hover:shadow-md transition-shadow">
+const UserCard = ({ user, currentUserId, onView, onEdit, onReset, onToggle, onDelete }) => (
+  <div 
+    className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+    onClick={() => onView(user)}
+  >
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
           {user.prenom[0]}{user.nom[0]}
         </div>
-        <span className="text-xs font-bold text-gray-400">ID {user.id}</span>
       </div>
       <div className="flex items-center gap-1">
-        {user.id === currentUserId ? (
-          <span className="text-xs text-gray-400 italic px-2">Moi</span>
-        ) : (
           <div className="flex gap-1">
-            <button onClick={() => onEdit(user)} className="p-1.5 rounded hover:bg-blue-100 text-blue-600 transition" title="Modifier"><FaEdit size={14}/></button>
-            <button onClick={() => onReset(user)} className="p-1.5 rounded hover:bg-amber-100 text-amber-600 transition" title="Mot de passe"><FaKey size={14}/></button>
-            <button onClick={() => onToggle(user)} className={`p-1.5 rounded transition ${user.est_actif ? 'hover:bg-orange-100 text-orange-600' : 'hover:bg-green-100 text-green-600'}`} title={user.est_actif ? "Désactiver" : "Activer"}>
-              {user.est_actif ? <FaUserTimes size={14}/> : <FaUserCheck size={14}/>}
-            </button>
-            <button onClick={() => onDelete(user)} className="p-1.5 rounded hover:bg-red-100 text-red-600 transition" title="Supprimer"><FaTrash size={14}/></button>
+            {user.id === currentUserId ? (
+              <span className="text-xs text-gray-400 italic px-2 self-center">Moi</span>
+            ) : (
+              <>
+                <button onClick={() => onView(user)} className="p-1.5 rounded hover:bg-blue-100 text-blue-600 transition" title="Voir les détails"><Eye size={14}/></button>
+                <button onClick={() => onEdit(user)} className="p-1.5 rounded hover:bg-blue-100 text-blue-600 transition" title="Modifier"><FaEdit size={14}/></button>
+                <button onClick={() => onReset(user)} className="p-1.5 rounded hover:bg-amber-100 text-amber-600 transition" title="Mot de passe"><FaKey size={14}/></button>
+                <button onClick={() => onToggle(user)} className={`p-1.5 rounded transition ${user.est_actif ? 'hover:bg-orange-100 text-orange-600' : 'hover:bg-green-100 text-green-600'}`} title={user.est_actif ? "Désactiver" : "Activer"}>
+                  {user.est_actif ? <FaUserTimes size={14}/> : <FaUserCheck size={14}/>}
+                </button>
+                <button onClick={() => onDelete(user)} className="p-1.5 rounded hover:bg-red-100 text-red-600 transition" title="Supprimer"><FaTrash size={14}/></button>
+              </>
+            )}
           </div>
-        )}
       </div>
     </div>
     <div className="space-y-2">
@@ -494,6 +606,7 @@ export default function UsersView() {
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
   
   const [formData, setFormData] = useState(EMPTY_FORM_DATA);
+  const [viewItem, setViewItem] = useState(null);
 
   const currentUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "{}");
 
@@ -508,7 +621,7 @@ export default function UsersView() {
         const data = await getAllUsers();
         setUsers(data);
       } catch (error) {
-        showToast("Erreur lors du chargement des utilisateurs", "error");
+        showToast(error.response?.data?.message || "Erreur lors du chargement des utilisateurs", "error");
       } finally {
         setLoading(false);
       }
@@ -573,7 +686,7 @@ export default function UsersView() {
     );
   };
 
-  const handleOpenModal = (user = null) => {
+  const handleOpenModal = (user = null, isView = false) => {
     const selectedUser =
       user &&
       typeof user === "object" &&
@@ -583,6 +696,10 @@ export default function UsersView() {
         : null;
 
     if (selectedUser) {
+      if (isView) {
+        setViewItem(selectedUser);
+        return;
+      }
       setEditingId(selectedUser.id);
       setFormData({
         nom: selectedUser.nom ?? "",
@@ -670,6 +787,12 @@ export default function UsersView() {
   return (
     <div className="min-h-[100dvh] bg-white p-0">
       <ToastContainer />
+      {viewItem && (
+        <ViewModal 
+          item={viewItem} 
+          onClose={() => setViewItem(null)} 
+        />
+      )}
       {showModal && (
         <UserModal 
           formData={formData}
@@ -752,9 +875,6 @@ export default function UsersView() {
             <table className="w-full min-w-[800px] border-collapse">
               <thead>
                 <tr className="bg-gray-100 border-b-2 border-gray-200">
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase text-gray-600 cursor-pointer hover:bg-gray-200" onClick={() => requestSort('id')}>
-                    <div className="flex items-center justify-center">ID {getSortIcon('id')}</div>
-                  </th>
                   <th className="px-4 py-3 text-center text-xs font-bold uppercase text-gray-600 cursor-pointer hover:bg-gray-200" onClick={() => requestSort('nom')}>
                     <div className="flex items-center justify-center">Utilisateur {getSortIcon('nom')}</div>
                   </th>
@@ -768,12 +888,11 @@ export default function UsersView() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={6} className="py-16 text-center text-gray-500">Chargement...</td></tr>
+                  <tr><td colSpan={5} className="py-16 text-center text-gray-500">Chargement...</td></tr>
                 ) : paginatedUsers.length === 0 ? (
                     <tr><td colSpan={5} className="py-16 text-center text-gray-500">Aucun utilisateur trouvé</td></tr>
                 ) : paginatedUsers.map(u => (
                   <tr key={u.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
-                    <td className="px-4 py-3 text-sm text-gray-900 font-medium text-center">{u.id}</td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex flex-col items-center">
                         <span className="text-sm font-semibold text-gray-900">{u.prenom} {u.nom}</span>
@@ -805,11 +924,18 @@ export default function UsersView() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <div className="flex justify-center gap-1">
+                      <div className="flex items-center justify-center gap-1">
                         {u.id === currentUser.id ? (
                            <span className="text-xs text-gray-400 italic px-2 self-center">Moi</span>
                         ) : (
                           <>
+                            <button 
+                              onClick={() => handleOpenModal(u, true)}
+                              className="p-1.5 rounded hover:bg-blue-100 text-blue-600 transition" 
+                              title="Voir les détails"
+                            >
+                              <Eye size={15} />
+                            </button>
                             <button onClick={() => handleOpenModal(u)} className="p-1.5 rounded hover:bg-blue-100 text-blue-600 transition" title="Modifier"><FaEdit size={15}/></button>
                             <button onClick={() => setResettingUser(u)} className="p-1.5 rounded hover:bg-amber-100 text-amber-600 transition" title="Mot de passe"><FaKey size={15}/></button>
                             <button onClick={() => handleToggleStatus(u)} className={`p-1.5 rounded transition ${u.est_actif ? 'hover:bg-orange-100 text-orange-600' : 'hover:bg-green-100 text-green-600'}`} title={u.est_actif ? "Désactiver" : "Activer"}>
@@ -832,6 +958,7 @@ export default function UsersView() {
                 key={u.id} 
                 user={u} 
                 currentUserId={currentUser.id} 
+                onView={(item) => handleOpenModal(item, true)}
                 onEdit={handleOpenModal}
                 onReset={setResettingUser}
                 onToggle={handleToggleStatus}

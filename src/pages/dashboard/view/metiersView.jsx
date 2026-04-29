@@ -1,4 +1,3 @@
-// src/pages/dashboard/view/metiersView.jsx
 import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -13,7 +12,7 @@ import {
 import { 
   Download, FileSpreadsheet, FileText,
   ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  X
+  X, Eye
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -511,6 +510,129 @@ const MetierModal = ({
   );
 };
 
+// ── Modale de visualisation ───────────────────────────────────────────────────
+const ViewModal = ({ item, onClose }) => (
+  <ModalShell
+    title="Détails du métier"
+    icon={Eye}
+    onClose={onClose}
+    footer={<button onClick={onClose} className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition">Fermer</button>}
+  >
+    <div className="space-y-6">
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">ID</p>
+            <p className="text-sm font-bold text-blue-600">#{item.id}</p>
+          </div>
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Métier</p>
+            <Pill tone="blue">{item.label}</Pill>
+          </div>
+
+          <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm sm:col-span-2">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider flex items-center gap-2">
+               Description complète
+            </p>
+            <div className="text-sm text-gray-700 leading-relaxed bg-gray-50/80 p-4 rounded-lg border border-gray-100 italic relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-blue-400/30" />
+              "{item.description}"
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+          <h4 className="text-[10px] font-bold text-blue-700 uppercase mb-3 tracking-wider">Prérequis et Niveaux</h4>
+          <div className="space-y-3">
+            <div>
+              <p className="text-gray-400 text-[10px] font-bold uppercase mb-1">Niveaux</p>
+              <div className="flex flex-wrap gap-1">
+                {(item.niveau || []).map((n, i) => <Pill key={i} tone="purple">{n}</Pill>)}
+              </div>
+            </div>
+            <div>
+              <p className="text-gray-400 text-[10px] font-bold uppercase mb-1">Séries</p>
+              <div className="flex flex-wrap gap-1">
+                {(item.serie || []).map((s, i) => <Pill key={i} tone="orange">{s}</Pill>)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+          <h4 className="text-[10px] font-bold text-blue-700 uppercase mb-3 tracking-wider">Domaines et Mentions</h4>
+          <div className="space-y-3">
+            <div>
+              <p className="text-gray-400 text-[10px] font-bold uppercase mb-1">Domaines</p>
+              <div className="flex flex-wrap gap-1">
+                {(item.domaine || []).map((d, i) => <Pill key={i} tone="blue">{d}</Pill>)}
+              </div>
+            </div>
+            <div>
+              <p className="text-gray-400 text-[10px] font-bold uppercase mb-1">Mentions</p>
+              <div className="flex flex-wrap gap-1">
+                {(item.mention || []).map((m, i) => <Pill key={i} tone="green">{m}</Pill>)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+        <h4 className="text-[10px] font-bold text-blue-700 uppercase mb-3 tracking-wider">Parcours</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-gray-400 text-[10px] font-bold uppercase mb-2">Parcours d'études</p>
+            <ul className="space-y-1.5">
+              {(item.parcours || []).map((p, i) => (
+                <li key={i} className="flex items-center gap-2 text-xs text-gray-700">
+                  <div className="w-1 h-1 bg-blue-400 rounded-full" />
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-gray-400 text-[10px] font-bold uppercase mb-2">Parcours de formation</p>
+            <ul className="space-y-1.5">
+              {(item.parcoursFormation || []).map((p, i) => (
+                <li key={i} className="flex items-center gap-2 text-xs text-gray-700">
+                  <div className="w-1 h-1 bg-green-400 rounded-full" />
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Dates de traçabilité (si disponibles) */}
+      {(item.created_at || item.updated_at) && (
+        <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm grid grid-cols-2 gap-4 border-t-2 border-t-gray-50">
+          {item.created_at && (
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Créé le</p>
+              <p className="text-xs text-gray-600 font-medium">
+                {new Date(item.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+              </p>
+            </div>
+          )}
+          {item.updated_at && (
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Dernière modification</p>
+              <p className="text-xs text-gray-600 font-medium">
+                {new Date(item.updated_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  </ModalShell>
+);
+
 // ── Modale de confirmation ────────────────────────────────────────────────────
 const CONFIRM_COLORS = {
   blue:"bg-blue-600 hover:bg-blue-700", red:"bg-red-600 hover:bg-red-700",
@@ -527,7 +649,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
       <button 
         onClick={onConfirm} 
         disabled={loading}
-        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${confirmColor === 'red' ? 'bg-red-600 hover:bg-red-700' : 'bg-gradient-to-r from-blue-600 to-indigo-600'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${CONFIRM_COLORS[confirmColor]} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? (
           <div className="flex items-center gap-2">
@@ -542,15 +664,18 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
 );
 
 // ── Carte métier — vue mobile ───────────────────────────────────────────────
-const MetierCard = ({ metier, onEdit, onDelete }) => (
+const MetierCard = ({ metier, onEdit, onDelete, onView }) => (
   <div
     className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-    onClick={() => onEdit(metier)}
+    onClick={() => onView(metier)}
   >
     {/* Ligne 1 : ID + actions */}
     <div className="flex items-center justify-between">
-      <span className="text-xs font-bold text-gray-400">ID {metier.id}</span>
       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => onView(metier)}
+          className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Voir les détails">
+          <Eye size={14} className="text-blue-600" />
+        </button>
         <button onClick={() => onEdit(metier)}
           className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Modifier">
           <FaEdit size={14} className="text-blue-600" />
@@ -760,6 +885,7 @@ export default function MetiersView() {
   
   const [formData, setFormData] = useState(emptyForm);
   const [newParcoursFormation, setNewParcoursFormation] = useState("");
+  const [viewItem, setViewItem] = useState(null);
 
   // ── Toast ──────────────────────────────────────────────────────────
   const showToast = (message, type = "success") => {
@@ -940,18 +1066,22 @@ export default function MetiersView() {
   };
 
   // ── Ouvrir modal ───────────────────────────────────────────────────
-  const handleOpenModal = (metier = null) => {
-    if (metier) {
-      setEditingId(metier.id);
+  const handleOpenModal = (m = null, isView = false) => {
+    if (m) {
+      if (isView) {
+        setViewItem(m);
+        return;
+      }
+      setEditingId(m.id);
       setFormData({
-        label: metier.label,
-        description: metier.description,
-        parcours: Array.isArray(metier.parcours) ? metier.parcours : [],
-        mention: Array.isArray(metier.mention) ? metier.mention : [],
-        domaine: Array.isArray(metier.domaine) ? metier.domaine : [],
-        serie: Array.isArray(metier.serie) ? metier.serie : [],
-        niveau: Array.isArray(metier.niveau) ? metier.niveau : [],
-        parcoursFormation: Array.isArray(metier.parcoursFormation) ? metier.parcoursFormation : [],
+        label: m.label,
+        description: m.description,
+        parcours: Array.isArray(m.parcours) ? m.parcours : [],
+        mention: Array.isArray(m.mention) ? m.mention : [],
+        domaine: Array.isArray(m.domaine) ? m.domaine : [],
+        serie: Array.isArray(m.serie) ? m.serie : [],
+        niveau: Array.isArray(m.niveau) ? m.niveau : [],
+        parcoursFormation: Array.isArray(m.parcoursFormation) ? m.parcoursFormation : [],
       });
     } else {
       setEditingId(null);
@@ -963,7 +1093,7 @@ export default function MetiersView() {
 
   const handleRowClick = (metier, e) => { 
     if (e.target.closest('button')) return; 
-    handleOpenModal(metier); 
+    handleOpenModal(metier, true); 
   };
 const handleSave = async () => {
   if (!isFormValid()) {
@@ -983,26 +1113,14 @@ const handleSave = async () => {
     parcoursFormation: [...formData.parcoursFormation],
   };
 
-  console.log("=== [handleSave] payload envoyé à PHP ===", JSON.stringify(payload, null, 2));
-  console.log("  label:", payload.label);
-  console.log("  description:", payload.description);
-  console.log("  mention:", payload.mention);
-  console.log("  domaine:", payload.domaine);
-  console.log("  niveau:", payload.niveau);
-  console.log("  parcours:", payload.parcours);
-  console.log("  serie:", payload.serie);
-  console.log("  parcoursFormation:", payload.parcoursFormation);
-
   setLoadingSave(true);
   try {
     let result;
     if (editingId) {
       result = await updateMetier(editingId, payload);
-      console.log("=== [updateMetier] réponse PHP ===", result);
       showToast("Métier modifié avec succès", "success");
     } else {
       result = await createMetier(payload);
-      console.log("=== [createMetier] réponse PHP ===", result);
       showToast("Métier ajouté avec succès", "success");
     }
 
@@ -1013,7 +1131,6 @@ const handleSave = async () => {
     await fetchData();
 
   } catch (error) {
-    console.error("=== [handleSave] ERREUR ===", error.response?.data || error);
     const message = error.response?.data?.message || "Erreur lors de l'enregistrement";
     showToast(message, "error");
   } finally {
@@ -1069,10 +1186,8 @@ const handleSave = async () => {
 
   // Colonnes du tableau
   const COLS = [
-    { key: 'id', label: 'ID' },
     { key: 'label', label: 'Métier' },
     { key: 'domaine', label: 'Domaine' },
-    { key: 'description', label: 'Description' },
     { key: 'mention', label: 'Mention' },
     { key: 'niveau', label: 'Niveau' },
   ];
@@ -1083,6 +1198,13 @@ const handleSave = async () => {
       <ToastContainer />
 
       {/* Modales */}
+      {viewItem && (
+        <ViewModal 
+          item={viewItem} 
+          onClose={() => setViewItem(null)} 
+        />
+      )}
+
       {showModal && (
         <MetierModal 
           isEditing={!!editingId}
@@ -1227,7 +1349,7 @@ const handleSave = async () => {
               <thead>
                 <tr className="bg-gray-100 border-b-2 border-gray-200">
                   {COLS.map(({ key, label }) => (
-                    <th 
+                    <th
                       key={key}
                       className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:bg-gray-200 whitespace-nowrap"
                       onClick={() => requestSort(key)}
@@ -1257,18 +1379,17 @@ const handleSave = async () => {
                       <div className="flex flex-col items-center gap-2 opacity-50">
                         <FaSearch size={24}/>
                         <span className="text-sm">
-                          {searchTerm ? "Aucun résultat trouvé" : "Aucun métier disponible"}
+                          {searchTerm ? "Aucun r??sultat trouv??" : "Aucun m??tier disponible"}
                         </span>
                       </div>
                     </td>
                   </tr>
                 ) : paginatedMetiers.map((metier) => (
-                  <tr 
+                  <tr
                     key={metier.id || metier.label}
                     className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer"
                     onClick={(e) => handleRowClick(metier, e)}
                   >
-                    <td className="px-3 py-3 text-sm text-gray-900 font-medium text-center">{metier.id}</td>
                     <td className="px-3 py-3 text-sm text-gray-900 text-center truncate max-w-[200px]" title={metier.label}>{metier.label}</td>
                     <td className="px-3 py-3 text-sm text-gray-700 text-center">
                       <div className="flex flex-wrap justify-center gap-1">
@@ -1277,7 +1398,6 @@ const handleSave = async () => {
                         ))}
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-sm text-gray-700 text-center max-w-xs truncate">{metier.description}</td>
                     <td className="px-3 py-3 text-sm text-gray-700 text-center">
                       <div className="flex flex-wrap justify-center gap-1">
                         {Array.isArray(metier.mention) && metier.mention.map((m, i) => (
@@ -1294,16 +1414,23 @@ const handleSave = async () => {
                     </td>
                     <td className="px-3 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <button 
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleOpenModal(metier, true); }}
+                          className="p-1.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition"
+                          title="Voir les détails"
+                        >
+                          <Eye size={15} className="text-blue-600" />
+                        </button>
+                        <button
                           onClick={(e) => { e.stopPropagation(); handleOpenModal(metier); }}
-                          className="p-1.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" 
+                          className="p-1.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition"
                           title="Modifier"
                         >
                           <FaEdit size={15} className="text-blue-600" />
                         </button>
-                        <button 
+                        <button
                           onClick={(e) => { e.stopPropagation(); handleDeleteClick(metier); }}
-                          className="p-1.5 rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition" 
+                          className="p-1.5 rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition"
                           title="Supprimer"
                         >
                           <FaTrash size={15} className="text-red-600" />

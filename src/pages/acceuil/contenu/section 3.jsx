@@ -16,9 +16,7 @@ function MetierDetailPanel({ metier }) {
     <div className="relative h-full rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/25 p-4 sm:p-6 xl:p-8 flex flex-col overflow-hidden">
       {/* Titre & badges */}
       <div className="shrink-0 mb-3 sm:mb-5">
-        <h2 className="text-white font-black text-lg sm:text-2xl xl:text-3xl leading-tight mb-2 sm:mb-3">
-          {metier.label}
-        </h2>
+
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
 
           {metier.niveau && (
@@ -248,12 +246,12 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
           {/* Bouton retour */}
           <button
             onClick={onRetour}
-            className="text-white/80 hover:text-white transition-colors w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shrink-0 mb-3 sm:mb-4"
+            className="text-white/80 hover:text-white transition-colors w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center shrink-0 mb-3 sm:mb-4"
             aria-label="Retour"
           >
             {/* Deux tailles d'icône : petite sur xs, grande sur sm+ */}
-            <IoArrowBackCircleOutline size={32} className="sm:hidden" />
-            <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
+            <IoArrowBackCircleOutline size={28} className="sm:hidden" />
+            <IoArrowBackCircleOutline size={38} className="hidden sm:block" />
           </button>
 
             {/* Titre */}
@@ -266,6 +264,12 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
 
           {/* Zone scrollable */}
           <div className="flex-1 overflow-y-auto scrollbar-thin-white min-h-0 pr-2 pb-24 sm:pb-28">
+            {/* Mobile uniquement : Détails du métier (description, niveau, etc.) */}
+            <div className="lg:hidden mb-4 sm:mb-6">
+              {m && <MetierDetailPanel metier={m} />}
+            </div>
+
+            {/* Parcours de formation (Timeline) - Affiché en bas sur mobile, et normalement sur desktop */}
             {m?.parcoursFormation && m.parcoursFormation.length > 0 && (
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-5 border border-white/15">
                 <h2 className="text-white font-black text-[clamp(0.85rem,1vw,1rem)] uppercase tracking-wide mb-2.5 sm:mb-3">
@@ -290,22 +294,17 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
                 </div>
               </div>
             )}
-
-            {/* Mobile uniquement */}
-            <div className="lg:hidden mt-4 sm:mt-6">
-              {m && <MetierDetailPanel metier={m} />}
-            </div>
           </div>
 
           {/* Boutons ancrés en bas */}
           <div className="shrink-0 flex flex-col items-center gap-1.5 sm:gap-2 py-3 sm:py-4 z-10">
             <button
               onClick={() => onVoirCarte(m)}
-              className="w-full max-w-sm bg-[#1250c8] hover:bg-[#1a3ea8] text-white font-black py-3 sm:py-4 lg:py-3 px-4 sm:px-6 rounded-full flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 text-[clamp(0.78rem,1vw,0.98rem)]"
+              className="w-full max-w-xs bg-[#1250c8] hover:bg-[#1a3ea8] text-white font-black py-2.5 sm:py-3 px-4 sm:px-6 rounded-full flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 text-[clamp(0.75rem,0.9vw,0.9rem)]"
             >
-              <span className="text-[clamp(0.78rem,1vw,0.98rem)]">Établissements proposant ce parcours</span>
-              <HiOutlineArrowRight size={16} className="sm:hidden" />
-              <HiOutlineArrowRight size={18} className="hidden sm:block" />
+              <span className="text-[clamp(0.75rem,0.9vw,0.9rem)]">Établissements proposant ce parcours</span>
+              <HiOutlineArrowRight size={15} className="sm:hidden" />
+              <HiOutlineArrowRight size={17} className="hidden sm:block" />
             </button>
             <button
               onClick={onHome}

@@ -336,9 +336,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
               Découvrez les établissements d'enseignement supérieur proposant des formations adaptées à votre profil et vos ambitions professionnelles.
             </p>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-block bg-white/20 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-white">
-                {mentionLabel}
-              </span>
+
               {regionLabel && (
                 <span className="inline-flex items-center gap-1.5 bg-black/15 border border-white/30 rounded-full px-3 py-1.5 text-xs font-semibold text-white">
                   <FiMapPin size={11} />

@@ -7,7 +7,7 @@ import {
 import { 
   Download, FileSpreadsheet, FileText,
   ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  X
+  X, Eye
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -23,6 +23,22 @@ import {
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 const PER_PAGE_OPTIONS = [10, 20, 30, 50, 100];
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+const TONES = {
+  gray:   "bg-gray-100 text-gray-600",
+  blue:   "bg-blue-50  text-blue-700",
+  green:  "bg-green-50  text-green-700",
+  red:    "bg-red-50    text-red-700",
+  orange: "bg-orange-50 text-orange-700",
+  purple: "bg-purple-50 text-purple-700",
+};
+
+const Pill = ({ children, tone = "gray" }) => (
+  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${TONES[tone]}`}>
+    {children}
+  </span>
+);
 
 // ── Menu Export ───────────────────────────────────────────────────────────────
 const ExportMenu = ({ onExport, filteredData }) => {
@@ -190,6 +206,11 @@ const DomaineModal = ({ isEditing, formData, onClose, onSubmit, onChange, loadin
 };
 
 // ── Modale de confirmation ────────────────────────────────────────────────────
+const CONFIRM_COLORS = {
+  blue:"bg-blue-600 hover:bg-blue-700", red:"bg-red-600 hover:bg-red-700",
+  orange:"bg-orange-600 hover:bg-orange-700", green:"bg-green-600 hover:bg-green-700"
+};
+
 const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmText = "Confirmer", confirmColor = "blue", loading }) => (
   <ModalShell 
     title={title} 
@@ -200,7 +221,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
       <button 
         onClick={onConfirm} 
         disabled={loading}
-        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${confirmColor === 'red' ? 'bg-red-600 hover:bg-red-700' : 'bg-gradient-to-r from-blue-600 to-indigo-600'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`px-3 sm:px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium shadow-md hover:brightness-110 transition ${CONFIRM_COLORS[confirmColor]} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? (
           <div className="flex items-center gap-2">
@@ -214,15 +235,78 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
   </ModalShell>
 );
 
+// ── Modale de visualisation ───────────────────────────────────────────────────
+const ViewModal = ({ item, onClose }) => (
+  <ModalShell
+    title="Détails du domaine"
+    icon={Eye}
+    onClose={onClose}
+    footer={<button onClick={onClose} className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition">Fermer</button>}
+  >
+    <div className="space-y-6">
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+
+        {/* Grille d'informations détaillées */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">ID</p>
+            <p className="text-sm font-bold text-blue-600">#{item.id}</p>
+          </div>
+          <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Domaine</p>
+            <Pill tone="blue">{item.label}</Pill>
+          </div>
+          
+          <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm sm:col-span-2">
+            <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider flex items-center gap-2">
+               Description complète
+            </p>
+            <div className="text-sm text-gray-700 leading-relaxed bg-gray-50/80 p-4 rounded-lg border border-gray-100 italic relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-blue-400/30" />
+              "{item.description}"
+            </div>
+          </div>
+
+          {/* Dates de traçabilité (si disponibles) */}
+          {(item.created_at || item.updated_at) && (
+            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm sm:col-span-2 grid grid-cols-2 gap-4 border-t-2 border-t-gray-50">
+              {item.created_at && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Créé le</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    {new Date(item.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+              {item.updated_at && (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">Dernière modification</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    {new Date(item.updated_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </ModalShell>
+);
+
 // ── Carte domaine — vue mobile ───────────────────────────────────────────────
-const DomaineCard = ({ domaine, onEdit, onDelete }) => (
+const DomaineCard = ({ domaine, onEdit, onDelete, onView }) => (
   <div
     className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-    onClick={() => onEdit(domaine)}
+    onClick={() => onView(domaine)}
   >
     <div className="flex items-center justify-between">
       <span className="text-xs font-bold text-gray-400">ID {domaine.id}</span>
       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => onView(domaine)}
+          className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Voir les détails">
+          <Eye size={14} className="text-blue-600" />
+        </button>
         <button onClick={() => onEdit(domaine)}
           className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Modifier">
           <FaEdit size={14} className="text-blue-600" />
@@ -280,6 +364,7 @@ export default function DomainesView() {
   const [showModal, setShowModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const [viewItem, setViewItem] = useState(null);
   
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -337,9 +422,16 @@ export default function DomainesView() {
     formData.description.trim().length >= 50 && 
     formData.description.trim().length <= 220;
 
-  const handleOpenModal = (d = null) => {
-    if (d) { setEditingId(d.id); setFormData({ label: d.label, description: d.description }); }
-    else { setEditingId(null); setFormData({ label: "", description: "" }); }
+  const handleOpenModal = (domaine = null, isView = false) => {
+    if (domaine) {
+      if (isView) {
+        setViewItem(domaine);
+        return;
+      }
+      setEditingId(domaine.id); setFormData({ label: domaine.label, description: domaine.description });
+    } else {
+      setEditingId(null); setFormData({ label: "", description: "" });
+    }
     setShowModal(true);
   };
 
@@ -394,6 +486,14 @@ export default function DomainesView() {
   return (
     <div className="min-h-[100dvh] bg-white p-0">
       <ToastContainer />
+      
+      {viewItem && (
+        <ViewModal 
+          item={viewItem} 
+          onClose={() => setViewItem(null)} 
+        />
+      )}
+
       {showModal && (
         <DomaineModal 
           isEditing={!!editingId} formData={formData}
@@ -466,9 +566,6 @@ export default function DomainesView() {
             <table className="w-full min-w-[640px] border-collapse">
               <thead>
                 <tr className="bg-gray-100 border-b-2 border-gray-200">
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase text-gray-600 cursor-pointer hover:bg-gray-200" onClick={() => requestSort('id')}>
-                    <div className="flex items-center justify-center">ID {getSortIcon('id')}</div>
-                  </th>
                   <th className="px-4 py-3 text-center text-xs font-bold uppercase text-gray-600 cursor-pointer hover:bg-gray-200" onClick={() => requestSort('label')}>
                     <div className="flex items-center justify-center">Domaine {getSortIcon('label')}</div>
                   </th>
@@ -478,16 +575,34 @@ export default function DomainesView() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={4} className="py-16 text-center text-gray-500">Chargement...</td></tr>
+                  <tr><td colSpan={3} className="py-16 text-center text-gray-500">Chargement...</td></tr>
                 ) : paginatedDomaines.map(d => (
                   <tr key={d.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer" onClick={() => handleOpenModal(d)}>
-                    <td className="px-4 py-3 text-sm text-gray-900 font-medium text-center">{d.id}</td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-center font-semibold truncate max-w-[200px]" title={d.label}>{d.label}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 text-center max-w-xs truncate">{d.description}</td>
                     <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-center gap-1">
-                        <button onClick={() => handleOpenModal(d)} className="p-1.5 rounded hover:bg-blue-100 text-blue-600 transition"><FaEdit size={15}/></button>
-                        <button onClick={() => setDeleteItem(d)} className="p-1.5 rounded hover:bg-red-100 text-red-600 transition"><FaTrash size={15}/></button>
+                        <button 
+                          onClick={() => handleOpenModal(d, true)} 
+                          className="p-1.5 rounded hover:bg-blue-100 text-blue-600 transition"
+                          title="Voir les détails"
+                        >
+                          <Eye size={15}/>
+                        </button>
+                        <button 
+                          onClick={() => handleOpenModal(d)} 
+                          className="p-1.5 rounded hover:bg-blue-100 text-blue-600 transition"
+                          title="Modifier"
+                        >
+                          <FaEdit size={15}/>
+                        </button>
+                        <button 
+                          onClick={() => setDeleteItem(d)} 
+                          className="p-1.5 rounded hover:bg-red-100 text-red-600 transition"
+                          title="Supprimer"
+                        >
+                          <FaTrash size={15}/>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -498,7 +613,7 @@ export default function DomainesView() {
 
           <div className="md:hidden p-3 space-y-3">
             {paginatedDomaines.map(d => (
-              <DomaineCard key={d.id} domaine={d} onEdit={handleOpenModal} onDelete={setDeleteItem} />
+              <DomaineCard key={d.id} domaine={d} onEdit={handleOpenModal} onDelete={setDeleteItem} onView={(item) => handleOpenModal(item, true)} />
             ))}
           </div>
 
