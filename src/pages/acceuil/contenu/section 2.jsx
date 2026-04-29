@@ -71,6 +71,7 @@ function MetierCard({ metier, onSelect }) {
     <button
       type="button"
       onClick={() => onSelect(metier)}
+      aria-label={`Selectionner le metier ${metier.label}`}
       className="w-full text-left bg-white/10 backdrop-blur-xl border border-white/25 rounded-2xl p-4 transition-all hover:bg-white/18 hover:-translate-y-0.5 active:translate-y-0"
     >
       <div className="flex items-start justify-between gap-2 mb-1">
@@ -316,11 +317,15 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             <div className={`s2-cbwrap ${isMetierComboOpen ? "open" : ""} ${isComboOpen ? "hidden" : ""}`} ref={metierComboRef}>
               <p className="s2-lbl">Rechercher un métier</p>
               <button
+                type="button"
                 className="s2-trigger"
                 onClick={() => {
                   setIsMetierComboOpen((prev) => !prev);
                   setIsComboOpen(false);
                 }}
+                aria-haspopup="listbox"
+                aria-expanded={isMetierComboOpen}
+                aria-controls="metier-options"
               >
                 <span className={localSelected ? "s2-val-new" : "s2-ph"}>
                   {localSelected ? localSelected.label : "Ex : développeur, infirmier…"}
@@ -349,6 +354,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                           onChange={(e) => setSearchQuery(e.target.value)}
                           onClick={(e) => e.stopPropagation()}
                           className="s2-drop-input-new pr-8"
+                          aria-label="Rechercher un metier"
                         />
                       {searchQuery && (
                         <button 
@@ -360,19 +366,22 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                       )}
                     </div>
                   </div>
-                  <div className="s2-drop-list-new">
+                  <div id="metier-options" className="s2-drop-list-new" role="listbox" aria-label="Liste des metiers">
                     {filteredMetiers.length > 0 ? filteredMetiers.map((m) => (
-                      <div
+                      <button
+                        type="button"
                         key={m.id}
                         onClick={() => handleSelectMetier(m, false)}
                         className={`s2-drop-item-new ${localSelected?.id === m.id ? "active" : ""}`}
+                        role="option"
+                        aria-selected={localSelected?.id === m.id}
                       >
                         <div className="flex flex-col">
                           <span className="s2-item-name">{m.label}</span>
                           <span className="s2-item-badge">{Array.isArray(m.domaine) ? m.domaine.join(", ") : m.domaine}</span>
                         </div>
                         {localSelected?.id === m.id && <HiCheck className="text-blue-600" size={14} />}
-                      </div>
+                      </button>
                     )) : (
                       <div className="py-4 text-center text-xs text-gray-400 italic">Aucun résultat</div>
                     )}
@@ -394,11 +403,15 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                 <div className={`s2-cbwrap ${isComboOpen ? "open" : ""} ${isMetierComboOpen ? "hidden" : ""}`} ref={comboRef}>
                   <p className="s2-lbl">Explorer par domaine</p>
                   <button
+                    type="button"
                     onClick={() => {
                       setIsComboOpen((prev) => !prev);
                       setIsMetierComboOpen(false);
                     }}
                     className="s2-trigger"
+                    aria-haspopup="listbox"
+                    aria-expanded={isComboOpen}
+                    aria-controls="domaine-options"
                   >
                     <span className={selectedDomaine ? "s2-val-new green" : "s2-ph"}>
                       {selectedDomaine ? selectedDomaine.label : "Sélectionner un domaine…"}
@@ -427,6 +440,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                             onChange={(e) => setComboSearch(e.target.value)}
                             onClick={(e) => e.stopPropagation()}
                             className="s2-drop-input-new pr-8"
+                            aria-label="Rechercher un domaine"
                           />
                           {comboSearch && (
                             <button 
@@ -438,16 +452,19 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                           )}
                         </div>
                       </div>
-                      <div className="s2-drop-list-new">
+                      <div id="domaine-options" className="s2-drop-list-new" role="listbox" aria-label="Liste des domaines">
                         {filteredDomaines.length > 0 ? filteredDomaines.map((d) => (
-                          <div
+                          <button
+                            type="button"
                             key={d.id}
                             onClick={() => handleSelectDomaine(d)}
                             className={`s2-drop-item-new ${selectedDomaine?.id === d.id ? "active" : ""}`}
+                            role="option"
+                            aria-selected={selectedDomaine?.id === d.id}
                           >
                             <span className="s2-item-name">{d.label}</span>
                             {selectedDomaine?.id === d.id && <HiCheck className="text-blue-600" size={14} />}
-                          </div>
+                          </button>
                         )) : (
                           <div className="py-4 text-center text-xs text-gray-400 italic">Aucun résultat</div>
                         )}

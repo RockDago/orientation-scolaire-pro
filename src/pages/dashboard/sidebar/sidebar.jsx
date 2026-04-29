@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { useNavigate, useLocation, Link, useParams } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   FaBars,
   FaTimes,
-  FaSignOutAlt,
   FaTachometerAlt,
   FaCog,
   FaTag,
@@ -11,7 +10,6 @@ import {
   FaBuilding,
   FaGlobe,
   FaChevronRight,
-  FaExclamationCircle,
   FaLayerGroup,
   FaListAlt,
   FaUsers,
@@ -25,10 +23,8 @@ const Sidebar = ({
   setIsMobileOpen,
 }) => {
   const navigate = useNavigate();
-  const { uuid } = useParams();
   const location = useLocation();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const goTo = (path) => {
     navigate(path);
@@ -39,35 +35,17 @@ const Sidebar = ({
 
   const isSettingsChildActive = () => {
     const settingsPaths = [
-      `/dashboard/admin/parametres/serie/${uuid}`,
-      `/dashboard/admin/parametres/domaine/${uuid}`,
-      `/dashboard/admin/parametres/mention/${uuid}`,
-      `/dashboard/admin/parametres/parcours/${uuid}`,
-      `/dashboard/admin/parametres/metier/${uuid}`,
-      `/dashboard/admin/parametres/etablissement/${uuid}`,
+      "/dashboard/admin/parametres/serie",
+      "/dashboard/admin/parametres/domaine",
+      "/dashboard/admin/parametres/mention",
+      "/dashboard/admin/parametres/parcours",
+      "/dashboard/admin/parametres/metier",
+      "/dashboard/admin/parametres/etablissement",
     ];
     return settingsPaths.some((path) => location.pathname === path);
   };
 
-  const handleConfirmLogout = () => {
-    setShowLogoutModal(false);
 
-    const savedEmail = localStorage.getItem("savedEmail"); 
-    const rememberMe = localStorage.getItem("rememberMe");
-    const visitorId = localStorage.getItem("osp_visitor_id"); 
-    const darkMode = localStorage.getItem("darkMode");
-
-    localStorage.clear();
-    sessionStorage.clear();
-
-    if (savedEmail) localStorage.setItem("savedEmail", savedEmail);
-    if (rememberMe) localStorage.setItem("rememberMe", rememberMe);
-    if (visitorId) localStorage.setItem("osp_visitor_id", visitorId);
-    if (darkMode !== null) localStorage.setItem("darkMode", darkMode);
-
-
-    navigate("/login");
-  };
 
   const baseItemClass =
     "group flex items-center justify-between px-4 py-3 mx-3 mb-1 rounded-xl transition-all duration-200 cursor-pointer text-sm font-medium";
@@ -79,32 +57,32 @@ const Sidebar = ({
   const settingsItems = [
     {
       label: "Series",
-      path: `/dashboard/admin/parametres/serie/${uuid}`,
+      path: "/dashboard/admin/parametres/serie",
       icon: FaListAlt,
     },
     {
       label: "Domaines",
-      path: `/dashboard/admin/parametres/domaine/${uuid}`,
+      path: "/dashboard/admin/parametres/domaine",
       icon: FaGlobe,
     },
     {
       label: "Mentions",
-      path: `/dashboard/admin/parametres/mention/${uuid}`,
+      path: "/dashboard/admin/parametres/mention",
       icon: FaTag,
     },
     {
       label: "Parcours",
-      path: `/dashboard/admin/parametres/parcours/${uuid}`,
+      path: "/dashboard/admin/parametres/parcours",
       icon: FaLayerGroup,
     },
     {
       label: "Metiers",
-      path: `/dashboard/admin/parametres/metier/${uuid}`,
+      path: "/dashboard/admin/parametres/metier",
       icon: FaBuilding,
     },
     {
       label: "Etablissement",
-      path: `/dashboard/admin/parametres/etablissement/${uuid}`,
+      path: "/dashboard/admin/parametres/etablissement",
       icon: FaUniversity,
     },
   ];
@@ -114,40 +92,7 @@ const Sidebar = ({
 
   return (
     <>
-      {/* ─── MODAL DE CONFIRMATION DE DÉCONNEXION ─── */}
-      {showLogoutModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 border border-transparent dark:border-neutral-800">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-                <FaExclamationCircle className="text-3xl text-red-500" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-neutral-100 mb-2">
-                Déconnexion
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-neutral-400">
-                Êtes-vous sûr de vouloir vous déconnecter de votre session
-                d'administration ?
-              </p>
-            </div>
 
-            <div className="flex items-center justify-center gap-3 p-4 bg-gray-50 dark:bg-neutral-800 border-t border-gray-100 dark:border-neutral-800">
-              <button
-                onClick={() => setShowLogoutModal(false)}
-                className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-neutral-100 bg-white dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleConfirmLogout}
-                className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 shadow-sm shadow-red-500/30 transition-all active:scale-95"
-              >
-                Oui, me déconnecter
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Overlay mobile pour la Sidebar */}
       {isMobileOpen && (
@@ -206,16 +151,16 @@ const Sidebar = ({
         <nav className="flex-1 overflow-y-auto py-4">
           {/* Tableau de bord */}
           <div
-            onClick={() => goTo(`/dashboard/admin/${uuid}`)}
+            onClick={() => goTo("/dashboard/admin")}
             className={`${baseItemClass} ${
-              location.pathname === `/dashboard/admin/${uuid}` ? activeClass : inactiveClass
+              location.pathname === "/dashboard/admin" ? activeClass : inactiveClass
             }`}
             title={collapsed ? "Tableau de bord" : ""}
           >
             <div className="flex items-center gap-3">
               <FaTachometerAlt
                 className={`text-lg flex-shrink-0 ${
-                  location.pathname === `/dashboard/admin/${uuid}`
+                  location.pathname === "/dashboard/admin"
                     ? "text-blue-600"
                     : "text-gray-400 group-hover:text-gray-600"
                 }`}
@@ -289,16 +234,16 @@ const Sidebar = ({
 
           {/* Utilisateurs */}
           <div
-            onClick={() => goTo(`/dashboard/admin/utilisateurs/${uuid}`)}
+            onClick={() => goTo("/dashboard/admin/utilisateurs")}
             className={`${baseItemClass} ${
-              location.pathname === `/dashboard/admin/utilisateurs/${uuid}` ? activeClass : inactiveClass
+              location.pathname === "/dashboard/admin/utilisateurs" ? activeClass : inactiveClass
             }`}
             title={collapsed ? "Utilisateurs" : ""}
           >
             <div className="flex items-center gap-3">
               <FaUsers
                 className={`text-lg flex-shrink-0 ${
-                  location.pathname === `/dashboard/admin/utilisateurs/${uuid}`
+                  location.pathname === "/dashboard/admin/utilisateurs"
                     ? "text-blue-600"
                     : "text-gray-400 group-hover:text-gray-600"
                 }`}
@@ -307,27 +252,16 @@ const Sidebar = ({
             </div>
           </div>
         </nav>
-
-        {/* Déconnexion Stylée */}
-        <div className="p-4 border-t border-gray-100 dark:border-neutral-800 bg-gray-50/30 dark:bg-neutral-950/30">
-          <button
-            onClick={() => setShowLogoutModal(true)}
-            className={`
-              w-full flex items-center py-3 rounded-xl text-sm font-semibold transition-all group
-              ${
-                collapsed
-                  ? "justify-center px-0 hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-500 dark:text-neutral-400"
-                  : "justify-start px-4 gap-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 text-gray-700 dark:text-neutral-300 hover:border-gray-300 dark:hover:border-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white hover:shadow-sm"
-              }
-            `}
-            title={collapsed ? "Déconnexion" : ""}
-          >
-            <FaSignOutAlt
-              className={`text-lg transition-colors ${collapsed ? "group-hover:text-red-600" : "text-gray-500 dark:text-neutral-400 group-hover:text-red-600"}`}
-            />
-            {!collapsed && <span>Déconnexion</span>}
-          </button>
+        
+        {/* Footer Copyright */}
+        <div className={`px-6 py-6 border-t border-gray-50 dark:border-neutral-800 transition-opacity duration-300 ${collapsed ? 'opacity-0 h-0 p-0 overflow-hidden' : 'opacity-100'}`}>
+          <p className="text-[10px] text-gray-400 dark:text-neutral-500 font-medium leading-relaxed text-center">
+            © 2026 MESUPRES
+            Tous droits réservés
+          </p>
         </div>
+
+
       </aside>
     </>
   );

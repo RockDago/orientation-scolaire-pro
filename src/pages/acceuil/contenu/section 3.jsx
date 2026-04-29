@@ -179,10 +179,12 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
               {metier.results.map((item) => {
                 const active = selectedMetier?.id === item.id;
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={item.id}
                     onClick={() => setSelectedMetier(item)}
                     className={`rounded-2xl p-3 sm:p-4 border cursor-pointer transition-all ${active ? "bg-white/20 border-white/50" : "bg-white/10 border-white/20 hover:bg-white/15"}`}
+                    aria-pressed={active}
                   >
                     <div className="flex justify-between items-start mb-1.5 sm:mb-2">
                       <h3 className="font-bold text-white text-[clamp(0.88rem,1.15vw,1.05rem)] leading-snug">{item.label}</h3>
@@ -192,7 +194,7 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
                     </div>
                     <p className="text-white/75 text-[clamp(0.72rem,0.9vw,0.82rem)] leading-relaxed line-clamp-2">{item.description}</p>
 
-                  </div>
+                  </button>
                 );
               })}
             </div>

@@ -24,9 +24,8 @@ const PUBLIC_ROUTES = [
   "/track-etablissement-selection",
   "/top-metiers",
   "/metiers",
-  "/metier",
   "/mentions",
-  "/mentions",
+  "/domaines",
   "/series",
   "/etablissements",
   "/parcours",
@@ -84,8 +83,10 @@ API.interceptors.response.use(
       // 4. Route protégée + pas authentifié → nettoyer et rediriger
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      localStorage.removeItem("userRole");
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("user");
+      sessionStorage.removeItem("userRole");
 
       window.location.href = "/login";
     }

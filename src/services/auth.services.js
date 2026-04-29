@@ -13,13 +13,6 @@ export const login = async (identifiant, motDePasse, rememberMe = false) => {
   });
 
   const { token, utilisateur } = response.data;
-  const storage = rememberMe ? localStorage : sessionStorage;
-  storage.setItem("token", token);
-  storage.setItem("user", JSON.stringify(utilisateur));
-
-  localStorage.setItem("token", token);
-  localStorage.setItem("user", JSON.stringify(utilisateur));
-
   return { token, utilisateur };
 };
 

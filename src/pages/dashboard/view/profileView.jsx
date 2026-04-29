@@ -1,5 +1,5 @@
 // src/pages/dashboard/view/profileView.jsx
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaUser,
@@ -8,9 +8,7 @@ import {
   FaClock,
   FaEdit,
   FaPhone,
-  FaCamera,
   FaMapMarkerAlt,
-  FaShieldAlt,
   FaEye,
   FaEyeSlash,
   FaCheck,
@@ -33,7 +31,7 @@ import {
   getLocalUser,
 } from "../../../services/profile.services";
 
-// ── Badges ────────────────────────────────────────────────────────────────────
+// Badges
 const TONES = {
   gray:   "bg-gray-100 text-gray-600",
   blue:   "bg-blue-50  text-blue-700",
@@ -49,7 +47,7 @@ const Pill = ({ children, tone = "gray" }) => (
   </span>
 );
 
-// ── FloatInput (version animée) avec astérisque rouge ─────────────────────────
+// FloatInput
 const FloatInput = ({ id, name, label, value, onChange, type = "text", error, disabled, className = "", min, maxLength, rows }) => {
   const InputComponent = type === "textarea" ? "textarea" : "input";
   
@@ -88,7 +86,7 @@ const FloatInput = ({ id, name, label, value, onChange, type = "text", error, di
   );
 };
 
-// ── BtnPrimary avec le même style que les autres vues ─────────────────────────
+// BtnPrimary
 const BtnPrimary = ({ onClick, children, loading, disabled, type = "button", icon: Icon }) => (
   <button 
     type={type}
@@ -141,7 +139,6 @@ const ProfileView = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("personal");
   const [previewImage, setPreviewImage] = useState(null);
-  const fileInputRef = useRef(null);
   const [authError, setAuthError] = useState(false);
   const navigate = useNavigate();
 
@@ -186,22 +183,6 @@ const ProfileView = () => {
     loadProfile();
   }, []);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast("L'image ne doit pas dépasser 5MB", "error");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewImage(reader.result);
-      showToast("Photo de profil mise à jour", "success");
-    };
-    reader.readAsDataURL(file);
-  };
 
   const tabs = [
     { key: "personal", label: "Informations personnelles" },
@@ -236,11 +217,7 @@ const ProfileView = () => {
         {/* En-tête du profil */}
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
           <div className="flex items-start gap-4 flex-wrap sm:items-center sm:gap-5">
-            {/* Avatar avec upload */}
-            <div
-              className="cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}
-            >
+            <div>
               <div className="relative inline-block">
                 <div className="w-[clamp(64px,9vw,82px)] h-[clamp(64px,9vw,82px)] rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center relative">
                   {previewImage ? (
@@ -255,28 +232,17 @@ const ProfileView = () => {
                       {userData.nom?.[0]}
                     </span>
                   )}
-                  <div className="absolute inset-0 rounded-full bg-black/0 hover:bg-black/40 transition-colors duration-200 flex items-center justify-center">
-                    <FaCamera className="w-4 h-4 text-white opacity-0 hover:opacity-100 transition-opacity duration-200 sm:w-[18px] sm:h-[18px]" />
-                  </div>
                 </div>
-                <div className="absolute inset-[-3px] rounded-full border-2 border-blue-500/40" />
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
             </div>
 
             {/* Informations utilisateur */}
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <h1 className="text-[clamp(1.125rem,2vw,1.5rem)] font-bold text-gray-900 m-0">
-                  {userData.prenom} {userData.nom}
+                  {userData.nom} {userData.prenom} 
                 </h1>
-                <Pill tone="blue">{userData.role}</Pill>
+          
               </div>
 
               <div className="flex items-center gap-1.5 mb-2">
@@ -299,14 +265,6 @@ const ProfileView = () => {
                   </span>
                 </div>
               )}
-            </div>
-
-            {/* Badge email vérifié */}
-            <div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-green-500/10 text-green-600 border border-green-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                Vérifié
-              </div>
             </div>
           </div>
         </div>
@@ -349,7 +307,7 @@ const ProfileView = () => {
   );
 };
 
-// ─── Composant Informations Personnelles ─────────────────────────────────────
+// Composant Informations Personnelles
 const PersonalInfoForm = ({ userData, setUserData, showToast }) => {
   const [editInfo, setEditInfo] = useState(false);
   const [editContact, setEditContact] = useState(false);
@@ -690,7 +648,7 @@ const PersonalInfoForm = ({ userData, setUserData, showToast }) => {
   );
 };
 
-// ─── Composant Sécurité ───────────────────────────────────────────────────────
+// Composant Sécurité
 const SecurityForm = ({ showToast }) => {
   const [passwords, setPasswords] = useState({
     passwordCurrent: "",
@@ -704,11 +662,6 @@ const SecurityForm = ({ showToast }) => {
   });
   const [errors, setErrors] = useState({});
   const [loadingPassword, setLoadingPassword] = useState(false);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [showQRCode, setShowQRCode] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [qrCodeUrl, setQrCodeUrl] = useState("");
-  const [loading2FA, setLoading2FA] = useState(false);
 
   const passwordCriteria = [
     { key: "minLength", regex: /.{8,}/, label: "8 caractères" },
@@ -782,50 +735,6 @@ const SecurityForm = ({ showToast }) => {
 
   const togglePasswordVisibility = (field) => {
     setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
-  };
-
-  const handleEnable2FA = () => {
-    setLoading2FA(true);
-    setTimeout(() => {
-      setQrCodeUrl(
-        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=otpauth://totp/Orientation:admin%40orientation.local?secret=JBSWY3DPEHPK3PXP&issuer=Orientation",
-      );
-      setShowQRCode(true);
-      setLoading2FA(false);
-      showToast("QR Code généré avec succès", "success");
-    }, 1000);
-  };
-
-  const handleVerify2FA = () => {
-    if (verificationCode.length !== 6) {
-      showToast("Le code doit contenir 6 chiffres", "error");
-      return;
-    }
-    setLoading2FA(true);
-    setTimeout(() => {
-      setTwoFactorEnabled(true);
-      setShowQRCode(false);
-      setVerificationCode("");
-      setLoading2FA(false);
-      showToast("Authentification à 2 facteurs activée", "success");
-    }, 1000);
-  };
-
-  const handleDisable2FA = () => {
-    if (
-      window.confirm(
-        "Êtes-vous sûr de vouloir désactiver l'authentification à deux facteurs ?",
-      )
-    ) {
-      setLoading2FA(true);
-      setTimeout(() => {
-        setTwoFactorEnabled(false);
-        setShowQRCode(false);
-        setVerificationCode("");
-        setLoading2FA(false);
-        showToast("Authentification à 2 facteurs désactivée", "success");
-      }, 1000);
-    }
   };
 
   const PasswordInput = ({ field, label, visKey }) => (
@@ -935,93 +844,6 @@ const SecurityForm = ({ showToast }) => {
             Mettre à jour
           </BtnPrimary>
         </div>
-      </div>
-
-      {/* 2FA */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-start gap-3 sm:items-center">
-            <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
-              <FaShieldAlt className="w-4 h-4 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-gray-900 m-0">
-                Authentification à deux facteurs
-              </h3>
-              <p className="text-xs text-gray-500 mt-1 max-w-[480px]">
-                Protégez votre compte en exigeant un code lors de la connexion
-                en plus de votre mot de passe.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Pill tone={twoFactorEnabled ? "green" : "gray"}>
-              {twoFactorEnabled ? "Activé" : "Désactivé"}
-            </Pill>
-            {twoFactorEnabled ? (
-              <BtnSecondary onClick={handleDisable2FA} disabled={loading2FA}>
-                Désactiver
-              </BtnSecondary>
-            ) : (
-              <BtnPrimary onClick={handleEnable2FA} loading={loading2FA} disabled={loading2FA}>
-                Activer le 2FA
-              </BtnPrimary>
-            )}
-          </div>
-        </div>
-
-        {showQRCode && (
-          <div className="mt-5 grid grid-cols-1 gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4 sm:gap-6 sm:p-5 md:grid-cols-[160px_1fr]">
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-[120px] h-[120px] bg-white rounded-lg flex items-center justify-center border border-gray-200 sm:w-[140px] sm:h-[140px]">
-                {qrCodeUrl ? (
-                  <img
-                    src={qrCodeUrl}
-                    alt="QR Code"
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <FaClock className="animate-spin text-gray-400" size={24} />
-                )}
-              </div>
-              <p className="text-[10px] text-gray-500 text-center">
-                Scannez avec Google Authenticator, Authy, etc.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3">
-              <p className="text-xs text-gray-600 m-0">
-                Entrez le code à 6 chiffres de votre application.
-              </p>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={verificationCode}
-                  onChange={(e) =>
-                    setVerificationCode(e.target.value.replace(/\D/g, ""))
-                  }
-                  maxLength={6}
-                  className="w-full rounded-lg border border-gray-200 bg-white p-3 text-center text-base font-mono tracking-[0.22em] focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-lg sm:tracking-[4px]"
-                  placeholder="••••••"
-                />
-              </div>
-              <div className="flex gap-2">
-                <BtnPrimary
-                  onClick={handleVerify2FA}
-                  loading={loading2FA}
-                  disabled={loading2FA}
-                >
-                  Confirmer
-                </BtnPrimary>
-                <BtnSecondary onClick={() => setShowQRCode(false)}>
-                  Annuler
-                </BtnSecondary>
-              </div>
-              <p className="text-[9px] text-gray-400 m-0">
-                Conservez votre code de secours en lieu sûr.
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </form>
   );

@@ -356,10 +356,10 @@ const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, pl
 };
 
 // ── ModalShell — fond blanc pur ───────────────────────────────────────────────
-const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
+const ModalShell = ({ title, icon: Icon, onClose, children, footer, maxWidth = "sm:max-w-2xl" }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-    <div className="relative w-full max-w-[calc(100vw-1.5rem)] sm:max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col">
+    <div className={`relative w-full max-w-[calc(100vw-1.5rem)] ${maxWidth} bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col`}>
       <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex-shrink-0 bg-white">
         <div className="flex items-center gap-2 sm:gap-3">
           {Icon && (
@@ -373,7 +373,7 @@ const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
           <X size={17} className="text-gray-500" />
         </button>
       </div>
-      <div className="p-4 sm:p-5 overflow-y-auto overflow-x-hidden flex-1 text-gray-900 bg-white min-h-[400px]">
+      <div className="p-4 sm:p-5 overflow-y-auto overflow-x-hidden flex-1 text-gray-900 bg-white">
         {children}
       </div>
       {footer && (
@@ -420,7 +420,7 @@ const ParcoursModal = ({ isEditing, formData, onClose, onSubmit, onChange, loadi
         </BtnPrimary>
       </>}
     >
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-8 min-h-[400px]">
         {/* SECTION 1 : INFORMATIONS DU PARCOURS */}
         <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
           <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
@@ -582,6 +582,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
     title={title} 
     icon={Icon || FaExclamationTriangle} 
     onClose={onClose}
+    maxWidth="sm:max-w-md"
     footer={<>
       <BtnCancel onClick={onClose} />
       <button 
@@ -597,7 +598,12 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
         ) : confirmText}
       </button>
     </>}>
-    <p className="text-sm text-gray-600">{message}</p>
+    <div className="flex flex-col items-center text-center py-4">
+      <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-4">
+        <FaExclamationTriangle size={24} />
+      </div>
+      <p className="text-sm text-gray-600 leading-relaxed px-4">{message}</p>
+    </div>
   </ModalShell>
 );
 

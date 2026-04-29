@@ -144,6 +144,9 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
                 type="button"
                 onClick={handleToggle}
                 className="s8-trigger"
+                aria-haspopup="listbox"
+                aria-expanded={open}
+                aria-controls="section8-domaines"
               >
                 <span className={selected ? "s8-val" : "s8-ph"}>
                   {selected ? selected.label : "Sélectionner un domaine..."}
@@ -171,6 +174,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Rechercher..."
                         className="s8-drop-input pr-8"
+                        aria-label="Rechercher un domaine"
                       />
                       {search && (
                         <button
@@ -186,7 +190,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
                     </div>
                   </div>
 
-                  <div className="s8-drop-list">
+                  <div id="section8-domaines" className="s8-drop-list" role="listbox" aria-label="Liste des domaines">
                     {filteredOptions.length > 0 ? (
                       filteredOptions.map((o) => (
                         <button
@@ -194,6 +198,8 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
                           type="button"
                           onClick={() => handleSelect(o)}
                           className={`s8-drop-item ${selected?.value === o.value ? "active" : ""}`}
+                          role="option"
+                          aria-selected={selected?.value === o.value}
                         >
                           <span className="s8-item-name">{o.label}</span>
                           {selected?.value === o.value && <HiCheck className="text-blue-600" size={14} />}

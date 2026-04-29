@@ -21,6 +21,21 @@ import {
 import { toSearchSlug } from "../../utils/slug";
 import BuildingSVG from "./contenu/BuildingSVG";
 
+const PUBLIC_ROUTE_PATTERNS = [
+  /^\/acceuil\/orientation$/,
+  /^\/acceuil\/trouver-metier$/,
+  /^\/acceuil\/trouver-metier\/[a-z0-9-]+$/,
+  /^\/acceuil\/metier\/[a-z0-9-]+$/,
+  /^\/acceuil\/region-map-madagascar$/,
+  /^\/acceuil\/universiter-parcours$/,
+  /^\/acceuil\/trouver-mon-orientation$/,
+  /^\/acceuil\/recommendation$/,
+  /^\/acceuil\/trouver-domaine$/,
+  /^\/acceuil\/type-etude$/,
+  /^\/acceuil\/metier-suggerer$/,
+  /^\/acceuil\/parcours-formation$/,
+];
+
 function Section2Wrapper(props) {
   const { slug } = useParams();
   const searchParam = slug ? decodeURIComponent(slug.replace(/-/g, " ")) : "";
@@ -42,7 +57,6 @@ function Section3Wrapper({ metierSelectionne, setMetierSelectionne, ...props }) 
 export default function Acceuil() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { uuid } = useParams();
 
   const [metierSelectionne,            setMetierSelectionne]            = useState(null);
   const [regionSelectionnee,           setRegionSelectionnee]           = useState(null);
@@ -53,36 +67,18 @@ export default function Acceuil() {
   const [sourceFlux,                   setSourceFlux]                   = useState("metier");
   const [animDir,                      setAnimDir]                      = useState("idle");
 
-  // Extract UUID from URL because it's now at the end of nested routes
-  // and might not be available via useParams() in this parent component
-  const getUuidFromPath = () => {
-    if (uuid) return uuid;
-    const parts = location.pathname.split("/");
-    const last = parts[parts.length - 1];
-    // Simple check: if it looks like a UUID (not a static keyword)
-    const keywords = ["orientation", "trouver-metier", "metier", "region-map-madagascar", "universiter-parcours", "trouver-mon-orientation", "recommendation", "trouver-domaine", "type-etude", "metier-suggerer", "parcours-formation"];
-    if (last && !keywords.includes(last) && last !== "acceuil") {
-      return last;
-    }
-    return null;
-  };
-  const currentUuid = getUuidFromPath();
-
   const naviguerVers = (path, direction = "forward") => {
     setAnimDir(direction);
     let finalPath = path;
     
-    // Ensure the path starts with /acceuil
     if (!path.startsWith("/acceuil")) {
       finalPath = `/acceuil${path.startsWith("/") ? "" : "/"}${path}`;
     }
 
-    // Append UUID if it's not already there at the end
-    const effectiveUuid = currentUuid || Math.random().toString(36).substring(2, 11);
-    if (!finalPath.endsWith(`/${effectiveUuid}`)) {
-      finalPath = `${finalPath.replace(/\/$/, "")}/${effectiveUuid}`;
+    if (!PUBLIC_ROUTE_PATTERNS.some((pattern) => pattern.test(finalPath))) {
+      finalPath = "/acceuil/orientation";
     }
-    
+
     navigate(finalPath);
   };
 
@@ -147,7 +143,7 @@ export default function Acceuil() {
 
               {/* ── S1 : Accueil ── */}
               <Route
-                path="orientation/:uuid"
+                path="orientation"
                 element={
                   <Section1
                     onChoisirMetier={() => {
@@ -163,9 +159,8 @@ export default function Acceuil() {
               />
 
               {/* ── S2 : Choisir un métier ── */}
-              {/* /acceuil/trouver-metier/:uuid  ou  /acceuil/trouver-metier/developpeur-web/:uuid */}
               <Route
-                path="trouver-metier/:uuid"
+                path="trouver-metier"
                 element={
                   <Section2Wrapper
                     selectedMetier={metierSelectionne}
@@ -184,7 +179,7 @@ export default function Acceuil() {
                 }
               />
               <Route
-                path="trouver-metier/:slug/:uuid"
+                path="trouver-metier/:slug"
                 element={
                   <Section2Wrapper
                     selectedMetier={metierSelectionne}
@@ -204,10 +199,9 @@ export default function Acceuil() {
               />
 
               {/* ── S3 : Détail métier ── */}
-              {/* /acceuil/metier/developpeur-full-stack/:uuid */}
               {/* Résistant au refresh : Section3 recharge depuis BDD via slugFromUrl */}
               <Route
-                path="metier/:slug/:uuid"
+                path="metier/:slug"
                 element={
                   <Section3Wrapper
                     metierSelectionne={metierSelectionne}
@@ -227,7 +221,7 @@ export default function Acceuil() {
 
               {/* ── S5 : Carte des régions ── */}
               <Route
-                path="region-map-madagascar/:uuid"
+                path="region-map-madagascar"
                 element={
                   <Section5
                     metier={metierSelectionne}
@@ -256,7 +250,7 @@ export default function Acceuil() {
 
               {/* ── S4 : Liste établissements ── */}
               <Route
-                path="universiter-parcours/:uuid"
+                path="universiter-parcours"
                 element={
                   <Section4
                     metier={metierSelectionne}
@@ -270,7 +264,7 @@ export default function Acceuil() {
 
               {/* ── S6 : Orientation intro ── */}
               <Route
-                path="trouver-mon-orientation/:uuid"
+                path="trouver-mon-orientation"
                 element={
                   <Section6
                     onRetour={() => naviguerVers("/orientation", "back")}
@@ -282,7 +276,7 @@ export default function Acceuil() {
 
               {/* ── S7 : Tu es actuellement ── */}
               <Route
-                path="recommendation/:uuid"
+                path="recommendation"
                 element={
                   <Section7
                     onRetour={() => naviguerVers("/trouver-mon-orientation", "back")}
@@ -297,7 +291,7 @@ export default function Acceuil() {
 
               {/* ── S8 : Quel domaine/mention ── */}
               <Route
-                path="trouver-domaine/:uuid"
+                path="trouver-domaine"
                 element={
                   <Section8
                     onRetour={() => naviguerVers("/recommendation", "back")}
@@ -312,7 +306,7 @@ export default function Acceuil() {
 
               {/* ── S9 : Type d'études ── */}
               <Route
-                path="type-etude/:uuid"
+                path="type-etude"
                 element={
                   <Section9
                     reponseDomaine={reponseDomaine}
@@ -328,7 +322,7 @@ export default function Acceuil() {
 
               {/* ── S10 : Métiers suggérés ── */}
               <Route
-                path="metier-suggerer/:uuid"
+                path="metier-suggerer"
                 element={
                   <Section10
                     reponseStatut={reponseStatut}
@@ -346,7 +340,7 @@ export default function Acceuil() {
 
               {/* ── S11 : Parcours de formation ── */}
               <Route
-                path="parcours-formation/:uuid"
+                path="parcours-formation"
                 element={
                   <Section11
                     metier={metierOrientationSelectionne}
@@ -362,8 +356,8 @@ export default function Acceuil() {
               />
 
               {/* ── Redirections ── */}
-              <Route path="/"  element={<Navigate to={`/acceuil/orientation/${currentUuid || Math.random().toString(36).substring(2, 11)}`} replace />} />
-              <Route path="*"  element={<Navigate to={`/acceuil/orientation/${currentUuid || Math.random().toString(36).substring(2, 11)}`} replace />} />
+              <Route path="/"  element={<Navigate to="/acceuil/orientation" replace />} />
+              <Route path="*"  element={<Navigate to="/acceuil/orientation" replace />} />
 
             </Routes>
           </div>

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import InstallPWA from "./InstallPWA.jsx";
 
 import LoadingPage from "./pages/acceuil/loadingPage.jsx";
@@ -19,6 +19,66 @@ import NotFound404 from "../src/pages/error/NotFound404.jsx";
 
 const AuthContext = createContext(null);
 
+const safeParse = (value) => {
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+};
+
+const decodeTokenPayload = (token) => {
+  if (!token) return null;
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(window.atob(normalized));
+  } catch {
+    return null;
+  }
+};
+
+const isTokenExpired = (token) => {
+  const payload = decodeTokenPayload(token);
+  if (!payload?.exp) return true;
+  return Date.now() >= payload.exp * 1000;
+};
+
+const clearAuthStorage = () => {
+  for (const storage of [localStorage, sessionStorage]) {
+    storage.removeItem("token");
+    storage.removeItem("userRole");
+    storage.removeItem("user");
+  }
+};
+
+const getStoredSession = () => {
+  const storages = [localStorage, sessionStorage];
+
+  for (const storage of storages) {
+    const token = storage.getItem("token");
+    const user = safeParse(storage.getItem("user"));
+    const role = storage.getItem("userRole") || user?.role || null;
+
+    if (!token) continue;
+    if (isTokenExpired(token)) {
+      clearAuthStorage();
+      return null;
+    }
+
+    if (!role) {
+      clearAuthStorage();
+      return null;
+    }
+
+    return { token, role, ...(user || {}) };
+  }
+
+  return null;
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -28,25 +88,10 @@ export const useAuth = () => {
 };
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
-    const userRole =
-      localStorage.getItem("userRole") || sessionStorage.getItem("userRole");
-    const userData =
-      localStorage.getItem("user") || sessionStorage.getItem("user");
-
-    if (token && userRole) {
-      return {
-        token,
-        role: userRole,
-        ...(userData ? JSON.parse(userData) : {}),
-      };
-    }
-    return null;
-  });
+  const [user, setUser] = useState(() => getStoredSession());
 
   const login = (token, role, rememberMe = false, userData = {}) => {
+    clearAuthStorage();
     const storage = rememberMe ? localStorage : sessionStorage;
     storage.setItem("token", token);
     storage.setItem("userRole", role);
@@ -55,38 +100,44 @@ const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("userRole");
-    sessionStorage.removeItem("user");
+    clearAuthStorage();
     setUser(null);
   };
 
-  const value = {
-    user,
-    login,
-    logout,
-    isAuthenticated: !!user,
-    isAdmin: user?.role === "admin",
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      login,
+      logout,
+      isAuthenticated: !!user?.token && !isTokenExpired(user.token),
+      isAdmin: user?.role === "admin",
+    }),
+    [user],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 const ProtectedRoute = ({ children, requireAdmin = true }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, logout } = useAuth();
 
   if (!isAuthenticated) {
+    logout();
     return <Navigate to="/login" replace />;
   }
 
   if (requireAdmin && !isAdmin) {
-    return <Navigate to="/acceuil" replace />;
+    return <Navigate to="/acceuil/orientation" replace />;
   }
 
   return children;
+};
+
+const PublicOnlyRoute = ({ children }) => {
+  const { isAuthenticated, isAdmin } = useAuth();
+
+  if (!isAuthenticated) return children;
+  return <Navigate to={isAdmin ? "/dashboard/admin" : "/acceuil/orientation"} replace />;
 };
 
 function App() {
@@ -94,15 +145,16 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Route racine : publique */}
           <Route path="/" element={<LoadingPage />} />
-
-          {/* Routes publiques */}
           <Route path="/acceuil/*" element={<Acceuil />} />
-          <Route path="/login/:uuid" element={<Login />} />
-          <Route path="/login" element={<Navigate to={`/login/${Math.random().toString(36).substring(2, 11)}`} replace />} />
-
-          {/* Routes protégées - Dashboard Admin */}
+          <Route
+            path="/login"
+            element={
+              <PublicOnlyRoute>
+                <Login />
+              </PublicOnlyRoute>
+            }
+          />
           <Route
             path="/dashboard/admin/*"
             element={
@@ -111,23 +163,17 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route path=":uuid" element={<DashboardAdminView />} />
-            <Route path="profile/:uuid" element={<ProfileView />} />
-            <Route path="parametres/domaine/:uuid" element={<DomainesView />} />
-            <Route path="parametres/metier/:uuid" element={<MetiersView />} />
-            <Route path="parametres/parcours/:uuid" element={<ParcoursView />} />
-            <Route path="parametres/mention/:uuid" element={<MentionsView />} />
-            <Route path="parametres/serie/:uuid" element={<SeriesView />} />
-            <Route
-              path="parametres/etablissement/:uuid"
-              element={<EtablissementsView />}
-            />
-            <Route path="utilisateurs/:uuid" element={<UsersView />} />
-            {/* Fallback to index with random UUID if missing */}
-            <Route path="*" element={<Navigate to={`/dashboard/admin/${Math.random().toString(36).substring(2, 11)}`} replace />} />
+            <Route index element={<DashboardAdminView />} />
+            <Route path="profile" element={<ProfileView />} />
+            <Route path="parametres/domaine" element={<DomainesView />} />
+            <Route path="parametres/metier" element={<MetiersView />} />
+            <Route path="parametres/parcours" element={<ParcoursView />} />
+            <Route path="parametres/mention" element={<MentionsView />} />
+            <Route path="parametres/serie" element={<SeriesView />} />
+            <Route path="parametres/etablissement" element={<EtablissementsView />} />
+            <Route path="utilisateurs" element={<UsersView />} />
+            <Route path="*" element={<Navigate to="/dashboard/admin" replace />} />
           </Route>
-
-          {/* Page 404 */}
           <Route path="*" element={<NotFound404 />} />
         </Routes>
       </BrowserRouter>

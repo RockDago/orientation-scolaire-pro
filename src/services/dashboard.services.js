@@ -2,10 +2,10 @@ import API from "../api/axios";
 
 const getVisitorId = () => {
   if (typeof window === "undefined") return null;
-  let vid = localStorage.getItem("osp_visitor_id");
+  let vid = sessionStorage.getItem("osp_visitor_id");
   if (!vid) {
     vid = "v_" + Math.random().toString(36).substring(2) + Date.now().toString(36);
-    localStorage.setItem("osp_visitor_id", vid);
+    sessionStorage.setItem("osp_visitor_id", vid);
   }
   return vid;
 };
@@ -21,12 +21,10 @@ const buildClientInfo = () => {
   } catch { /* silencieux */ }
 
   return {
-    user_agent:      nav.userAgent || null,
     language:        nav.language  || null,
-    platform:        nav.platform  || null,
     screen:          { width: scr.width || null, height: scr.height || null },
     timezone:        Intl.DateTimeFormat().resolvedOptions().timeZone || null,
-    connection_type: connectionType,
+    connection_type: connectionType || null,
   };
 };
 

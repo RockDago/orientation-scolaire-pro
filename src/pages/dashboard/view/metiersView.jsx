@@ -31,6 +31,8 @@ import { getAllSeries } from "../../../services/serie.services";
 import { getAllDomaines } from "../../../services/domaine.services";
 
 const niveauOptions = ["Bac+2", "Bac+3", "Bac+4", "Bac+5", "Bac+8"];
+const parcoursFormationOptions = ["Bac", "Licence", "Master", "Master indifférencié", "Master recherche", "Master professionnel", "Doctorat"];
+
 
 const emptyForm = {
   label: "",
@@ -284,10 +286,10 @@ const MultiSelect = ({ label, values = [], options = [], onAdd, onRemove, id, pl
 };
 
 // ── ModalShell — fond blanc pur ───────────────────────────────────────────────
-const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
+const ModalShell = ({ title, icon: Icon, onClose, children, footer, maxWidth = "sm:max-w-5xl" }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-    <div className="relative w-full max-w-[calc(100vw-1.5rem)] sm:max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col">
+    <div className={`relative w-full max-w-[calc(100vw-1.5rem)] ${maxWidth} bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col`}>
       <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex-shrink-0 bg-white">
         <div className="flex items-center gap-2 sm:gap-3">
           {Icon && (
@@ -301,7 +303,7 @@ const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
           <X size={17} className="text-gray-500" />
         </button>
       </div>
-      <div className="p-4 sm:p-5 overflow-y-auto overflow-x-hidden flex-1 text-gray-900 bg-white min-h-[400px]">
+      <div className="p-4 sm:p-5 overflow-y-auto overflow-x-hidden flex-1 text-gray-900 bg-white">
         {children}
         {footer && (
           <div className="mt-8 pt-4 border-t border-gray-100 flex justify-end gap-2">
@@ -336,8 +338,7 @@ const BtnPrimary = ({ onClick, children, loading, disabled }) => (
 const MetierModal = ({ 
   isEditing, formData, onClose, onSubmit, onChange, loadingSave, isFormValid,
   mentionOptions, parcoursOptions, serieOptions, domaineOptions,
-  handleAddCollection, handleRemoveCollection,
-  newParcoursFormation, setNewParcoursFormation, handleAddParcoursFormation, handleRemoveParcoursFormation
+  handleAddCollection, handleRemoveCollection
 }) => {
   const handleSubmit = (e) => { e.preventDefault(); onSubmit(); };
 
@@ -353,7 +354,7 @@ const MetierModal = ({
         </BtnPrimary>
       </>}
     >
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-8 min-h-[400px]">
         {/* SECTION 1 : INFORMATIONS GÉNÉRALES */}
         <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 space-y-4">
           <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2 mb-2">
@@ -461,50 +462,18 @@ const MetierModal = ({
               onAdd={(val) => handleAddCollection('parcours', val)}
               onRemove={(val) => handleRemoveCollection('parcours', val)}
             />
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-800 border-b pb-2">
-                Parcours de formation <span className="text-red-500">*</span>
-              </h3>
-              <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="Nouveau parcours... (Appuyez sur Entrée)"
-                  value={newParcoursFormation}
-                  onChange={(e) => setNewParcoursFormation(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddParcoursFormation();
-                    }
-                  }}
-                />
-              </div>
-              <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-lg border border-gray-200">
-                {formData.parcoursFormation.map((parcours) => (
-                  <div
-                    key={parcours}
-                    className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm transition-shadow"
-                  >
-                    <span className="text-xs text-gray-700 font-medium">{parcours}</span>
-                    <button
-                      onClick={() => handleRemoveParcoursFormation(parcours)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                      type="button"
-                    >
-                      <FaTimes size={12} />
-                    </button>
-                  </div>
-                ))}
-                {formData.parcoursFormation.length === 0 && (
-                  <span className="text-gray-400 text-[10px] w-full text-center py-2 italic">
-                    Aucun élément ajouté sur le parcours de formations
-                  </span>
-                )}
-              </div>
-            </div>
+            <MultiSelect 
+              label="Parcours de formation"
+              id="parcoursFormation_select"
+              placeholder="Sélectionner un parcours de formation"
+              values={formData.parcoursFormation}
+              options={parcoursFormationOptions}
+              onAdd={(val) => handleAddCollection('parcoursFormation', val)}
+              onRemove={(val) => handleRemoveCollection('parcoursFormation', val)}
+            />
           </div>
         </div>
+
       </form>
     </ModalShell>
   );
@@ -644,6 +613,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
     title={title} 
     icon={Icon || FaExclamationTriangle} 
     onClose={onClose}
+    maxWidth="sm:max-w-md"
     footer={<>
       <BtnCancel onClick={onClose} />
       <button 
@@ -659,7 +629,12 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
         ) : confirmText}
       </button>
     </>}>
-    <p className="text-sm text-gray-600">{message}</p>
+    <div className="flex flex-col items-center text-center py-4">
+      <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-4">
+        <FaExclamationTriangle size={24} />
+      </div>
+      <p className="text-sm text-gray-600 leading-relaxed px-4">{message}</p>
+    </div>
   </ModalShell>
 );
 
@@ -884,8 +859,8 @@ export default function MetiersView() {
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
   
   const [formData, setFormData] = useState(emptyForm);
-  const [newParcoursFormation, setNewParcoursFormation] = useState("");
   const [viewItem, setViewItem] = useState(null);
+
 
   // ── Toast ──────────────────────────────────────────────────────────
   const showToast = (message, type = "success") => {
@@ -1042,30 +1017,8 @@ export default function MetiersView() {
     }));
   };
 
-  const handleAddParcoursFormation = () => {
-    if (newParcoursFormation.trim() === "") {
-      showToast("Veuillez saisir un parcours de formation", "error");
-      return;
-    }
-    if (formData.parcoursFormation.includes(newParcoursFormation.trim())) {
-      showToast("Ce parcours existe déjà", "error");
-      return;
-    }
-    setFormData(prev => ({
-      ...prev,
-      parcoursFormation: [...prev.parcoursFormation, newParcoursFormation.trim()]
-    }));
-    setNewParcoursFormation("");
-  };
-
-  const handleRemoveParcoursFormation = (pfToRemove) => {
-    setFormData(prev => ({
-      ...prev,
-      parcoursFormation: prev.parcoursFormation.filter(pf => pf !== pfToRemove)
-    }));
-  };
-
   // ── Ouvrir modal ───────────────────────────────────────────────────
+
   const handleOpenModal = (m = null, isView = false) => {
     if (m) {
       if (isView) {
@@ -1087,8 +1040,8 @@ export default function MetiersView() {
       setEditingId(null);
       setFormData(emptyForm);
     }
-    setNewParcoursFormation("");
     setShowModal(true);
+
   };
 
   const handleRowClick = (metier, e) => { 
@@ -1126,9 +1079,9 @@ const handleSave = async () => {
 
     setShowModal(false);
     setFormData(emptyForm);
-    setNewParcoursFormation("");
 
     await fetchData();
+
 
   } catch (error) {
     const message = error.response?.data?.message || "Erreur lors de l'enregistrement";
@@ -1220,11 +1173,8 @@ const handleSave = async () => {
           domaineOptions={domaineOptions}
           handleAddCollection={handleAddCollection}
           handleRemoveCollection={handleRemoveCollection}
-          newParcoursFormation={newParcoursFormation}
-          setNewParcoursFormation={setNewParcoursFormation}
-          handleAddParcoursFormation={handleAddParcoursFormation}
-          handleRemoveParcoursFormation={handleRemoveParcoursFormation}
         />
+
       )}
       
       {deleteItem && (

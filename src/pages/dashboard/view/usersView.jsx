@@ -127,10 +127,10 @@ const FloatInput = ({ id, name, label, value, onChange, type = "text", error, di
 };
 
 // ── ModalShell ───────────────────────────────────────────────────────────────
-const ModalShell = ({ title, icon: Icon, onClose, children, footer }) => (
+const ModalShell = ({ title, icon: Icon, onClose, children, footer, maxWidth = "sm:max-w-2xl" }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-    <div className="relative w-full max-w-[calc(100vw-1.5rem)] sm:max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col border border-gray-100">
+    <div className={`relative w-full max-w-[calc(100vw-1.5rem)] ${maxWidth} bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col border border-gray-100`}>
       <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex-shrink-0 bg-white">
         <div className="flex items-center gap-2 sm:gap-3">
           {Icon && (
@@ -213,7 +213,7 @@ const UserModal = ({ formData, isEditing, onClose, onSubmit, onChange, loadingSa
         </BtnPrimary>
       </>}
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 min-h-[400px]">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FloatInput 
             id="nom"
@@ -402,6 +402,7 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
     title={title} 
     icon={Icon || FaExclamationTriangle} 
     onClose={onClose}
+    maxWidth="sm:max-w-md"
     footer={<>
       <BtnCancel onClick={onClose} />
       <button 
@@ -417,7 +418,12 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
         ) : confirmText}
       </button>
     </>}>
-    <p className="text-sm text-gray-600">{message}</p>
+    <div className="flex flex-col items-center text-center py-4">
+      <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-4">
+        <FaExclamationTriangle size={24} />
+      </div>
+      <p className="text-sm text-gray-600 leading-relaxed px-4">{message}</p>
+    </div>
   </ModalShell>
 );
 

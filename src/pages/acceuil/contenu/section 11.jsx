@@ -141,12 +141,9 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
           </div>
 
           <div className="flex flex-wrap gap-2 mb-5">
-            <span className="bg-white/20 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full">
-              {Array.isArray(m?.mention) ? m.mention.join(", ") : (m?.mention || "—")}
-            </span>
             {m?.niveau && (
-              <span className="bg-white/15 text-white text-[10px] sm:text-xs font-semibold px-3 py-1 rounded-full">
-                {Array.isArray(m.niveau) ? m.niveau.join(", ") : m.niveau}
+              <span className="bg-[#155faa]/60 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                Niveau : {Array.isArray(m.niveau) ? m.niveau.join(", ") : m.niveau}
               </span>
             )}
           </div>
