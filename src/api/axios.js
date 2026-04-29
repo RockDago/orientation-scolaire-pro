@@ -5,7 +5,7 @@ export const API_URL =
   import.meta.env.VITE_API_URL ||
   (window.location.hostname === "localhost"
     ? "http://localhost/orientation-scolaire-professionnelle/backend/public"
-    : "https://bambaray.mg/dssip.bambaray.mg/backend/public");
+    : "https://dssip.bambaray.mg/backend/public");
 
 const API = axios.create({
   baseURL: API_URL + "/api",
