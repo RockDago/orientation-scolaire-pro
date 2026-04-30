@@ -144,7 +144,7 @@ const Login = () => {
                       Plateforme officielle
                     </p>
                     <p className="text-lg font-semibold text-white/90">
-                      Ministère de l&apos;Enseignement Supérieur
+                      Ministère de l&apos;Enseignement Supérieur et de la Recherche Scientifique
                     </p>
                   </div>
                 </div>

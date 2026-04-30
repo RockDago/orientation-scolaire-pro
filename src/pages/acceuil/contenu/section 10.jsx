@@ -354,7 +354,7 @@ export default function Section10({
                       type="button"
                       key={item.id || i}
                       onClick={() => setIndex(i)}
-                      className={`rounded-2xl p-4 border cursor-pointer transition-all h-[180px] flex flex-col ${index === i ? "bg-white/20 border-white/50" : "bg-white/10 border-white/20 hover:bg-white/15"}`}
+                      className={`w-full rounded-2xl p-4 border cursor-pointer transition-all h-[180px] flex flex-col ${index === i ? "bg-white/20 border-white/50" : "bg-white/10 border-white/20 hover:bg-white/15"}`}
                       aria-pressed={index === i}
                     >
                       <div className="flex justify-between items-start mb-2">
