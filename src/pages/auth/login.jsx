@@ -139,11 +139,11 @@ const Login = () => {
                     alt="Logo MESUPRES"
                     className="h-14 w-auto object-contain sm:h-16 lg:h-20"
                   />
-                  <div className="hidden lg:block">
-                    <p className="text-sm font-medium uppercase tracking-[0.35em] text-white/70">
+                  <div className="hidden lg:block max-w-3xl">
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-white/65">
                       Plateforme officielle
                     </p>
-                    <p className="text-lg font-semibold text-white/90">
+                    <p className="mt-1 text-xl font-black leading-tight text-white xl:text-2xl">
                       Ministère de l&apos;Enseignement Supérieur et de la Recherche Scientifique
                     </p>
                   </div>
