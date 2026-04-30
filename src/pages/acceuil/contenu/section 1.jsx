@@ -1,4 +1,4 @@
-import logo from "../../../assets/logo.jpeg";
+import logo from "../../../assets/logo.png";
 import pictoExplorer from "../../../assets/picto_Explorer.png";
 import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
 import { useState } from "react";
@@ -60,7 +60,7 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
       )}
 
       <section
-        className="s1-container relative w-full min-h-[100dvh] bg-white flex flex-col pt-10 md:pt-12 pb-6"
+        className="s1-container relative w-full min-h-[100dvh] flex flex-col pt-10 md:pt-12 pb-6"
         style={{ animation: "sectionEntrance 0.6s cubic-bezier(0.16,1,0.3,1) both" }}
       >
         {/* Noise texture */}
@@ -104,12 +104,12 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             className="s1-header-text w-full max-w-6xl mx-auto text-center mt-8 mb-12 md:mt-10 md:mb-16"
             style={{ animation: "fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.2s both" }}
           >
-            <h1 className="s1-title-main font-extrabold text-slate-900 leading-tight tracking-tight">
+            <h1 className="s1-title-main font-extrabold text-white leading-tight tracking-tight">
               Que veux-tu faire
               <br />
               aujourd&apos;hui ?
             </h1>
-            <p className="s1-description text-slate-500 leading-relaxed max-w-3xl mx-auto mt-4">
+            <p className="s1-description text-white/90 leading-relaxed max-w-3xl mx-auto mt-4">
               Découvre les métiers et les formations qui te correspondent
             </p>
           </div>
@@ -188,7 +188,7 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
         </div>
 
         <p
-          className="s1-footer mt-auto pt-16 pb-4 text-center text-slate-400"
+          className="s1-footer mt-auto pt-16 pb-4 text-center text-white/85"
           style={{ animation: "fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.5s both" }}
         >
           &copy; {new Date().getFullYear()} MESUPRES — Tous droits réservés
@@ -198,6 +198,9 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
 
           /* ─── BASE MOBILE (≥390px) ─── */
           .s1-container { padding: 0.75rem 1rem 0; }
+          .s1-container {
+            background: linear-gradient(135deg,#1250c8 0%,#1a6dcc 25%,#28b090 55%,#a0d820 80%,#c2e832 100%);
+          }
           .s1-logo { height: clamp(6rem, 18vw, 8.5rem); }
           .s1-badge { font-size: 0.7rem; padding: 0.4rem 0.8rem; }
           .s1-title-main { font-size: clamp(1.4rem, 7vw, 2rem); }

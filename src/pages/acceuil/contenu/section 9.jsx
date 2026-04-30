@@ -4,6 +4,7 @@ import { HiOutlineHome } from "react-icons/hi";
 import BuildingSVG from "./BuildingSVG";
 import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
 import { useNavigate } from "react-router-dom";
+import Boutton from "../../../components/ui/boutton";
 
 const CHOIX_ETUDES = [
   {
@@ -106,17 +107,14 @@ export default function Section9({ onVoirResultats, onRetour, onHome }) {
 
             <div className="s9-choices flex flex-wrap justify-center gap-3 w-full max-w-md mb-6">
               {CHOIX_ETUDES.map((item) => (
-                <button
+                <Boutton
                   key={item.value}
                   onClick={() => handleChoix(item)}
-                  className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all border ${
-                    choix === item.value
-                      ? "bg-white text-[#1250c8] border-white shadow-lg"
-                      : "bg-white/10 text-white border-white/40 hover:bg-white/25"
-                  }`}
+                  size="sm"
+                  variant={choix === item.value ? "chipActive" : "chip"}
                 >
                   {item.label}
-                </button>
+                </Boutton>
               ))}
             </div>
           </div>
@@ -125,29 +123,30 @@ export default function Section9({ onVoirResultats, onRetour, onHome }) {
 
       {/* Boutons bas - Centrés au milieu en haut de Home */}
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-sm px-6 pointer-events-none flex justify-center">
-        <button
+        <Boutton
           onClick={handleSuivant}
           disabled={!choix || isLoading}
-          className={`w-full py-3 sm:py-4 rounded-full font-black text-[clamp(0.8rem,1vw,1rem)] transition-all shadow-lg active:scale-95 pointer-events-auto ${
-            choix && !isLoading
-              ? "bg-[#1250c8] text-white hover:bg-[#1a3ea8] hover:-translate-y-0.5"
-              : "bg-white/20 text-white/40 cursor-not-allowed"
-          }`}
+          fullWidth
+          size="lg"
+          variant={choix && !isLoading ? "primary" : "soft"}
+          className="pointer-events-auto"
         >
-          {isLoading ? "Traitement..." : "Voir les résultats"}
-        </button>
+          {isLoading ? "Traitement..." : "Résultats"}
+        </Boutton>
       </div>
 
       {/* Home Fixed - Centered */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
-        <button
+        <Boutton
           onClick={onHome}
-          className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
+          size="icon"
+          variant="ghost"
+          className="pointer-events-auto"
           aria-label="Accueil"
         >
           <HiOutlineHome size={26} className="sm:hidden" />
           <HiOutlineHome size={30} className="hidden sm:block" />
-        </button>
+        </Boutton>
       </div>
 
       <style>{`

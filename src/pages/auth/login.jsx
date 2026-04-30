@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { login as loginService } from "../../services/auth.services";
 import { useAuth } from "../../App";
 import backgroundImage from "../../assets/mesupres.png";
-import mesupresLogo from "../../assets/logo.jpeg";
+import mesupresLogo from "../../assets/logo.png";
 
 const Login = () => {
   const navigate = useNavigate();

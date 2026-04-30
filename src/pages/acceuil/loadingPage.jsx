@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../assets/logo.jpeg';
+import logo from '../../assets/logo.png';
 
 const LoadingPage = () => {
   const navigate = useNavigate();
@@ -45,7 +45,12 @@ const LoadingPage = () => {
         }
       `}</style>
 
-      <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white px-4 sm:px-6 lg:px-8">
+      <div
+        className="relative flex h-screen w-full items-center justify-center overflow-hidden px-4 sm:px-6 lg:px-8"
+        style={{
+          background: 'linear-gradient(135deg,#1250c8 0%,#1a6dcc 25%,#28b090 55%,#a0d820 80%,#c2e832 100%)',
+        }}
+      >
         <div className="flex h-full w-full items-center justify-center">
           <img
             src={logo}

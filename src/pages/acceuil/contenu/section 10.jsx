@@ -179,7 +179,7 @@ function MetierDetailPanel({ metier, onVoirParcours }) {
           onClick={() => onVoirParcours?.(metier)}
           className="group inline-flex items-center gap-2 text-white hover:text-[#c2e832] font-black text-[clamp(0.8rem,1vw,0.9rem)] transition-all uppercase tracking-wide"
         >
-          Découvrir le parcours
+          Parcours
           <FiArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
         </button>
       </div>

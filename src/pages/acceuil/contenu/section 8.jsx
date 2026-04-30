@@ -4,6 +4,8 @@ import { HiOutlineHome, HiChevronDown, HiCheck, HiX, HiOutlineSearch } from "rea
 import BuildingSVG from "./BuildingSVG";
 import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
 import { getAllDomaines } from "../../../services/domaine.services";
+import Boutton from "../../../components/ui/boutton";
+import Input from "../../../components/ui/input";
 
 function GradBg() {
   return (
@@ -168,7 +170,7 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
                   <div className="s8-drop-search">
                     <div className="relative">
                       <HiOutlineSearch size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input
+                      <Input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
@@ -223,28 +225,29 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
       </div>
 
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-sm px-6 pointer-events-none flex justify-center">
-        <button
+        <Boutton
           onClick={handleSuivantClick}
           disabled={!selected || open}
-          className={`w-full py-3 sm:py-4 rounded-full font-black text-[clamp(0.84rem,1.05vw,1rem)] transition-all flex items-center justify-center gap-3 shadow-lg active:scale-95 pointer-events-auto ${
-            selected && !open
-              ? "bg-[#1250c8] text-white hover:bg-[#1a3ea8] hover:-translate-y-0.5"
-              : "bg-white/20 text-white/40 cursor-not-allowed"
-          }`}
+          fullWidth
+          size="lg"
+          variant={selected && !open ? "primary" : "soft"}
+          className="pointer-events-auto"
         >
           Suivant
-        </button>
+        </Boutton>
       </div>
 
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
-        <button
+        <Boutton
           onClick={onHome}
-          className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
+          size="icon"
+          variant="ghost"
+          className="pointer-events-auto"
           aria-label="Accueil"
         >
           <HiOutlineHome size={26} className="sm:hidden" />
           <HiOutlineHome size={30} className="hidden sm:block" />
-        </button>
+        </Boutton>
       </div>
 
       <style>{`

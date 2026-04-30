@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { getMetierById, getAllMetiersCache } from "../../../services/metier.services";
 import BuildingSVG from "./BuildingSVG";
 import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
+import Boutton from "../../../components/ui/boutton";
 
 function GradBg() {
   return (
@@ -203,25 +204,30 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
 
       {/* Boutons bas - Fixés en bas */}
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-md px-6 pointer-events-none flex justify-center">
-        <button
+        <Boutton
           onClick={handleVoirFormations}
-          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white border-none rounded-full px-6 py-3.5 sm:py-4 flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-xl transition-all font-black text-[clamp(0.78rem,1vw,0.95rem)] active:scale-95 pointer-events-auto"
+          fullWidth
+          size="lg"
+          variant="primary"
+          className="pointer-events-auto"
         >
-          <span>Établissements proposant ce parcours</span>
+          <span>Établissements</span>
           <FiArrowRight size={18} />
-        </button>
+        </Boutton>
       </div>
 
       {/* Home Fixed - Centered */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
-        <button
+        <Boutton
           onClick={onHome}
-          className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
+          size="icon"
+          variant="ghost"
+          className="pointer-events-auto"
           aria-label="Accueil"
         >
           <HiOutlineHome size={26} className="sm:hidden" />
           <HiOutlineHome size={30} className="hidden sm:block" />
-        </button>
+        </Boutton>
       </div>
 
       <style>{`

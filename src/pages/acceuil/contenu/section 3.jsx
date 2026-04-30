@@ -304,7 +304,7 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
               onClick={() => onVoirCarte(m)}
               className="w-full max-w-xs bg-[#1250c8] hover:bg-[#1a3ea8] text-white font-black py-2.5 sm:py-3 px-4 sm:px-6 rounded-full flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 text-[clamp(0.75rem,0.9vw,0.9rem)]"
             >
-              <span className="text-[clamp(0.75rem,0.9vw,0.9rem)]">Établissements proposant ce parcours</span>
+              <span className="text-[clamp(0.75rem,0.9vw,0.9rem)]">Établissements</span>
               <HiOutlineArrowRight size={15} className="sm:hidden" />
               <HiOutlineArrowRight size={17} className="hidden sm:block" />
             </button>

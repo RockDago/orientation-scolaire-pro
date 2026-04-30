@@ -24,8 +24,8 @@ import BuildingSVG from "./contenu/BuildingSVG";
 const PUBLIC_ROUTE_PATTERNS = [
   /^\/acceuil\/orientation$/,
   /^\/acceuil\/trouver-metier$/,
-  /^\/acceuil\/trouver-metier\/[a-z0-9-]+$/,
-  /^\/acceuil\/metier\/[a-z0-9-]+$/,
+  /^\/acceuil\/trouver-metier\/[\p{L}\p{N}-]+$/u,
+  /^\/acceuil\/metier\/[\p{L}\p{N}-]+$/u,
   /^\/acceuil\/region-map-madagascar$/,
   /^\/acceuil\/universiter-parcours$/,
   /^\/acceuil\/trouver-mon-orientation$/,
@@ -66,6 +66,19 @@ export default function Acceuil() {
   const [metierOrientationSelectionne, setMetierOrientationSelectionne] = useState(null);
   const [sourceFlux,                   setSourceFlux]                   = useState("metier");
   const [animDir,                      setAnimDir]                      = useState("idle");
+
+  const resetMetierFlowState = () => {
+    setMetierSelectionne(null);
+    setRegionSelectionnee(null);
+    setSourceFlux("metier");
+  };
+
+  const resetOrientationFlowState = () => {
+    setReponseStatut(null);
+    setReponseDomaine(null);
+    setReponseEtudes(null);
+    setMetierOrientationSelectionne(null);
+  };
 
   const naviguerVers = (path, direction = "forward") => {
     setAnimDir(direction);
@@ -110,7 +123,11 @@ export default function Acceuil() {
     naviguerVers(`/acceuil/metier/${slug}`, direction);
   };
 
-  const onHome = () => naviguerVers("/acceuil/orientation", "back");
+  const onHome = () => {
+    resetMetierFlowState();
+    resetOrientationFlowState();
+    naviguerVers("/acceuil/orientation", "back");
+  };
 
   return (
     <>
@@ -147,10 +164,14 @@ export default function Acceuil() {
                 element={
                   <Section1
                     onChoisirMetier={() => {
+                      resetOrientationFlowState();
+                      resetMetierFlowState();
                       setSourceFlux("metier");
                       naviguerVers("/trouver-metier", "forward");
                     }}
                     onOrientation={() => {
+                      resetMetierFlowState();
+                      resetOrientationFlowState();
                       setSourceFlux("orientation");
                       naviguerVers("/trouver-mon-orientation", "forward");
                     }}

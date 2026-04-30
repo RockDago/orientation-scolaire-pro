@@ -14,6 +14,8 @@ import { searchMetier }        from "../../../services/metier.services";
 import { ChevronDown, Search } from "lucide-react";
 import BuildingSVG        from "./BuildingSVG";
 import pictoExplorer      from "../../../assets/picto_Explorer.png";
+import Boutton from "../../../components/ui/boutton";
+import Input from "../../../components/ui/input";
 
 
 function MetierDetailsCard({ metier, onClose }) {
@@ -86,7 +88,7 @@ function MetierCard({ metier, onSelect }) {
   );
 }
 
-export default function Section2({ onSelectMetier, selectedMetier, onRetour, searchParam, onHome }) {
+export default function Section2({ onSelectMetier, selectedMetier, onRetour, onHome }) {
   const navigate = useNavigate();
   const [allMetiers,  setAllMetiers]  = useState([]);
   const [allDomaines, setAllDomaines] = useState([]);
@@ -94,7 +96,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
   const [isLoading,   setIsLoading]   = useState(false);
 
   const [isMetierComboOpen, setIsMetierComboOpen] = useState(false);
-  const [searchQuery,       setSearchQuery]       = useState(searchParam || "");
+  const [searchQuery,       setSearchQuery]       = useState("");
   const [localSelected,     setLocalSelected]     = useState(selectedMetier || null);
 
   const [selectedDomaine, setSelectedDomaine] = useState(null);
@@ -122,12 +124,12 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
     }
   }, [selectedMetier]);
 
-  useEffect(() => {
-    if (searchParam && searchParam.trim()) {
-      setSearchQuery(searchParam);
-      setIsMetierComboOpen(true);
-    }
-  }, [searchParam]);
+  const resetMetierInputState = () => {
+    setSearchQuery("");
+    setLocalSelected(null);
+    setIsMetierComboOpen(false);
+    setMode("idle");
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -241,6 +243,10 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  useEffect(() => {
+    if (isComboOpen) setIsMetierComboOpen(false);
+  }, [isComboOpen]);
+
   return (
     <div
       className="s2-root"
@@ -293,7 +299,14 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           <div className="s2-scroll">
             <div className="flex items-center justify-between mb-2">
               {onRetour && (
-                <button onClick={onRetour} className="s2-back" aria-label="Retour">
+                <button
+                  onClick={() => {
+                    resetMetierInputState();
+                    onRetour?.();
+                  }}
+                  className="s2-back"
+                  aria-label="Retour"
+                >
                   <IoArrowBackCircleOutline size={32} className="sm:hidden" />
                   <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
                 </button>
@@ -314,7 +327,8 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             </div>
 
             {/* ── COMBOBOX 1 : Recherche métier ── */}
-            <div className={`s2-cbwrap ${isMetierComboOpen ? "open" : ""} ${isComboOpen ? "hidden" : ""}`} ref={metierComboRef}>
+            {!isComboOpen && (
+            <div className={`s2-cbwrap ${isMetierComboOpen ? "open" : ""}`} ref={metierComboRef}>
               <p className="s2-lbl">Rechercher un métier</p>
               <button
                 type="button"
@@ -347,7 +361,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                   <div className="s2-drop-search-new">
                     <div className="relative">
                       <HiOutlineSearch size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
+                        <Input
                           type="text"
                           placeholder="Rechercher..."
                           value={searchQuery}
@@ -389,6 +403,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                 </div>
               )}
             </div>
+            )}
 
             {/* ── Séparateur ── */}
             {mode !== "metier" && !focusMetierSearch && !isComboOpen && !isMetierComboOpen && (
@@ -433,7 +448,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                       <div className="s2-drop-search-new">
                         <div className="relative">
                           <HiOutlineSearch size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                          <input
+                          <Input
                             type="text"
                             placeholder="Rechercher..."
                             value={comboSearch}
@@ -529,30 +544,34 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
       {/* Lancer la recherche Button - ONLY for manual career search (mode === "metier") */}
       {mode === "metier" && (
         <div className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-sm px-6 pointer-events-none flex justify-center transition-all duration-300 ${isMetierComboOpen ? "opacity-0 translate-y-3" : "opacity-100 translate-y-0"}`}>
-          <button
+          <Boutton
             onClick={() => handleLancerRecherche()}
             disabled={!localSelected || isLoading || isMetierComboOpen}
-            className={`w-full py-4 rounded-full font-black text-[clamp(0.8rem,1vw,1rem)] transition-all shadow-lg active:scale-95 pointer-events-auto ${
-              localSelected && !isLoading && !isMetierComboOpen
-                ? "bg-[#1250c8] text-white hover:bg-[#1a3ea8] hover:-translate-y-0.5"
-                : "bg-white/20 text-white/40 cursor-not-allowed"
-            }`}
+            fullWidth
+            size="lg"
+            variant={localSelected && !isLoading && !isMetierComboOpen ? "primary" : "soft"}
+            className="pointer-events-auto"
           >
-            {isLoading ? "Traitement..." : "Lancer la recherche"}
-          </button>
+            {isLoading ? "Traitement..." : "Rechercher"}
+          </Boutton>
         </div>
       )}
 
       {/* Home Fixed - Centered */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
-        <button
-          onClick={onHome}
-          className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
+        <Boutton
+          onClick={() => {
+            resetMetierInputState();
+            onHome?.();
+          }}
+          size="icon"
+          variant="ghost"
+          className="pointer-events-auto"
           aria-label="Accueil"
         >
           <HiOutlineHome size={26} className="sm:hidden" />
           <HiOutlineHome size={30} className="hidden sm:block" />
-        </button>
+        </Boutton>
       </div>
 
       <style>{`
@@ -712,13 +731,14 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           margin-bottom: 1.25rem; 
         }
         .s2-layout.metier-focus .s2-cbwrap {
-          margin-left: auto;
-          margin-right: auto;
+          margin-left: 0;
+          margin-right: 0;
+          align-self: flex-start;
         }
         .s2-cbwrap:focus-within { z-index: 200; }
         .s2-cbwrap.open { z-index: 1200; }
-        @media(max-width: 1023px) {
-          .s2-cbwrap { max-width: 100%; display: flex; flex-direction: column; align-items: center; }
+        @media(max-width: 1023px) { 
+          .s2-cbwrap { max-width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
         }
 
         /* Original Rounded Trigger */
@@ -839,13 +859,19 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         }
         .s2-drop-item-new {
           min-height: 44px;
+          width: 100%;
           padding: 0.65rem 0.85rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
+          text-align: left;
           border-radius: 0.75rem;
           cursor: pointer;
           transition: all 0.2s;
+        }
+        .s2-drop-item-new > div {
+          text-align: left;
+          align-items: flex-start;
         }
         .s2-drop-item-new:hover { background: #eff6ff; }
         .s2-drop-item-new.active { background: #eff6ff; color: #2563eb; }

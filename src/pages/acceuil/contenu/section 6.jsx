@@ -4,6 +4,7 @@ import { GiDiploma } from "react-icons/gi";
 import BuildingSVG from "./BuildingSVG";
 import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
 import { useNavigate } from "react-router-dom";
+import Boutton from "../../../components/ui/boutton";
 
 function GradBg() {
   return (
@@ -66,20 +67,23 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
 
       {/* Boutons bas - Centrés au milieu en haut de Home */}
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-sm px-6 pointer-events-none flex justify-center">
-        <button
+        <Boutton
           onClick={() => onCommencer?.()}
-          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white border-none rounded-full px-8 py-3 sm:py-4 flex items-center justify-center cursor-pointer shadow-lg hover:shadow-xl transition-all font-black text-[clamp(0.8rem,1vw,1rem)] active:scale-95 pointer-events-auto"
+          fullWidth
+          size="lg"
+          variant="primary"
+          className="pointer-events-auto"
         >
           <span>Commencer</span>
-        </button>
+        </Boutton>
       </div>
 
       {/* Home Fixed - Centered */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
-        <button onClick={onHome} className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm" aria-label="Accueil">
+        <Boutton onClick={onHome} size="icon" variant="ghost" className="pointer-events-auto" aria-label="Accueil">
           <HiOutlineHome size={26} className="sm:hidden" />
           <HiOutlineHome size={30} className="hidden sm:block" />
-        </button>
+        </Boutton>
       </div>
 
       <style>{`
