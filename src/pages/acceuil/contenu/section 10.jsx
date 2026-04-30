@@ -354,20 +354,20 @@ export default function Section10({
                       type="button"
                       key={item.id || i}
                       onClick={() => setIndex(i)}
-                      className={`rounded-2xl p-4 border cursor-pointer transition-all ${index === i ? "bg-white/20 border-white/50" : "bg-white/10 border-white/20 hover:bg-white/15"}`}
+                      className={`rounded-2xl p-4 border cursor-pointer transition-all h-[180px] flex flex-col ${index === i ? "bg-white/20 border-white/50" : "bg-white/10 border-white/20 hover:bg-white/15"}`}
                       aria-pressed={index === i}
                     >
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-white text-[1rem] uppercase">{item.label}</h3>
+                        <h3 className="font-bold text-white text-[1rem] uppercase line-clamp-2 pr-2">{item.label}</h3>
                         <span className="text-[10px] bg-white/25 text-white px-2 py-1 rounded-full font-bold uppercase">
                           {Array.isArray(item.niveau) ? item.niveau[0] : item.niveau}
                         </span>
                       </div>
                       
-                      <p className="text-white/75 text-xs leading-relaxed line-clamp-2 mb-3">{item.description}</p>
+                      <p className="text-white/75 text-xs leading-relaxed line-clamp-2 min-h-[2.6rem] mb-3">{item.description}</p>
 
                       {item.mention && (
-                        <div className="mb-3">
+                        <div className="mt-auto min-h-[2.4rem]">
                           <p className="text-white/40 text-[9px] uppercase tracking-widest font-bold mb-1">Mention</p>
                           <div className="flex flex-wrap gap-1">
                             {(Array.isArray(item.mention) ? item.mention : [item.mention]).map((m, idx) => (
