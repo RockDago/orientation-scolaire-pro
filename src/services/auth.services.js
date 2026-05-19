@@ -6,7 +6,7 @@ import API from "../api/axios";
  * @param {string} motDePasse
  * @param {boolean} rememberMe 
  */
-export const login = async (identifiant, motDePasse, rememberMe = false) => {
+export const login = async (identifiant, motDePasse) => {
   const response = await API.post("/login", {
     nom_utilisateur: identifiant,
     mot_de_passe: motDePasse,

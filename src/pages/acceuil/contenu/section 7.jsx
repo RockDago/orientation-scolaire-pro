@@ -28,7 +28,7 @@ function GradBg() {
 }
 
 export default function Section7({ onSuivant, onRetour, onHome }) {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [statut, setStatut] = useState(null);
 
   const handleSuivant = () => {

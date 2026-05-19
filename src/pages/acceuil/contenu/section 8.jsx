@@ -3,7 +3,7 @@ import { IoArrowBackCircleOutline } from "react-icons/io5";
 import { HiOutlineHome, HiChevronDown, HiCheck, HiX, HiOutlineSearch } from "react-icons/hi";
 import BuildingSVG from "./BuildingSVG";
 import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
-import { getAllDomaines } from "../../../services/domaine.services";
+import { useDomainesQuery } from "../../../hooks/queries/useApiQueries";
 import Boutton from "../../../components/ui/boutton";
 import Input from "../../../components/ui/input";
 
@@ -23,14 +23,13 @@ function GradBg() {
 }
 
 export default function Section8({ onSuivant, onRetour, onHome }) {
-  const [allDomaines, setAllDomaines] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
 
   const triggerRef = useRef(null);
   const dropdownRef = useRef(null);
+  const { data: allDomaines = [], isLoading: loading } = useDomainesQuery();
 
   useEffect(() => {
     if (!open) return;
@@ -55,22 +54,6 @@ export default function Section8({ onSuivant, onRetour, onHome }) {
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [open]);
-
-  useEffect(() => {
-    const loadDomaines = async () => {
-      try {
-        const domaines = await getAllDomaines();
-        setAllDomaines(domaines);
-      } catch (error) {
-        console.error("Erreur chargement domaines:", error);
-        setAllDomaines([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDomaines();
-  }, []);
 
   const domaineOptions = useMemo(() => {
     return allDomaines.map((d) => ({ value: d.id || d.label, label: d.label }));

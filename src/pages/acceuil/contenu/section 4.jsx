@@ -14,9 +14,9 @@ import {
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import {
-  getAllEtablissementsCache,
   recordEtablissementSelection,
 } from "../../../services/etablissement.services";
+import { useEtablissementsQuery } from "../../../hooks/queries/useApiQueries";
 
 const TYPES  = ["Tous", "Public", "Privé"];
 const NIVEAUX = ["Tous", "Licence", "Master", "Doctorat"];
@@ -47,7 +47,7 @@ const REGION_LABELS = {
   anosy:               "Anosy",
 };
 
-function FicheModal({ fiche, metier, onClose }) {
+function FicheModal({ fiche, onClose }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
@@ -187,13 +187,13 @@ function FicheModal({ fiche, metier, onClose }) {
 }
 
 export default function Section4({ metier, selectedRegion, reponseDomaine, onRetour, onHome }) {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [selectedEtab, setSelectedEtab] = useState(null);
   const [filterType,   setFilterType]   = useState("Tous");
   const [filterNiveau, setFilterNiveau] = useState("Tous");
-  const [etablissements, setEtablissements] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: tous = [], isLoading: loading } = useEtablissementsQuery();
 
+  /*
   useEffect(() => {
     const loadEtablissements = async () => {
       setLoading(true);
@@ -251,6 +251,45 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
 
     loadEtablissements();
   }, [metier?.label, selectedRegion, reponseDomaine]);
+  */
+
+  const etablissements = useMemo(() => {
+    const metierLabel = metier?.label || "";
+    const regionLabel = selectedRegion
+      ? REGION_LABELS[selectedRegion] || selectedRegion
+      : null;
+
+    const fieldContains = (field, value) => {
+      if (!field || !value) return false;
+      const valLower = value.toLowerCase().trim();
+      if (Array.isArray(field)) {
+        return field.some((item) => {
+          const itemLower = String(item).toLowerCase().trim();
+          return itemLower === valLower || itemLower.includes(valLower) || valLower.includes(itemLower);
+        });
+      }
+      const fieldLower = String(field).toLowerCase().trim();
+      return fieldLower === valLower || fieldLower.includes(valLower) || valLower.includes(fieldLower);
+    };
+
+    return tous.filter((e) => {
+      if (metierLabel) {
+        if (!fieldContains(e.metier, metierLabel)) return false;
+      } else if (reponseDomaine) {
+        const inMention = fieldContains(e.mention, reponseDomaine);
+        const inDomaine = fieldContains(e.domaine, reponseDomaine);
+        if (!inMention && !inDomaine) return false;
+      }
+      if (regionLabel) {
+        const regionLower = regionLabel.toLowerCase().trim();
+        const regionOk =
+          (e.region && e.region.toLowerCase().trim() === regionLower) ||
+          (e.province && e.province.toLowerCase().trim() === regionLower);
+        if (!regionOk) return false;
+      }
+      return true;
+    });
+  }, [metier?.label, reponseDomaine, selectedRegion, tous]);
 
   const etablissementsFiltres = useMemo(() => {
     return etablissements.filter((e) => {
@@ -267,7 +306,6 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
     });
   }, [etablissements, filterType, filterNiveau]);
 
-  const mentionLabel = metier ? metier.mention || metier.label : "Formation";
   const regionLabel  = selectedRegion
     ? REGION_LABELS[selectedRegion] || selectedRegion
     : null;

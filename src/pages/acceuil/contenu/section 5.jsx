@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { HiOutlineHome } from "react-icons/hi";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
@@ -6,9 +6,9 @@ import BuildingSVG from "./BuildingSVG";
 import { FiMapPin, FiChevronRight } from "react-icons/fi";
 import { searchMetier } from "../../../services/metier.services";
 import {
-  getAllEtablissementsCache,
   recordEtablissementSelection,
 } from "../../../services/etablissement.services";
+import { useEtablissementsQuery } from "../../../hooks/queries/useApiQueries";
 
 const REGION_LABELS = {
   diana:               "Diana",
@@ -76,12 +76,71 @@ function normalizeRegionId(name) {
 }
 
 export default function Section5({ metier, reponseDomaine, onRetour, onSelectRegion, onHome }) {
-  const navigate = useNavigate();
-  const [loading, setLoading]   = useState(true);
-  const [activeRegions, setActiveRegions] = useState([]);
-  const [etablissementsParRegion, setEtablissementsParRegion] = useState({});
-  const [regionToProvince, setRegionToProvince] = useState({});
+  const _navigate = useNavigate();
+  const hasCriteria = Boolean(metier?.label || reponseDomaine);
+  const { data: tous = [], isLoading: loadingEtablissements } = useEtablissementsQuery("", {
+    enabled: hasCriteria,
+  });
+  const loading = hasCriteria && loadingEtablissements;
 
+  const { activeRegions, etablissementsParRegion, regionToProvince } = useMemo(() => {
+    if (!hasCriteria) {
+      return {
+        activeRegions: [],
+        etablissementsParRegion: {},
+        regionToProvince: {},
+      };
+    }
+
+    const metierLabel = metier?.label || "";
+    const fieldContains = (field, value) => {
+      if (!field || !value) return false;
+      const valLower = value.toLowerCase().trim();
+      if (Array.isArray(field)) {
+        return field.some((item) => {
+          const itemLower = String(item).toLowerCase().trim();
+          return itemLower === valLower || itemLower.includes(valLower) || valLower.includes(itemLower);
+        });
+      }
+      const fieldLower = String(field).toLowerCase().trim();
+      return fieldLower === valLower || fieldLower.includes(valLower) || valLower.includes(fieldLower);
+    };
+
+    const filtered = tous.filter((e) => {
+      if (reponseDomaine && !metierLabel) {
+        return fieldContains(e.mention, reponseDomaine) || fieldContains(e.domaine, reponseDomaine);
+      }
+      return fieldContains(e.metier, metierLabel);
+    });
+
+    const regionsSet = new Set();
+    const countByRegion = {};
+    const regToProv = {};
+
+    filtered.forEach((etab) => {
+      if (etab.region) {
+        const regionId = normalizeRegionId(etab.region);
+        regionsSet.add(regionId);
+        countByRegion[regionId] = (countByRegion[regionId] || 0) + 1;
+        if (!regToProv[regionId]) {
+          regToProv[regionId] = etab.province || "Madagascar";
+        }
+      }
+    });
+
+    return {
+      activeRegions: Array.from(regionsSet),
+      etablissementsParRegion: countByRegion,
+      regionToProvince: regToProv,
+    };
+  }, [hasCriteria, metier?.label, reponseDomaine, tous]);
+
+  useEffect(() => {
+    if (!metier?.id || !metier?.label || loading) return;
+    searchMetier(metier.id, metier.label).catch(console.error);
+  }, [loading, metier?.id, metier?.label]);
+
+  /*
   useEffect(() => {
     const loadRegions = async () => {
       setLoading(true);
@@ -157,6 +216,7 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
 
     loadRegions();
   }, [metier?.label, metier?.id, reponseDomaine]);
+  */
 
   const handleSelectRegion = (regionId) => {
     const regionLabel = REGION_LABELS[regionId] || regionId;

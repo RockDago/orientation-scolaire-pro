@@ -1,6 +1,5 @@
 // src/pages/dashboard/view/etablissementsView.jsx
 import { useState, useEffect, useMemo, useRef } from "react";
-import { createPortal } from "react-dom";
 import {
   FaPlus, FaEdit, FaTrash, FaSearch,
   FaTimes, FaExclamationTriangle, FaPlusCircle
@@ -16,15 +15,18 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import {
-  getAllEtablissements,
-  createEtablissement,
-  updateEtablissement,
-  deleteEtablissement,
-} from "../../../services/etablissement.services";
-import { getAllMentions } from "../../../services/mention.services";
-import { getAllParcours } from "../../../services/parcours.services";
-import { getAllMetiers } from "../../../services/metier.services";
-import { getAllDomaines } from "../../../services/domaine.services";
+  useCreateEtablissementMutation,
+  useDeleteEtablissementMutation,
+  useUpdateEtablissementMutation,
+} from "../../../hooks/mutations/useApiMutations";
+import {
+  useDomainesQuery,
+  useEtablissementsQuery,
+  useMentionsQuery,
+  useMetiersQuery,
+  useParcoursQuery,
+} from "../../../hooks/queries/useApiQueries";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 const formatPhone = (phone) => {
@@ -1084,14 +1086,6 @@ const exportToPDF = (data) => {
 
 
 export default function EtablissementsView() {
-  const [etablissements, setEtablissements] = useState([]);
-  const [mentionOptions, setMentionOptions] = useState([]);
-  const [domaineOptions, setDomaineOptions] = useState([]);
-  const [parcoursOptions, setParcoursOptions] = useState([]);
-  const [metierOptions, setMetierOptions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingSave, setLoadingSave] = useState(false);
-  const [loadingDelete, setLoadingDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
@@ -1101,9 +1095,24 @@ export default function EtablissementsView() {
   // Pagination et tri
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
+  const [sortConfig, _setSortConfig] = useState({ key: 'id', direction: 'desc' });
   
   const [formData, setFormData] = useState(emptyForm);
+  const debouncedSearch = useDebouncedValue(searchTerm, 400);
+  const { data: etablissements = [], isLoading: etablissementsLoading } =
+    useEtablissementsQuery(debouncedSearch);
+  const { data: mentionOptions = [], isLoading: mentionsLoading } = useMentionsQuery();
+  const { data: domaineOptions = [], isLoading: domainesLoading } = useDomainesQuery();
+  const { data: parcoursOptions = [], isLoading: parcoursLoading } = useParcoursQuery();
+  const { data: metierOptions = [], isLoading: metiersLoading } = useMetiersQuery();
+  const createEtablissementMutation = useCreateEtablissementMutation();
+  const updateEtablissementMutation = useUpdateEtablissementMutation();
+  const deleteEtablissementMutation = useDeleteEtablissementMutation();
+  const loading =
+    etablissementsLoading || mentionsLoading || domainesLoading || parcoursLoading || metiersLoading;
+  const loadingSave =
+    createEtablissementMutation.isPending || updateEtablissementMutation.isPending;
+  const loadingDelete = deleteEtablissementMutation.isPending;
 
   // ── Toast ──────────────────────────────────────────────────────────
   const showToast = (message, type = "success") => {
@@ -1119,6 +1128,11 @@ export default function EtablissementsView() {
   };
 
   // ── Chargement initial ─────────────────────────────────────────────
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  /*
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -1161,6 +1175,7 @@ export default function EtablissementsView() {
     }, 400);
     return () => clearTimeout(delay);
   }, [searchTerm]);
+  */
 
   // ── Tri et pagination ───────────────────────────────────────────────
   const sortedEtablissements = useMemo(() => {
@@ -1279,17 +1294,12 @@ export default function EtablissementsView() {
       showToast("Veuillez remplir tous les champs obligatoires", "error");
       return;
     }
-    setLoadingSave(true);
     try {
       if (editingId) {
-        const updated = await updateEtablissement(editingId, formData);
-        setEtablissements(etablissements.map((e) =>
-          e.id === editingId ? updated : e
-        ));
+        await updateEtablissementMutation.mutateAsync({ id: editingId, data: formData });
         showToast("Établissement modifié avec succès", "success");
       } else {
-        const created = await createEtablissement(formData);
-        setEtablissements([...etablissements, created]);
+        await createEtablissementMutation.mutateAsync(formData);
         showToast("Établissement ajouté avec succès", "success");
       }
       setShowModal(false);
@@ -1297,8 +1307,6 @@ export default function EtablissementsView() {
     } catch (error) {
       const message = error.response?.data?.message || "Erreur lors de l'enregistrement";
       showToast(message, "error");
-    } finally {
-      setLoadingSave(false);
     }
   };
 
@@ -1308,17 +1316,13 @@ export default function EtablissementsView() {
   };
 
   const handleConfirmDelete = async () => {
-    setLoadingDelete(true);
     try {
-      await deleteEtablissement(deleteItem.id);
-      setEtablissements(etablissements.filter((e) => e.id !== deleteItem.id));
+      await deleteEtablissementMutation.mutateAsync(deleteItem.id);
       showToast("Établissement supprimé avec succès", "success");
       setDeleteItem(null);
     } catch (error) {
       const message = error.response?.data?.message || "Erreur lors de la suppression";
       showToast(message, "error");
-    } finally {
-      setLoadingDelete(false);
     }
   };
 

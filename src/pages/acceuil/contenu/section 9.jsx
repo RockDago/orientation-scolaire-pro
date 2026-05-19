@@ -33,7 +33,7 @@ function GradBg() {
 }
 
 export default function Section9({ onVoirResultats, onRetour, onHome }) {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [choix, setChoix] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 

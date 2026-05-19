@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { login as loginService } from "../../services/auth.services";
 import { useAuth } from "../../App";
+import { useLoginMutation } from "../../hooks/mutations/useApiMutations";
 import backgroundImage from "../../assets/mesupres.png";
 import mesupresLogo from "../../assets/logo.png";
 
@@ -15,8 +15,9 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const loginMutation = useLoginMutation();
+  const loading = loginMutation.isPending;
 
   const handleForgotPassword = () => {
     toast.info(
@@ -35,17 +36,19 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setErrors({});
 
     if (!identifier.trim() || !password.trim()) {
       setErrors({ general: "Veuillez remplir tous les champs" });
-      setLoading(false);
       return;
     }
 
     try {
-      const response = await loginService(identifier, password, rememberMe);
+      const response = await loginMutation.mutateAsync({
+        identifier,
+        password,
+        rememberMe,
+      });
       const { utilisateur, token } = response;
 
       authLogin(token, utilisateur.role, rememberMe, utilisateur);
@@ -98,8 +101,6 @@ const Login = () => {
           theme: "colored",
         });
       }
-    } finally {
-      setLoading(false);
     }
   };
 

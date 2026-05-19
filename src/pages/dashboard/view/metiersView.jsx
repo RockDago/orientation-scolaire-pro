@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { createPortal } from "react-dom";
 import {
   FaPlus,
   FaEdit,
@@ -20,15 +19,18 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import {
-  getAllMetiers,
-  createMetier,
-  updateMetier,
-  deleteMetier,
-} from "../../../services/metier.services";
-import { getAllMentions } from "../../../services/mention.services";
-import { getAllParcours } from "../../../services/parcours.services";
-import { getAllSeries } from "../../../services/serie.services";
-import { getAllDomaines } from "../../../services/domaine.services";
+  useCreateMetierMutation,
+  useDeleteMetierMutation,
+  useUpdateMetierMutation,
+} from "../../../hooks/mutations/useApiMutations";
+import {
+  useDomainesQuery,
+  useMentionsQuery,
+  useMetiersQuery,
+  useParcoursQuery,
+  useSeriesQuery,
+} from "../../../hooks/queries/useApiQueries";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
 const niveauOptions = ["Bac+2", "Bac+3", "Bac+4", "Bac+5", "Bac+8"];
 const parcoursFormationOptions = ["Bac", "Licence", "Master", "Master indifférencié", "Master recherche", "Master professionnel", "Doctorat"];
@@ -840,14 +842,6 @@ const exportToPDF = (data) => {
 };
 
 export default function MetiersView() {
-  const [metiers, setMetiers] = useState([]);
-  const [mentionOptions, setMentionOptions] = useState([]);
-  const [parcoursOptions, setParcoursOptions] = useState([]);
-  const [serieOptions, setSerieOptions] = useState([]);
-  const [domaineOptions, setDomaineOptions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingSave, setLoadingSave] = useState(false);
-  const [loadingDelete, setLoadingDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
@@ -860,6 +854,29 @@ export default function MetiersView() {
   
   const [formData, setFormData] = useState(emptyForm);
   const [viewItem, setViewItem] = useState(null);
+  const debouncedSearch = useDebouncedValue(searchTerm, 400);
+  const { data: metiersData = [], isLoading: metiersLoading } = useMetiersQuery(debouncedSearch);
+  const { data: mentionOptions = [], isLoading: mentionsLoading } = useMentionsQuery();
+  const { data: parcoursOptions = [], isLoading: parcoursLoading } = useParcoursQuery();
+  const { data: serieOptions = [], isLoading: seriesLoading } = useSeriesQuery();
+  const { data: domaineOptions = [], isLoading: domainesLoading } = useDomainesQuery();
+  const createMetierMutation = useCreateMetierMutation();
+  const updateMetierMutation = useUpdateMetierMutation();
+  const deleteMetierMutation = useDeleteMetierMutation();
+  const metiers = useMemo(
+    () =>
+      metiersData.map((metier) => ({
+        ...metier,
+        parcours: Array.isArray(metier.parcours) ? metier.parcours : [],
+        parcoursFormation: Array.isArray(metier.parcoursFormation) ? metier.parcoursFormation : [],
+        serie: Array.isArray(metier.serie) ? metier.serie : [],
+      })),
+    [metiersData],
+  );
+  const loading =
+    metiersLoading || mentionsLoading || parcoursLoading || seriesLoading || domainesLoading;
+  const loadingSave = createMetierMutation.isPending || updateMetierMutation.isPending;
+  const loadingDelete = deleteMetierMutation.isPending;
 
 
   // ── Toast ──────────────────────────────────────────────────────────
@@ -876,6 +893,11 @@ export default function MetiersView() {
   };
 
   // ── Chargement initial : tout en parallèle ─────────────────────────
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  /*
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -935,6 +957,7 @@ export default function MetiersView() {
     return () => clearTimeout(delay);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
+  */
 
   // ── Tri et pagination ───────────────────────────────────────────────
   const sortedMetiers = useMemo(() => {
@@ -1066,28 +1089,21 @@ const handleSave = async () => {
     parcoursFormation: [...formData.parcoursFormation],
   };
 
-  setLoadingSave(true);
   try {
-    let result;
     if (editingId) {
-      result = await updateMetier(editingId, payload);
+      await updateMetierMutation.mutateAsync({ id: editingId, data: payload });
       showToast("Métier modifié avec succès", "success");
     } else {
-      result = await createMetier(payload);
+      await createMetierMutation.mutateAsync(payload);
       showToast("Métier ajouté avec succès", "success");
     }
 
     setShowModal(false);
     setFormData(emptyForm);
 
-    await fetchData();
-
-
   } catch (error) {
     const message = error.response?.data?.message || "Erreur lors de l'enregistrement";
     showToast(message, "error");
-  } finally {
-    setLoadingSave(false);
   }
 };
 
@@ -1098,17 +1114,13 @@ const handleSave = async () => {
   };
 
   const handleConfirmDelete = async () => {
-    setLoadingDelete(true);
     try {
-      await deleteMetier(deleteItem.id);
-      setMetiers(metiers.filter((m) => m.id !== deleteItem.id));
+      await deleteMetierMutation.mutateAsync(deleteItem.id);
       showToast("Métier supprimé avec succès", "success");
       setDeleteItem(null);
     } catch (error) {
       const message = error.response?.data?.message || "Erreur lors de la suppression";
       showToast(message, "error");
-    } finally {
-      setLoadingDelete(false);
     }
   };
 

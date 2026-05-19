@@ -1,6 +1,5 @@
 // src/pages/dashboard/view/mentionsView.jsx
 import { useState, useEffect, useMemo, useRef } from "react";
-import { createPortal } from "react-dom";
 import {
   FaPlus, FaEdit, FaTrash, FaSearch,
   FaTimes, FaExclamationTriangle
@@ -16,12 +15,12 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import {
-  getAllMentions,
-  createMention,
-  updateMention,
-  deleteMention,
-} from "../../../services/mention.services";
-import { getAllDomaines } from "../../../services/domaine.services";
+  useCreateMentionMutation,
+  useDeleteMentionMutation,
+  useUpdateMentionMutation,
+} from "../../../hooks/mutations/useApiMutations";
+import { useDomainesQuery, useMentionsQuery } from "../../../hooks/queries/useApiQueries";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 const PER_PAGE_OPTIONS = [10, 20, 30, 50, 100];
@@ -591,11 +590,6 @@ const exportToPDF = (data = []) => {
 };
 
 export default function MentionsView() {
-  const [mentions, setMentions] = useState([]);
-  const [domaines, setDomaines] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingSave, setLoadingSave] = useState(false);
-  const [loadingDelete, setLoadingDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
@@ -611,6 +605,15 @@ export default function MentionsView() {
     description: "",
     domaine_id: "",
   });
+  const debouncedSearch = useDebouncedValue(searchTerm, 400);
+  const { data: mentions = [], isLoading: mentionsLoading } = useMentionsQuery(debouncedSearch);
+  const { data: domaines = [], isLoading: domainesLoading } = useDomainesQuery();
+  const createMentionMutation = useCreateMentionMutation();
+  const updateMentionMutation = useUpdateMentionMutation();
+  const deleteMentionMutation = useDeleteMentionMutation();
+  const loading = mentionsLoading || domainesLoading;
+  const loadingSave = createMentionMutation.isPending || updateMentionMutation.isPending;
+  const loadingDelete = deleteMentionMutation.isPending;
 
   const showToast = (message, type = "success") => {
     toast[type](message, {
@@ -624,6 +627,11 @@ export default function MentionsView() {
     });
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  /*
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -662,6 +670,7 @@ export default function MentionsView() {
 
     return () => clearTimeout(delaySearch);
   }, [searchTerm]);
+  */
 
   const sortedMentions = useMemo(() => {
     if (!Array.isArray(mentions)) return [];
@@ -754,23 +763,19 @@ export default function MentionsView() {
       return;
     }
 
-    setLoadingSave(true);
     try {
       if (editingId) {
-        await updateMention(editingId, formData);
+        await updateMentionMutation.mutateAsync({ id: editingId, data: formData });
         showToast("Mention modifiée avec succès", "success");
       } else {
-        await createMention(formData);
+        await createMentionMutation.mutateAsync(formData);
         showToast("Mention ajoutée avec succès", "success");
       }
-      fetchData();
       setShowModal(false);
       resetForm();
     } catch (error) {
       const message = error.response?.data?.message || "Erreur lors de l'enregistrement";
       showToast(message, "error");
-    } finally {
-      setLoadingSave(false);
     }
   };
 
@@ -780,17 +785,13 @@ export default function MentionsView() {
 
   const handleConfirmDelete = async () => {
     if (!deleteItem) return;
-    setLoadingDelete(true);
     try {
-      await deleteMention(deleteItem.id);
-      setMentions(mentions.filter((m) => m.id !== deleteItem.id));
+      await deleteMentionMutation.mutateAsync(deleteItem.id);
       showToast("Mention supprimée avec succès", "success");
       setDeleteItem(null);
     } catch (error) {
       const message = error.response?.data?.message || "Erreur lors de la suppression";
       showToast(message, "error");
-    } finally {
-      setLoadingDelete(false);
     }
   };
 
@@ -803,14 +804,14 @@ export default function MentionsView() {
       try {
         exportToExcel(data);
         showToast(`Export Excel réussi ! (${data.length} entrées)`);
-      } catch(e) { 
+      } catch { 
         showToast("Erreur export Excel", "error"); 
       }
     } else {
       try {
         exportToPDF(data);
         showToast(`Export PDF réussi ! (${data.length} entrées)`);
-      } catch(e) { 
+      } catch { 
         showToast("Erreur export PDF", "error"); 
       }
     }

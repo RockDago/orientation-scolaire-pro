@@ -15,11 +15,12 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import {
-  getAllDomaines,
-  createDomaine,
-  updateDomaine,
-  deleteDomaine,
-} from "../../../services/domaine.services";
+  useCreateDomaineMutation,
+  useDeleteDomaineMutation,
+  useUpdateDomaineMutation,
+} from "../../../hooks/mutations/useApiMutations";
+import { useDomainesQuery } from "../../../hooks/queries/useApiQueries";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 const PER_PAGE_OPTIONS = [10, 20, 30, 50, 100];
@@ -364,10 +365,6 @@ const exportToPDF = (data) => {
 };
 
 export default function DomainesView() {
-  const [domaines, setDomaines] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingSave, setLoadingSave] = useState(false);
-  const [loadingDelete, setLoadingDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
@@ -379,28 +376,21 @@ export default function DomainesView() {
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
   
   const [formData, setFormData] = useState({ label: "", description: "" });
+  const debouncedSearch = useDebouncedValue(searchTerm, 400);
+  const { data: domaines = [], isLoading: loading } = useDomainesQuery(debouncedSearch);
+  const createDomaineMutation = useCreateDomaineMutation();
+  const updateDomaineMutation = useUpdateDomaineMutation();
+  const deleteDomaineMutation = useDeleteDomaineMutation();
+  const loadingSave = createDomaineMutation.isPending || updateDomaineMutation.isPending;
+  const loadingDelete = deleteDomaineMutation.isPending;
 
   const showToast = (message, type = "success") => {
     toast[type](message, { position: "top-right", autoClose: 3000, theme: "colored" });
   };
 
   useEffect(() => {
-    const delay = searchTerm === "" ? 0 : 400;
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const data = await getAllDomaines(searchTerm);
-        setDomaines(data);
-        if (searchTerm !== "") setCurrentPage(1);
-      } catch {
-        showToast("Erreur lors du chargement des domaines", "error");
-      } finally {
-        setLoading(false);
-      }
-    }, delay);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+    setCurrentPage(1);
+  }, [debouncedSearch]);
 
   const sortedDomaines = useMemo(() => {
     const sortable = [...domaines];
@@ -445,15 +435,12 @@ export default function DomainesView() {
 
   const handleSave = async () => {
     if (!isFormValid()) return;
-    setLoadingSave(true);
     try {
       if (editingId) {
-        const updated = await updateDomaine(editingId, formData);
-        setDomaines(domaines.map(d => d.id === editingId ? updated : d));
+        await updateDomaineMutation.mutateAsync({ id: editingId, data: formData });
         showToast("Domaine modifié avec succès");
       } else {
-        const created = await createDomaine(formData);
-        setDomaines([...domaines, created]);
+        await createDomaineMutation.mutateAsync(formData);
         showToast("Domaine ajouté avec succès");
       }
       setShowModal(false);
@@ -461,18 +448,14 @@ export default function DomainesView() {
       const message = error.response?.data?.message || "Erreur lors de l'enregistrement";
       showToast(message, "error"); 
     }
-    finally { setLoadingSave(false); }
   };
 
   const handleConfirmDelete = async () => {
-    setLoadingDelete(true);
     try {
-      await deleteDomaine(deleteItem.id);
-      setDomaines(domaines.filter(d => d.id !== deleteItem.id));
+      await deleteDomaineMutation.mutateAsync(deleteItem.id);
       showToast("Domaine supprimé avec succès");
       setDeleteItem(null);
     } catch { showToast("Erreur lors de la suppression", "error"); }
-    finally { setLoadingDelete(false); }
   };
 
   const requestSort = (key) => setSortConfig(prev => ({ 

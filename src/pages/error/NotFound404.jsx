@@ -6,7 +6,6 @@ export default function NotFound404() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let snapInstance = null;
     let timer = null;
 
     const loadSnap = async () => {
@@ -22,7 +21,8 @@ export default function NotFound404() {
       }
 
       const Snap = window.Snap;
-      snapInstance = Snap("#error");
+      const mina = window.mina;
+      Snap("#error");
 
       const hole = Snap.select("#svg-hole");
       const hand = Snap.select("#svg-hand");

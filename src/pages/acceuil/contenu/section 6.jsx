@@ -22,7 +22,7 @@ function GradBg() {
 }
 
 export default function Section6({ onCommencer, onRetour, onHome }) {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   return (
     <div className="relative w-full min-h-[100dvh] overflow-hidden font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">

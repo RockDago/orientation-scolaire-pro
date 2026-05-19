@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 import {
   ChevronLeft,
@@ -17,18 +17,8 @@ import {
   RefreshCw,
   MoreVertical
 } from "lucide-react";
-import { getDashboardData } from "../../../services/dashboard.services";
+import { useDashboardQuery } from "../../../hooks/queries/useApiQueries";
 import Button from "../../../components/ui/boutton";
-
-// Couleurs graphiques
-const chartColors = [
-  { border: "#3b82f6", background: "rgba(59,130,246,0.1)" },
-  { border: "#10b981", background: "rgba(16,185,129,0.1)" },
-  { border: "#f59e0b", background: "rgba(245,158,11,0.1)" },
-  { border: "#ef4444", background: "rgba(239,68,68,0.1)" },
-  { border: "#8b5cf6", background: "rgba(139,92,246,0.1)" },
-  { border: "#06b6d4", background: "rgba(6,182,212,0.1)" },
-];
 
 const pieColors = [
   "#3b82f6",
@@ -92,7 +82,7 @@ const KPICard = ({
           if (typeof icon === 'function' || (typeof icon === 'object' && icon !== null)) {
              try {
                return <IconComponent size={24} className={color.replace('bg-', 'text-')} />;
-             } catch (e) {
+             } catch {
                return <span className="text-xl">{String(icon)}</span>;
              }
           }
@@ -116,10 +106,6 @@ export default function DashboardAdminView() {
   const barChartInstance = useRef(null);
   const pieChartInstance = useRef(null);
 
-  const [dashData, setDashData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
   const [customFilter, setCustomFilter] = useState({
     startDate: "2000-01-01",
     endDate: formatDateForInput(new Date()),
@@ -129,6 +115,16 @@ export default function DashboardAdminView() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState("presets");
 
+  const {
+    data: dashData,
+    isLoading,
+    isFetching,
+    isError,
+    error: dashboardError,
+  } = useDashboardQuery(customFilter);
+  const loading = isLoading || (isFetching && !dashData);
+
+  /*
   const fetchDash = async () => {
     try {
       setLoading(true);
@@ -150,13 +146,20 @@ export default function DashboardAdminView() {
   useEffect(() => {
     fetchDash();
   }, [customFilter]);
+  */
 
   useEffect(() => {
     if (dashData && !loading) {
       initializeCharts();
     }
     return () => destroyCharts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashData, loading]);
+
+  useEffect(() => {
+    if (!isError) return;
+    console.error("Erreur dashboard:", dashboardError);
+  }, [isError, dashboardError]);
 
   const destroyCharts = () => {
     if (lineChartInstance.current) lineChartInstance.current.destroy();

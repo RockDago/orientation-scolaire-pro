@@ -15,13 +15,13 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import {
-  getAllUsers,
-  createUser,
-  updateUser,
-  toggleUserStatus,
-  resetUserPassword,
-  deleteUser,
-} from "../../../services/user.services";
+  useCreateUserMutation,
+  useDeleteUserMutation,
+  useResetUserPasswordMutation,
+  useToggleUserStatusMutation,
+  useUpdateUserMutation,
+} from "../../../hooks/mutations/useApiMutations";
+import { useUsersQuery } from "../../../hooks/queries/useApiQueries";
 import { FaEye, FaEyeSlash, FaCheck, FaTimes as FaTimesCircle } from "react-icons/fa";
 
 // ── Configuration ─────────────────────────────────────────────────────────────
@@ -597,10 +597,6 @@ const exportToPDF = (data) => {
 };
 
 export default function UsersView() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingSave, setLoadingSave] = useState(false);
-  const [loadingDelete, setLoadingDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -613,27 +609,23 @@ export default function UsersView() {
   
   const [formData, setFormData] = useState(EMPTY_FORM_DATA);
   const [viewItem, setViewItem] = useState(null);
+  const { data: users = [], isLoading: loading } = useUsersQuery();
+  const createUserMutation = useCreateUserMutation();
+  const updateUserMutation = useUpdateUserMutation();
+  const toggleUserStatusMutation = useToggleUserStatusMutation();
+  const resetUserPasswordMutation = useResetUserPasswordMutation();
+  const deleteUserMutation = useDeleteUserMutation();
+  const loadingSave =
+    createUserMutation.isPending ||
+    updateUserMutation.isPending ||
+    resetUserPasswordMutation.isPending;
+  const loadingDelete = deleteUserMutation.isPending;
 
   const currentUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "{}");
 
   const showToast = (message, type = "success") => {
     toast[type](message, { position: "top-right", autoClose: 3000, theme: "colored" });
   };
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const data = await getAllUsers();
-        setUsers(data);
-      } catch (error) {
-        showToast(error.response?.data?.message || "Erreur lors du chargement des utilisateurs", "error");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
-  }, []);
 
   const filteredUsers = useMemo(() => {
     return users.filter(u => 
@@ -724,54 +716,48 @@ export default function UsersView() {
 
   const handleSave = async () => {
     if (!isFormValid()) return;
-    setLoadingSave(true);
     try {
       if (editingId) {
-        const updated = await updateUser(editingId, formData);
-        setUsers(users.map(u => u.id === editingId ? updated : u));
+        await updateUserMutation.mutateAsync({ id: editingId, data: formData });
         showToast("Utilisateur mis à jour");
       } else {
-        const created = await createUser(formData);
-        setUsers([created, ...users]);
+        await createUserMutation.mutateAsync(formData);
         showToast("Utilisateur créé");
       }
       setShowModal(false);
     } catch (error) { 
       showToast(error.response?.data?.message || "Erreur", "error"); 
-    } finally { setLoadingSave(false); }
+    }
   };
 
   const handleToggleStatus = async (user) => {
     const newStatus = !user.est_actif;
     try {
-      await toggleUserStatus(user.id, newStatus);
-      setUsers(users.map(u => u.id === user.id ? { ...u, est_actif: newStatus } : u));
+      await toggleUserStatusMutation.mutateAsync({ id: user.id, isActive: newStatus });
       showToast(`Utilisateur ${newStatus ? 'activé' : 'désactivé'}`);
     } catch { showToast("Erreur statut", "error"); }
   };
 
   const handleResetPassword = async (newPass) => {
-    setLoadingSave(true);
     try {
-      await resetUserPassword(resettingUser.id, newPass);
+      await resetUserPasswordMutation.mutateAsync({
+        id: resettingUser.id,
+        password: newPass,
+      });
       showToast("Mot de passe réinitialisé");
       setResettingUser(null);
     } catch { showToast("Erreur réinitialisation", "error"); }
-    finally { setLoadingSave(false); }
   };
 
   const handleConfirmDelete = async () => {
-    setLoadingDelete(true);
     try {
-      await deleteUser(deleteItem.id);
-      setUsers(users.filter(u => u.id !== deleteItem.id));
+      await deleteUserMutation.mutateAsync(deleteItem.id);
       showToast("Utilisateur supprimé avec succès");
       setDeleteItem(null);
     } catch (error) { 
         const message = error.response?.data?.message || "Erreur lors de la suppression";
         showToast(message, "error"); 
     }
-    finally { setLoadingDelete(false); }
   };
 
   const requestSort = (key) => setSortConfig(prev => ({ 

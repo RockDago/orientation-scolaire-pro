@@ -1,6 +1,5 @@
 // src/pages/dashboard/view/parcoursView.jsx
 import { useState, useEffect, useMemo, useRef } from "react";
-import { createPortal } from "react-dom";
 import {
   FaPlus, FaEdit, FaTrash, FaSearch,
   FaTimes, FaExclamationTriangle
@@ -16,12 +15,12 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import {
-  getAllParcours,
-  createParcours,
-  updateParcours,
-  deleteParcours,
-} from "../../../services/parcours.services";
-import { getAllMentions } from "../../../services/mention.services";
+  useCreateParcoursMutation,
+  useDeleteParcoursMutation,
+  useUpdateParcoursMutation,
+} from "../../../hooks/mutations/useApiMutations";
+import { useMentionsQuery, useParcoursQuery } from "../../../hooks/queries/useApiQueries";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
 // Synchronisation niveau ↔ durée
 const niveauDureeMap = {
@@ -31,7 +30,6 @@ const niveauDureeMap = {
 };
 
 const niveauOptions = ["Licence", "Master", "Doctorat"];
-const dureeOptions = ["3 ans", "5 ans", "8 ans"];
 
 const emptyForm = {
   label:   "",
@@ -63,7 +61,9 @@ const Pill = ({ children, tone = "gray" }) => {
       // mais ici on s'attend à ce que le parent gère les tableaux.
       // Si on arrive ici, c'est probablement du JSON cassé ou mal mappé.
       if (content.includes('"') || content.includes(',')) return null; 
-    } catch (e) {}
+    } catch {
+      return null;
+    }
   }
 
   return (
@@ -789,11 +789,6 @@ const exportToPDF = (data) => {
 };
 
 export default function ParcoursView() {
-  const [parcours, setParcours] = useState([]);
-  const [mentionOptions, setMentionOptions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingSave, setLoadingSave] = useState(false);
-  const [loadingDelete, setLoadingDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
@@ -806,6 +801,15 @@ export default function ParcoursView() {
   
   const [formData, setFormData] = useState(emptyForm);
   const [viewItem, setViewItem] = useState(null);
+  const debouncedSearch = useDebouncedValue(searchTerm, 400);
+  const { data: parcours = [], isLoading: parcoursLoading } = useParcoursQuery(debouncedSearch);
+  const { data: mentionOptions = [], isLoading: mentionsLoading } = useMentionsQuery();
+  const createParcoursMutation = useCreateParcoursMutation();
+  const updateParcoursMutation = useUpdateParcoursMutation();
+  const deleteParcoursMutation = useDeleteParcoursMutation();
+  const loading = parcoursLoading || mentionsLoading;
+  const loadingSave = createParcoursMutation.isPending || updateParcoursMutation.isPending;
+  const loadingDelete = deleteParcoursMutation.isPending;
 
   // ── Toast ──────────────────────────────────────────────────────────
   const showToast = (message, type = "success") => {
@@ -821,6 +825,11 @@ export default function ParcoursView() {
   };
 
   // ── Chargement initial ─────────────────────────────────────────────
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  /*
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -859,6 +868,7 @@ export default function ParcoursView() {
     return () => clearTimeout(delaySearch);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
+  */
 
   // ── Tri et pagination ───────────────────────────────────────────────
   const sortedParcours = useMemo(() => {
@@ -1000,7 +1010,6 @@ export default function ParcoursView() {
       return;
     }
 
-    setLoadingSave(true);
     try {
       const dataToSend = {
         label: formData.label,
@@ -1011,12 +1020,10 @@ export default function ParcoursView() {
       };
 
       if (editingId) {
-        const updated = await updateParcours(editingId, dataToSend);
-        setParcours(parcours.map((p) => (p.id === editingId ? updated : p)));
+        await updateParcoursMutation.mutateAsync({ id: editingId, data: dataToSend });
         showToast("Parcours modifié avec succès", "success");
       } else {
-        const created = await createParcours(dataToSend);
-        setParcours([...parcours, created]);
+        await createParcoursMutation.mutateAsync(dataToSend);
         showToast("Parcours ajouté avec succès", "success");
       }
       setShowModal(false);
@@ -1024,8 +1031,6 @@ export default function ParcoursView() {
     } catch (error) {
       const message = error.response?.data?.message || "Erreur lors de l'enregistrement";
       showToast(message, "error");
-    } finally {
-      setLoadingSave(false);
     }
   };
 
@@ -1035,17 +1040,13 @@ export default function ParcoursView() {
   };
 
   const handleConfirmDelete = async () => {
-    setLoadingDelete(true);
     try {
-      await deleteParcours(deleteItem.id);
-      setParcours(parcours.filter((p) => p.id !== deleteItem.id));
+      await deleteParcoursMutation.mutateAsync(deleteItem.id);
       showToast("Parcours supprimé avec succès", "success");
       setDeleteItem(null);
     } catch (error) {
       const message = error.response?.data?.message || "Erreur lors de la suppression";
       showToast(message, "error");
-    } finally {
-      setLoadingDelete(false);
     }
   };
 

@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 import { HiOutlineHome } from "react-icons/hi";
 import BuildingSVG from "./BuildingSVG";
-import { getAllMetiers } from "../../../services/metier.services";
+import { useMetiersQuery } from "../../../hooks/queries/useApiQueries";
 
 const NIVEAUX_COURTS = [
   "bac+2",
@@ -201,39 +201,15 @@ export default function Section10({
   onHome,
 }) {
   const [index, setIndex] = useState(0);
-  const [metiersFiltres, setMetiersFiltres] = useState([]);
-  const [loading, setLoading] = useState(true);
   const touchStartX = useRef(null);
+  const { data: tous = [], isLoading: loading } = useMetiersQuery();
+  const metiersFiltres = useMemo(
+    () => filtrerMetiers(tous, reponseDomaine, reponseEtudes),
+    [reponseDomaine, reponseEtudes, tous],
+  );
 
   useEffect(() => {
-    let cancelled = false;
-
-    const loadEtFiltrer = async () => {
-      setLoading(true);
-      setMetiersFiltres([]);
-      setIndex(0);
-
-      try {
-        const tous = await getAllMetiers();
-        if (cancelled) return;
-
-        const filtres = filtrerMetiers(tous, reponseDomaine, reponseEtudes);
-        if (!cancelled) {
-          setMetiersFiltres(filtres);
-        }
-      } catch (err) {
-        console.error("Erreur chargement metiers:", err);
-        if (!cancelled) setMetiersFiltres([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    loadEtFiltrer();
-
-    return () => {
-      cancelled = true;
-    };
+    setIndex(0);
   }, [reponseDomaine, reponseEtudes]);
 
   const total = metiersFiltres.length;

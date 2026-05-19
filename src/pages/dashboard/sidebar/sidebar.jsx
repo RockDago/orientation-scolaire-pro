@@ -31,8 +31,6 @@ const Sidebar = ({
     if (setIsMobileOpen) setIsMobileOpen(false);
   };
 
-  const isLinkActive = (path) => location.pathname === path;
-
   const isSettingsChildActive = () => {
     const settingsPaths = [
       "/dashboard/admin/parametres/serie",

@@ -1,5 +1,5 @@
 // src/pages/dashboard/view/profileView.jsx
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaUser,
@@ -26,10 +26,10 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
-  getProfile,
-  updateProfile,
-  getLocalUser,
-} from "../../../services/profile.services";
+  useChangePasswordMutation,
+  useUpdateProfileMutation,
+} from "../../../hooks/mutations/useApiMutations";
+import { useProfileQuery } from "../../../hooks/queries/useApiQueries";
 
 // Badges
 const TONES = {
@@ -135,14 +135,17 @@ const BtnEdit = ({ onClick, children, isEditing }) => (
 );
 
 const ProfileView = () => {
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("personal");
-  const [previewImage, setPreviewImage] = useState(null);
-  const [authError, setAuthError] = useState(false);
+  const [previewImage] = useState(null);
   const navigate = useNavigate();
+  const {
+    data: userData,
+    isLoading: loading,
+    isError,
+    error: profileError,
+  } = useProfileQuery();
 
-  const showToast = (message, type = "success") => {
+  const showToast = useCallback((message, type = "success") => {
     toast[type](message, {
       position: "top-right",
       autoClose: 3000,
@@ -152,8 +155,20 @@ const ProfileView = () => {
       draggable: true,
       theme: "colored",
     });
-  };
+  }, []);
 
+  useEffect(() => {
+    if (!isError) return;
+    if (profileError.response?.status === 401) {
+      showToast("Session expirÃ©e, veuillez vous reconnecter", "error");
+      navigate("/login");
+      return;
+    }
+    showToast("Impossible de charger le profil", "error");
+    console.error("Erreur chargement profil:", profileError);
+  }, [isError, navigate, profileError, showToast]);
+
+  /*
   // Charger le profil depuis l'API au montage du composant
   useEffect(() => {
     const loadProfile = async () => {
@@ -182,6 +197,7 @@ const ProfileView = () => {
 
     loadProfile();
   }, []);
+  */
 
 
   const tabs = [
@@ -200,7 +216,7 @@ const ProfileView = () => {
     );
   }
 
-  if (!userData && !authError) {
+  if (!userData && !isError) {
     return (
       <div className="min-h-[100dvh] bg-white flex items-center justify-center">
         <span className="text-sm text-gray-500">Profil introuvable.</span>
@@ -293,7 +309,6 @@ const ProfileView = () => {
             {activeTab === "personal" && (
               <PersonalInfoForm
                 userData={userData}
-                setUserData={setUserData}
                 showToast={showToast}
               />
             )}
@@ -308,11 +323,13 @@ const ProfileView = () => {
 };
 
 // Composant Informations Personnelles
-const PersonalInfoForm = ({ userData, setUserData, showToast }) => {
+const PersonalInfoForm = ({ userData, showToast }) => {
   const [editInfo, setEditInfo] = useState(false);
   const [editContact, setEditContact] = useState(false);
-  const [loadingInfo, setLoadingInfo] = useState(false);
-  const [loadingContact, setLoadingContact] = useState(false);
+  const updateInfoMutation = useUpdateProfileMutation();
+  const updateContactMutation = useUpdateProfileMutation();
+  const loadingInfo = updateInfoMutation.isPending;
+  const loadingContact = updateContactMutation.isPending;
 
   const [formData, setFormData] = useState({
     username: userData.nom_utilisateur || "",
@@ -326,6 +343,20 @@ const PersonalInfoForm = ({ userData, setUserData, showToast }) => {
   });
 
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (editInfo || editContact) return;
+    setFormData({
+      username: userData.nom_utilisateur || "",
+      nom: userData.nom || "",
+      prenom: userData.prenom || "",
+      email: userData.email || "",
+      telephone: userData.telephone || "",
+      code_postal: userData.code_postal || "",
+      adresse: userData.adresse || "",
+      role: userData.role || "",
+    });
+  }, [editContact, editInfo, userData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -354,36 +385,28 @@ const PersonalInfoForm = ({ userData, setUserData, showToast }) => {
   const handleSubmitInfo = async (e) => {
     e.preventDefault();
     if (!validateInfoForm()) return;
-    setLoadingInfo(true);
     try {
-      const updated = await updateProfile(formData);
-      setUserData(updated);
+      await updateInfoMutation.mutateAsync(formData);
       showToast("Informations mises à jour avec succès", "success");
       setEditInfo(false);
     } catch (error) {
       const message =
         error.response?.data?.message || "Erreur lors de la mise à jour";
       showToast(message, "error");
-    } finally {
-      setLoadingInfo(false);
     }
   };
 
   const handleSubmitContact = async (e) => {
     e.preventDefault();
     if (!validateContactForm()) return;
-    setLoadingContact(true);
     try {
-      const updated = await updateProfile(formData);
-      setUserData(updated);
+      await updateContactMutation.mutateAsync(formData);
       showToast("Contacts mis à jour avec succès", "success");
       setEditContact(false);
     } catch (error) {
       const message =
         error.response?.data?.message || "Erreur lors de la mise à jour";
       showToast(message, "error");
-    } finally {
-      setLoadingContact(false);
     }
   };
 
@@ -661,7 +684,8 @@ const SecurityForm = ({ showToast }) => {
     confirm: false,
   });
   const [errors, setErrors] = useState({});
-  const [loadingPassword, setLoadingPassword] = useState(false);
+  const changePasswordMutation = useChangePasswordMutation();
+  const loadingPassword = changePasswordMutation.isPending;
 
   const passwordCriteria = [
     { key: "minLength", regex: /.{8,}/, label: "8 caractères" },
@@ -712,11 +736,11 @@ const SecurityForm = ({ showToast }) => {
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
-    setLoadingPassword(true);
     try {
-      const { changePassword } =
-        await import("../../../services/profile.services");
-      await changePassword(passwords.passwordCurrent, passwords.passwordNew);
+      await changePasswordMutation.mutateAsync({
+        currentPassword: passwords.passwordCurrent,
+        newPassword: passwords.passwordNew,
+      });
       showToast("Mot de passe mis à jour avec succès", "success");
       setPasswords({
         passwordCurrent: "",
@@ -728,8 +752,6 @@ const SecurityForm = ({ showToast }) => {
         error.response?.data?.message ||
         "Erreur lors du changement de mot de passe";
       showToast(message, "error");
-    } finally {
-      setLoadingPassword(false);
     }
   };
 

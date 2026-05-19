@@ -16,11 +16,12 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import {
-  getAllSeries,
-  createSerie,
-  updateSerie,
-  deleteSerie,
-} from "../../../services/serie.services";
+  useCreateSerieMutation,
+  useDeleteSerieMutation,
+  useUpdateSerieMutation,
+} from "../../../hooks/mutations/useApiMutations";
+import { useSeriesQuery } from "../../../hooks/queries/useApiQueries";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 const PER_PAGE_OPTIONS = [10, 20, 30, 50, 100];
@@ -536,10 +537,6 @@ const exportToPDF = (data) => {
 };
 
 export default function SeriesView() {
-  const [series, setSeries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingSave, setLoadingSave] = useState(false);
-  const [loadingDelete, setLoadingDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
@@ -556,6 +553,13 @@ export default function SeriesView() {
     label: "",
     description: "",
   });
+  const debouncedSearch = useDebouncedValue(searchTerm, 400);
+  const { data: series = [], isLoading: loading } = useSeriesQuery(debouncedSearch);
+  const createSerieMutation = useCreateSerieMutation();
+  const updateSerieMutation = useUpdateSerieMutation();
+  const deleteSerieMutation = useDeleteSerieMutation();
+  const loadingSave = createSerieMutation.isPending || updateSerieMutation.isPending;
+  const loadingDelete = deleteSerieMutation.isPending;
 
   // ── Toast ──────────────────────────────────────────────────────────
   const showToast = (message, type = "success") => {
@@ -571,6 +575,11 @@ export default function SeriesView() {
   };
 
   // ── Chargement initial depuis l'API ────────────────────────────────
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  /*
   const fetchSeries = async () => {
     setLoading(true);
     try {
@@ -606,6 +615,7 @@ export default function SeriesView() {
     return () => clearTimeout(delaySearch);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
+  */
 
   // ── Tri et pagination ───────────────────────────────────────────────
   const sortedSeries = useMemo(() => {
@@ -695,15 +705,12 @@ export default function SeriesView() {
       return;
     }
 
-    setLoadingSave(true);
     try {
       if (editingId) {
-        const updated = await updateSerie(editingId, formData);
-        setSeries(series.map((s) => (s.id === editingId ? updated : s)));
+        await updateSerieMutation.mutateAsync({ id: editingId, data: formData });
         showToast("Série modifiée avec succès", "success");
       } else {
-        const created = await createSerie(formData);
-        setSeries([...series, created]);
+        await createSerieMutation.mutateAsync(formData);
         showToast("Série ajoutée avec succès", "success");
       }
       setShowModal(false);
@@ -711,8 +718,6 @@ export default function SeriesView() {
     } catch (error) {
       const message = error.response?.data?.message || "Erreur lors de l'enregistrement";
       showToast(message, "error");
-    } finally {
-      setLoadingSave(false);
     }
   };
 
@@ -722,17 +727,13 @@ export default function SeriesView() {
   };
 
   const handleConfirmDelete = async () => {
-    setLoadingDelete(true);
     try {
-      await deleteSerie(deleteItem.id);
-      setSeries(series.filter((s) => s.id !== deleteItem.id));
+      await deleteSerieMutation.mutateAsync(deleteItem.id);
       showToast("Série supprimée avec succès", "success");
       setDeleteItem(null);
     } catch (error) {
       const message = error.response?.data?.message || "Erreur lors de la suppression";
       showToast(message, "error");
-    } finally {
-      setLoadingDelete(false);
     }
   };
 

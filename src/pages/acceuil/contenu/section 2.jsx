@@ -8,9 +8,8 @@ import {
   HiCheck,
 } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import { getAllMetiersCache }  from "../../../services/metier.services";
-import { getAllDomaines }      from "../../../services/domaine.services";
 import { searchMetier }        from "../../../services/metier.services";
+import { useDomainesQuery, useMetiersQuery } from "../../../hooks/queries/useApiQueries";
 import { ChevronDown, Search } from "lucide-react";
 import BuildingSVG        from "./BuildingSVG";
 import pictoExplorer      from "../../../assets/picto_Explorer.png";
@@ -89,11 +88,10 @@ function MetierCard({ metier, onSelect }) {
 }
 
 export default function Section2({ onSelectMetier, selectedMetier, onRetour, onHome }) {
-  const navigate = useNavigate();
-  const [allMetiers,  setAllMetiers]  = useState([]);
-  const [allDomaines, setAllDomaines] = useState([]);
-  const [_loading,    _setLoading]    = useState(true);
+  const _navigate = useNavigate();
   const [isLoading,   setIsLoading]   = useState(false);
+  const { data: allMetiers = [] } = useMetiersQuery();
+  const { data: allDomaines = [] } = useDomainesQuery();
 
   const [isMetierComboOpen, setIsMetierComboOpen] = useState(false);
   const [searchQuery,       setSearchQuery]       = useState("");
@@ -131,6 +129,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, onH
     setMode("idle");
   };
 
+  /*
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -145,6 +144,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, onH
     };
     loadData();
   }, []);
+  */
 
   const domainesList = useMemo(() =>
     allDomaines.map((d) => ({ id: d.id, label: d.label, keywords: [d.label.toLowerCase()] })),
@@ -224,10 +224,6 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, onH
     setIsComboOpen(false);
     setComboSearch("");
     setMode("domaine");
-  };
-
-  const handleValider = () => {
-    if (localSelected) onSelectMetier?.(localSelected);
   };
 
   useEffect(() => {

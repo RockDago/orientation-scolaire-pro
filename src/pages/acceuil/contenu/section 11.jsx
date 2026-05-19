@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 import { HiOutlineHome } from "react-icons/hi";
 import { FiArrowRight, FiCheckCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { getMetierById, getAllMetiersCache } from "../../../services/metier.services";
+import { useMetierQuery } from "../../../hooks/queries/useApiQueries";
 import BuildingSVG from "./BuildingSVG";
 import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
 import Boutton from "../../../components/ui/boutton";
@@ -24,10 +24,17 @@ function GradBg() {
 }
 
 export default function Section11({ metier, onRetour, onVoirFormations, onHome }) {
-  const navigate = useNavigate();
-  const [metierDetails, setMetierDetails] = useState(metier || null);
-  const [loading,        setLoading]       = useState(false);
+  const _navigate = useNavigate();
+  const shouldFetchDetails = Boolean(
+    metier?.id &&
+      typeof metier.id === "number" &&
+      !metier.parcoursFormation?.length,
+  );
+  const { data: fetchedMetier, isLoading: loading } = useMetierQuery(metier?.id, {
+    enabled: shouldFetchDetails,
+  });
 
+  /*
   useEffect(() => {
     if (!metier) return;
 
@@ -62,7 +69,12 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
     loadDetails();
   }, [metier?.id, metier?.domaine, metier?.mention]);
 
-  const m = metierDetails;
+  */
+
+  const m = useMemo(
+    () => (metier?.parcoursFormation?.length > 0 ? metier : fetchedMetier || metier || null),
+    [fetchedMetier, metier],
+  );
 
   const parcours =
     m?.parcoursFormation?.length > 0

@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 import BuildingSVG from "./BuildingSVG";
 import { HiOutlineHome, HiOutlineArrowRight } from "react-icons/hi";
 import pictoExplorer from "../../../assets/picto_Explorer.png";
 import { useNavigate } from "react-router-dom";
-import { getAllMetiers, getMetierById } from "../../../services/metier.services";
+import { useMetierQuery, useMetiersQuery } from "../../../hooks/queries/useApiQueries";
 import { findMetierBySlug } from "../../../utils/slug";
 
 
@@ -91,39 +91,36 @@ function DecoSVG() {
 
 
 export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, onMetierLoaded, onHome }) {
-  const navigate = useNavigate();
-  const [selectedMetier, setSelectedMetier] = useState(metier);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => { setSelectedMetier(metier); }, [metier]);
+  const _navigate = useNavigate();
+  const [manualSelectedMetier, setManualSelectedMetier] = useState(null);
+  const hasDetailedMetier = metier?.parcoursFormation?.length > 0;
+  const shouldResolveSlug = Boolean(slugFromUrl && !metier?.id && !hasDetailedMetier);
+  const { data: allMetiers = [], isLoading: loadingMetiers } = useMetiersQuery("", {
+    enabled: shouldResolveSlug,
+  });
+  const slugMetier = useMemo(
+    () => (shouldResolveSlug ? findMetierBySlug(slugFromUrl, allMetiers) : null),
+    [allMetiers, shouldResolveSlug, slugFromUrl],
+  );
+  const metierId = hasDetailedMetier
+    ? null
+    : typeof metier?.id === "number"
+    ? metier.id
+    : slugMetier?.id;
+  const { data: fetchedMetier, isLoading: loadingDetails } = useMetierQuery(metierId, {
+    enabled: Boolean(metierId),
+  });
 
   useEffect(() => {
-    const loadMetierDetails = async () => {
-      if (metier?.parcoursFormation?.length > 0) { setSelectedMetier(metier); return; }
-      if (metier?.id && typeof metier.id === "number") {
-        setLoading(true);
-        try {
-          const details = await getMetierById(metier.id);
-          setSelectedMetier(details);
-          onMetierLoaded?.(details);
-        } catch (e) { console.error(e); } finally { setLoading(false); }
-        return;
-      }
-      if (slugFromUrl) {
-        setLoading(true);
-        try {
-          const allMetiers = await getAllMetiers();
-          const found = findMetierBySlug(slugFromUrl, allMetiers);
-          if (found) {
-            const details = await getMetierById(found.id);
-            setSelectedMetier(details);
-            onMetierLoaded?.(details);
-          }
-        } catch (e) { console.error(e); } finally { setLoading(false); }
-      }
-    };
-    loadMetierDetails();
-  }, [metier?.id, slugFromUrl, onMetierLoaded]);
+    if (fetchedMetier) onMetierLoaded?.(fetchedMetier);
+  }, [fetchedMetier, onMetierLoaded]);
+
+  useEffect(() => {
+    setManualSelectedMetier(null);
+  }, [metier, slugFromUrl]);
+
+  const selectedMetier = manualSelectedMetier || (hasDetailedMetier ? metier : fetchedMetier || slugMetier || metier);
+  const loading = loadingMetiers || loadingDetails;
 
   const m = selectedMetier;
   const isMultipleResults = metier?.isDomaine && metier?.results?.length > 0;
@@ -182,7 +179,7 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
                   <button
                     type="button"
                     key={item.id}
-                    onClick={() => setSelectedMetier(item)}
+                    onClick={() => setManualSelectedMetier(item)}
                     className={`rounded-2xl p-3 sm:p-4 border cursor-pointer transition-all ${active ? "bg-white/20 border-white/50" : "bg-white/10 border-white/20 hover:bg-white/15"}`}
                     aria-pressed={active}
                   >
